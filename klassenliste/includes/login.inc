@@ -28,7 +28,7 @@ function anzeige_login($daten=0){
    <td><input type="text" name="nutzername" 
    value="<?=$daten['nutzername']?>" size="10" /></td></tr>
    <tr><td>Passwort:</td>
-<td><input type="password" name="passwort" value="" size="10"/></td></tr>
+<td><input type="password" name="passwort" value="" size="10" /></td></tr>
 <tr><td colspan="2" align="center">
    <input type="submit" value="Einloggen" />&nbsp;
 <input type="reset" value="Zur&uuml;cksetzen" /></td></tr>
@@ -42,13 +42,21 @@ function tue_login($daten,$db){
   $person=new personen($db);
   if ($person->pruefe_login($daten['nutzername'],$daten['passwort'])){
     $_SESSION['uid']=$person->id();
-    $_SESSION['name']=$person->vorname() . " " . $person->aktueller_name()
-      . ($person->geburtsname()!=$person->aktueller_name()?" geb. " .
-      $person->geburtsname():""); 
-    bearb_menu($db);
-  } else anzeige_login($daten);
+    $_SESSION['name']=sprintf("%s %s %s",
+			      $person->vorname(),
+			      $person->aktueller_name(),
+			      ($person->geburtsname()!=$person->aktueller_name()?
+			       " geb. " . $person->geburtsname():"")); 
+  } else {
+    unset($_SESSION['uid']);
+    $_SESSION['name']="<strong>fehlgeschlagene Anmeldung</strong>";
+  }
   $person->puffer_leeren();
 }
 
+function logout($db) {
+  unset($_SESSION['uid']);
+  unset($_SESSION['name']);
+}
 
 ?>
