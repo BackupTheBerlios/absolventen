@@ -50,6 +50,8 @@ class homepage   extends dbtabelle{
 			       $args['id']);
 	case "loeschen":
 	        return sprintf("delete from %s where id=%d",$mysql_daten['HPTab'],$args);
+	case "persloeschen":
+	        return sprintf("delete from %s where uid=%d",$mysql_daten['HPTab'],$args);
     }
   }
 	
