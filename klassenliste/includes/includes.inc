@@ -4,6 +4,7 @@ unset($mysql_daten);
 require_once('config.inc');
 require_once('init.inc');
 require_once('mysqldb.inc');
+require_once('dbtabelle.inc');
 require_once('jahrgang.inc');
 require_once('personen.inc');
 require_once('adressen.inc');
