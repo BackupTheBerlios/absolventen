@@ -30,28 +30,28 @@ function bearb_menu($db) {
 <p>
 <table border="0">
      <tr>
-     <th><a href="<?=$PHP_SELF?>?aktion=persformaendern">Allgemeine Daten</a></th>
+     <td><a href="<?=$PHP_SELF?>?aktion=persformaendern">Allgemeine Daten</a></td>
      </tr>
      <tr>
-     <th><a href="<?=$PHP_SELF?>?aktion=jgform">Jahrgang</a></th>
+     <td><a href="<?=$PHP_SELF?>?aktion=jgform">Jahrgang</a></td>
      </tr>
      <tr>
-     <th><a href="<?=$PHP_SELF?>?aktion=adrform">Adressen</a></th>
+     <td><a href="<?=$PHP_SELF?>?aktion=adrform">Adressen</a></td>
      </tr>
      <tr>
-     <th><a href="<?=$PHP_SELF?>?aktion=telform">Telefonnummer</a></th>
+     <td><a href="<?=$PHP_SELF?>?aktion=telform">Telefonnummer</a></td>
      </tr>
      <tr>
-     <th><a href="<?=$PHP_SELF?>?aktion=mailform">Adressen elektronischer Post</a></th>
+     <td><a href="<?=$PHP_SELF?>?aktion=mailform">Adressen elektronischer Post</a></td>
      </tr>
      <tr>
-     <th><a href="<?=$PHP_SELF?>?aktion=hpform">WWW-Seiten</a></th>
+     <td><a href="<?=$PHP_SELF?>?aktion=hpform">WWW-Seiten</a></td>
      </tr>
      <tr>
-     <th>Aus den Datenbank austragen</th>
+     <td><a href="<?=$PHP_SELF?>?aktion=austragen">Aus der Datenbank austragen</a></td>
      </tr>
      <tr>
-     <th><a href="<?=$PHP_SELF?>?aktion=logout">Abmelden</a></th>
+     <td><a href="<?=$PHP_SELF?>?aktion=logout">Abmelden</a></td>
      </tr>
 
 </table>
@@ -154,11 +154,62 @@ function untertabdatenloeschen($tabelle,$daten){
   $tabelle->diese($daten['id']);
   if ($tabelle->uid() != $_SESSION['uid']){
     print('<strong>Zugriff verweigert!</strong>');
-    select_jgs($tabelle->db());
+    select_jgs($tabelle->db);
     return;
   }  
-  $tabelle->loeschen($daten['id'],$daten['uid']);
+  $tabelle->loeschen($daten['id'],$_SESSION['uid']);
   untertabdatenform($tabelle);
 }
 
+function austragen($db,$daten) {
+  $person =new  personen($db);
+  $jg=new jg($db);
+  if ($daten['wirklich']=='nein'||
+      ($daten['austrageid'] && ($_SESSION['austrageid']!=$daten['austrageid'] ||
+      !ereg("^" . $_SESSION['uid'] . '+',$daten['austrageid']))) ||
+      ($daten['uid'] && $_SESSION['uid']!=$daten['uid'])){
+?> Sie wurden <em>nicht</em> aus der Datenbank ausgetragen.
+<?php    
+     unset($_SESSION['austrageid']);
+    bearb_menu($db);
+    return;
+  }
+  if ($_SESSION['austrageid'] && $_SESSION['austrageid']==$daten['austrageid'] &&
+      $_SESSION['uid']==$daten['uid']) {
+    if (! $person->loeschen($daten['uid'])) {
+      logout($db);
+      select_jgs($db);
+    }else {
+      bearb_menu($db);
+    }
+  } else {
+    $_SESSION['austrageid']=uniqid($_SESSION['uid'] . "+");
+  $jg->erste_person($_SESSION['uid']);
+  $jg->mitjg=1;
+  $person->diese($_SESSION['uid']);
+?><h2>Austragen</h2>
+  <p><strong>Ihre kompletten Daten werden gelöscht.</strong></p>
+  <form method="post" action="<?=$PHP_SELF?>">
+  <input type="hidden" name="austrageid" value="<?=$_SESSION['austrageid']?>" />
+  <input type="hidden" name="uid" value="<?=$_SESSION['uid']?>">
+  Sind Sie sich wirklich sicher?
+  </p>
+  <p><input type="radio" name="wirklich" value="ja" id="ja" /> <label for="ja">Ja</label><br>
+     <input type="radio" name="wirklich" value="nein" id="nein" checked="1" /> 
+     <label for="nein">Nein</label>
+  </p>
+  <p><input type="submit" value="Weiter"/></p>
+  </form>
+<p>
+<table border="1">
+     <?php $jg->nurjgprint();
+     $person->normprint(); ?>
+</table>
+</p>
+<?php
+    $person->puffer_leeren();
+     $jg->puffer_leeren();
+
+  }
+}
 ?>
