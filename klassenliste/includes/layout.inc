@@ -1,4 +1,4 @@
-<?php /* $Id: layout.inc,v 1.4 2004/07/15 11:46:50 keinstein Exp $
+<?php /* $Id: layout.inc,v 1.5 2004/07/19 22:34:01 keinstein Exp $
 Copyright (c) 2000-2004 SchlemmerSoft (Tobias Schlemmer)
 
 This program is free software; you can redistribute it and/or
@@ -18,6 +18,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 Der Autor kann unter der Email: Tobias.Schlemmer@web.de erreicht werden.
 
 $Log: layout.inc,v $
+Revision 1.5  2004/07/19 22:34:01  keinstein
+globale Variablen -> $GLOBALS
+Titel nach "Demodatenbank"
+header nach text/xml (wird wohl wieder rausfallen)
+<div> um alles
+
 Revision 1.4  2004/07/15 11:46:50  keinstein
 Copyright korrigiert
 $_SESSION  umbenannt
@@ -25,19 +31,19 @@ $_SESSION  umbenannt
 */ 
 
 /* Trennlinie in der Tabelle (komplette Tabellenzeile) */
-$layout['tabtrenner']='<tr><td colspan="5" align="center"><img src="../eksg/bilder/regenbogen.gif" height="5" width="700" align="center" /></td></tr>';
+$GLOBALS['mod_absolventen_glob']['layout']['tabtrenner']='<tr><td colspan="5" align="center"><img src="../eksg/bilder/regenbogen.gif" height="5" width="700" align="center" /></td></tr>';
 
 /* Trennlinie im freien Text */
-$layout['linie']='<hr width="95%" />';
+$GLOBALS['mod_absolventen_glob']['layout']['linie']='<hr width="95%" />';
 
 
 
-function seitenanfang($title="ehemalige Sch&uuml;ler von St.&nbsp;Augustin",
+function seitenanfang($title="Demodatenbank",
 		      $style="Hauptstil.css",
 		      $body='<body background="back.png" bgcolor="#440055" text="#FFFF88" link="#D3EEFF" alink="#FFFFFF" vlink="#DDDD00">',
 		      $target="") 
 {
-  Header("Content-Type: text/html; charset=" . $_SESSION['mod_absolventen']['zeichensatz']);
+  Header("Content-Type: text/xml; charset=" . $_SESSION['mod_absolventen']['zeichensatz']);
 ?>
 <?="<?"?>xml version="1.0" encoding="UTF-8"<?="?>"?>
 <?="<?"?>xml-stylesheet type="text/css" href="<?=$style?>"<?="?>"?>
@@ -51,37 +57,38 @@ function seitenanfang($title="ehemalige Sch&uuml;ler von St.&nbsp;Augustin",
    <?php if ($target) echo "   <base target=\"$target\" />\n";?>
 </head>
 <?=$body?>
-<center>
+<center><div class="absolventen" width="70%">
 <?php if ($_SESSION['mod_absolventen']['name']) 
   printf('<p><font size="-1">%s</font></p>',$_SESSION['mod_absolventen']['name']);
  if ($title) printf("<h1>%s</h1>\n",$title);
 }
 
 function seitenende($br=" | ",$copy=1){
-  global $layout;
-  global $version;
-  global $startzeit;
+  
+  
+  
 ?>
-  <p><?=$layout['linie']?>
-  <a href="<?=$PHP_SELF?>?aktion=jgauswahl">Abfrage</a><?=$br?>
-  <a href="<?=$PHP_SELF?>?aktion=hinzufuegen">Neu</a><?=$br?>
+  <p><?=$GLOBALS['mod_absolventen_glob']['layout']['linie']?>
+  <a href="<?=$GLOBALS['mod_absolventen_glob']['php_self']?>?aktion=jgauswahl">Abfrage</a><?=$br?>
+  <a href="<?=$GLOBALS['mod_absolventen_glob']['php_self']?>?aktion=hinzufuegen">Neu</a><?=$br?>
 <?php if (isset($_SESSION['mod_absolventen']['uid'])) { ?>
-  <a href="<?=$PHP_SELF?>?aktion=bearbmenu">eigene&nbsp;Daten</a><?=$br?>
-  <a href="<?=$PHP_SELF?>?aktion=logout">Abmelden</a>
+  <a href="<?=$GLOBALS['mod_absolventen_glob']['php_self']?>?aktion=bearbmenu">eigene&nbsp;Daten</a><?=$br?>
+  <a href="<?=$GLOBALS['mod_absolventen_glob']['php_self']?>?aktion=logout">Abmelden</a>
  <?php } else { ?>
-  <a href="<?=$PHP_SELF?>?aktion=login">Einloggen</a>
- <?php } ?>
+  <a href="<?=$GLOBALS['mod_absolventen_glob']['php_self']?>?aktion=login">Einloggen</a>
+ <?php } ?><?=$br?>
+  <a href="http://absolventen.berlios.de/hilfe/" target="_empty">Hilfe</a>
   </p>
-<?php if ($layout['homelink']) {?>
-  <p><?=$layout['linie']?>
-  <?=$layout['homelink']?>
+<?php if ($GLOBALS['mod_absolventen_glob']['layout']['homelink']) {?>
+  <p><?=$GLOBALS['mod_absolventen_glob']['layout']['linie']?>
+  <?=$GLOBALS['mod_absolventen_glob']['layout']['homelink']?>
   </p>
 <?php }
   if ($copy) 
   { 
 ?>
-  <p><?=$layout['linie']?><font size="-1">
-  <a href="http://absolventen.berlios.de">Klassenliste Version <?=$version?></a></font></p>
+  <p><?=$GLOBALS['mod_absolventen_glob']['layout']['linie']?><font size="-1">
+  <a href="http://absolventen.berlios.de">Klassenliste Version <?=$GLOBALS['mod_absolventen_glob']['version']?></a></font></p>
   <address><font size="-2">
    &copy; 2000-2004
     <a href="mailto:Tobias.Schlemmer@web.de">SchlemmerSoft 
@@ -89,8 +96,8 @@ function seitenende($br=" | ",$copy=1){
     Dieses Programm steht unter der 
       <a href="http://www.gnu.org/copyleft/gpl.html">GPL</a></font>
   </address>
- <font size="-3">Rechenzeit: <?php printf("%.3f",ereg_replace("^0.([0-9]*) ([0-9]*)$","\\2.\\1",microtime())*1000.-$startzeit)?> ms</font>
-<?php } ?>
+ <font size="-3">Rechenzeit: <?php printf("%.3f",ereg_replace("^0.([0-9]*) ([0-9]*)$","\\2.\\1",microtime())*1000.-$GLOBALS['mod_absolventen_glob']['startzeit'])?> ms</font>
+<?php } ?></div>
 </center>
 </body>
 </html>
