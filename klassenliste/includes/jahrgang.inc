@@ -1,5 +1,5 @@
-<?php /*
-Copyright (c) 2000 SchlemmerSoft (Tobias Schlemmer)
+<?php /* $Id: jahrgang.inc,v 1.7 2004/07/15 11:46:05 keinstein Exp $
+Copyright (c) 2000-2004 SchlemmerSoft (Tobias Schlemmer)
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -17,14 +17,34 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 Der Autor kann unter der Email: Tobias.Schlemmer@web.de erreicht werden.
 
+$Log: jahrgang.inc,v $
+Revision 1.7  2004/07/15 11:46:05  keinstein
+
+
+SQLs überprüft und geändert
+     (z.B. id bei insert auf NULL gesetzt
+       und nicht weggelassen).
+
+Referenz auf Datenbank
+Variablen auf Existenz prüfen
+Klassen in HTML-Ausgaben
+Formular neu formatiert. Fehlerhafte Felder ber CSS markiert
+         Neu als variable
+	 ggf. Abbrechen-Knopf
+checkdaten gibt Fehler-Array zurück
+           Bereichs-Check für Jahrgang
+
+id() und uid() raus (gibts schon in dbtabelle.inc)
+Tippfehler in normprint(), nurjgprint()
+
 */ 
 
 class jg extends dbtabelle{
   var $personen;
   var $mitjg;
 
-  function jg($h_db=0) {
-    $this->dbtabelle($h_db);
+  function jg(&$h_db) {
+    $this->dbtabelle(&$h_db);
     $this->mitjg=0;
     $this->mailformopts="";
   }
@@ -56,25 +76,24 @@ class jg extends dbtabelle{
 			       . " order by jahrgang",
    			       $mysql_daten['JgTab']);
 	case "insert":
-		return sprintf("insert into %s (%suid,jahrgang,klasse,drin"
-			       . ") values (%s%d,%d,'%s',%d)",
+		return sprintf("insert into %s (id,uid,jahrgang,klasse,drin"
+			       . ") values (%s,%d,%d,%s,%d)",
 			       $mysql_daten['JgTab'],
-			       $args['id']?"id,":"",
-			       $args['id']?$args['id'] . ',':"",
+			       empty($args['id'])?"NULL":sprintf("%d",$args['id']),
 			       $args['uid'],
 			       $args['jahrgang'],
-			       addslashes($args['klasse']),
+			       isset($args['klasse'])?"'" . addslashes($args['klasse']) . "'":"NULL",
 			       $args['drin']);
 	case "update":
-	       return sprintf("update %s set uid=%d,jahrgang=%d,"
-			      . "klasse='%s',drin=%d"
-			      . " where id=%d",
-			      $mysql_daten['JgTab'],
-			      $args['uid'],
-			      $args['jahrgang'],
-			      addslashes($args['klasse']),
-			      $args['drin'],
-			      $args['id']);
+	        return sprintf("update %s set uid=%d,jahrgang=%d,"
+			       . "klasse=%s,drin=%d"
+			       . " where id=%d",
+			       $mysql_daten['JgTab'],
+			       $args['uid'],
+			       $args['jahrgang'],
+			       isset($args['klasse'])?"'" . addslashes($args['klasse']) . "'":"NULL",
+			       $args['drin'],
+			       $args['id']);
        case "loeschen":
 	 return sprintf("delete from %s where id=%d",$mysql_daten['JgTab'],$args);
        case "persloeschen":
@@ -83,7 +102,7 @@ class jg extends dbtabelle{
   }
 	
   function insert($daten) {
-    if ($daten['id'] && !ereg('^[0-9]*$',$daten['id'])) {
+    if (isset($daten['id']) && !ereg('^[0-9]+$',$daten['id'])) {
       return -1;
     }
     return $this->insert_backend($this->sql("insert",$daten),$daten['uid']);
@@ -115,14 +134,6 @@ class jg extends dbtabelle{
   }
 
   /* die einzelnen Felder der Person */
-  function id() {
-    return $this->Werte["id"];
-  }
-  
-  function uid() {
-    return $this->Werte["uid"];
-  }
-
   function jahrgang() {
     return $this->Werte["jahrgang"];
   }
@@ -135,7 +146,7 @@ class jg extends dbtabelle{
     return $this->Werte["drin"];
   }
 
-  function normprint($erstspalte=""){
+  function normprint($erstespalte=""){
     global $layout;
     $personen=new personen($this->db);
 
@@ -157,7 +168,9 @@ class jg extends dbtabelle{
 
       if ($jgstring) {
 	echo $layout['tabtrenner'];
-?><tr><th colspan="<?=$spalten?>" align="center"><?=$jgstring?></th></tr>
+?><tr class="absolventen anzeige anzeige_jg">
+<th colspan="<?=$spalten?>" align="center" 
+class="absolventen anzeige anzeige_jahrgang"><?=$jgstring?></th></tr>
    <?php }
       $personen->erste_jahrgang($this->jahrgang(),
 				$this->klasse(),$this->drin());
@@ -179,7 +192,7 @@ class jg extends dbtabelle{
     return $mailformopts;
   }
 
-  function nurjgprint($erstspalte=""){
+  function nurjgprint($erstespalte=""){
     global $layout;
 
     if ($erstespalte) {
@@ -201,78 +214,138 @@ class jg extends dbtabelle{
       if ($jgstring) {
 	echo $layout['tabtrenner'];
 	?>
-<tr><th colspan="<?=$spalten?>" align="center"><?=$jgstring?></th></tr>
+<tr class="absolventen anzeige anzeige_jg">
+<th colspan="<?=$spalten?>" align="center" 
+class="absolventen anzeige anzeige_jahrgang"><?=$jgstring?></th></tr>
    <?php }
     } while ($this->naechste());
   }
 
   function optionprint($jahrgang=""){
     do {
-      printf("<option value=\"%s\" %s>%s</option>\n",$this->jahrgang(),
+      printf("<option  class=\"absolventen anzeige anzeige_jgliste\""
+	     . " value=\"%s\" %s>%s</option>\n",$this->jahrgang(),
 	     $this->jahrgang()==$jahrgang?" selected":"",$this->jahrgang());
-      print_r ($this);
     } while ($this->naechste());
   }
-
-function formular($daten=0) {
+  
+function formular($neu,$daten=0,$fehler=0) {
+  global $PHP_SELF;
   global $klasse;
   reset($klasse);
-  if (!$daten) $daten=array('uid' => $_SESSION['uid']);
+  if ($neu) $daten=array('uid' => $_SESSION['mod_absolventen']['uid']);
 ?>
-<form method="post" action="<?=$PHP_SELF?>">
-<input type="hidden" name="aktion" 
-   value="<?=$daten['id']?"jgdbaendern":"jgdbneu"?>" />
-<?php if ($daten['id']) { ?>
-<input type="hidden" name="id" value="<?=$daten['id']?>" />
-			  <?php } ?>
-<input type="hidden" name="uid" value="<?=$daten['uid']?>" />
-<table border="0">
-<tr><td>Jahrgang</td><td><input type="text" name="jahrgang"
-   value="<?=$daten['jahrgang']?>" size="4" maxlength="4" /></td></tr>
-<tr><td>Klasse</td><td><select name="klasse">
+<form method="post" action="<?=$PHP_SELF?>" class="absolventen jahrgang formular">
+  <input type="hidden" name="aktion" 
+     value="<?=$neu?"jgdbneu":"jgdbaendern"?>" />
+<?php if (!empty($daten['id'])) 
+{ ?>  <input type="hidden" name="id" value="<?=$daten['id']?>" /><?php 
+} ?>  <input type="hidden" name="uid" value="<?=$daten['uid']?>" />
+  <table border="0" class="absolventen jahrgang formular">
+    <tr class="absolventen jahrgang formular jg_jg">
+      <th class="absolventen jahrgang formular jg_jg"><label 
+          for="abs_jg<?=isset($daten['id'])?$daten['id']:""?>" 
+          class="absolventen jahrgang formular jg_jg">Abitur-Jahrgang</label></th>
+      <td class="absolventen jahrgang formular jg_jg"><input type="text" name="jahrgang" 
+          class="absolventen jahrgang formular jg_jg<?=isset($fehler['jahrgang'])?" fehler":""?>"
+          id="abs_jg<?=isset($daten['id'])?$daten['id']:""?>"
+          value="<?=isset($daten['jahrgang'])?$daten['jahrgang']:""?>" size="4" maxlength="4" /></td>
+    </tr>
+    <tr class="absolventen jahrgang formular jg_klasse">
+      <th class="absolventen jahrgang formular jg_klasse"><label 
+          for="abs_kl<?=isset($daten['id'])?$daten['id']:""?>" 
+          class="absolventen jahrgang formular jg_klasse">Klasse</label></th>
+      <td class="absolventen jahrgang formular jg_klasse"><select name="klasse" 
+          class="absolventen jahrgang formular jg_klasse<?=isset($fehler['klasse'])?" fehler":""?>"
+          id="abs_kl<?=isset($daten['id'])?$daten['id']:""?>">
 <?php
 while (list ($key, $val) = each ($klasse)) {
-  printf('<option value="%s"%s>%s</option>',
-	 $val,
-	 $daten['klasse']==$val?' selected="1"':'',
+  printf('          <option value="%s"%s>%s</option>' . "\n",
+	 $val,isset($daten['klasse'])&&
+	 ($daten['klasse']==$val)?' selected="1"':'',
 	 $key);
 }
   reset($klasse);
-?></select></td></tr>
-<tr><td>Verhältnis</td><td><input type="radio" name="drin" value="1" <?=$daten['drin']?'checked="checked" ':''?>/> Zugeh&ouml;rig<br />
-<input type="radio" name="drin" value="0" <?=(!$daten['drin'])?'checked="checked" ':''?>/>sonstige nahestehende Person</td></tr>
-<tr><td colspan="2" align="center">
-   <input type="submit" 
-   value="<?=$daten['id']?"&Auml;ndern":"Einf&uuml;gen"?>" />&nbsp;<input
-   type="reset" value="Zur&uuml;cksetzen" /></td></tr>
-</table>
+?>        </select></td>
+    </tr>
+    <tr class="absolventen jahrgang formular jg_drin">
+      <th class="absolventen jahrgang formular jg_drin"><label 
+          for="abs_ver<?=isset($daten['id'])?$daten['id']:""?>" 
+          class="absolventen jahrgang formular jg_drin">Verhältnis<br />zum Jahrgang</label></th>
+      <td id="abs_ver<?=isset($daten['id'])?$daten['id']:""?>" 
+          class="absolventen jahrgang formular jg_drin">
+        <div class="absolventen jahrgang formular jg_drin radio<?=isset($fehler['drin'])?
+                    " fehler":""?>"><input type="radio" 
+            name="drin" value="1" id="abs_drin<?=isset($daten['id'])?$daten['id']:""?>" 
+            <?=empty($daten['drin'])?"":'checked="checked" '?>
+            class="absolventen jahrgang formular jg_drin" /><label 
+            class="absolventen jahrgang formular jg_drin radio<?=isset($fehler['drin'])?" fehler":""?>"
+            for="abs_drin<?=isset($daten['id'])?$daten['id']:""?>">Zugeh&ouml;rig</label></div>
+        <div class="absolventen jahrgang formular jg_drin radio<?=isset($fehler['drin'])?
+                    " fehler":""?>"><input 
+            type="radio" class="absolventen jahrgang formular jg_drin" 
+            name="drin" value="0" id="abs_draussen<?=isset($daten['id'])?$daten['id']:""?>" 
+            <?=(isset($daten['drin']) && empty($daten['drin']))?'checked="checked" ':''?> /><label 
+            for="abs_draussen<?=isset($daten['id'])?$daten['id']:""?>"
+            class="absolventen jahrgang formular jg_drin radio<?=isset($fehler['drin'])?
+                          " fehler":""?>">sonstige nahestehende Person</label></div>
+      </td>
+    </tr>
+    <tr class="absolventen jahrgang formular knoepfe">
+      <td colspan="2" align="center" class="absolventen jahrgang formular knoepfe"><input type="submit" 
+          class="absolventen jahrgang formular knoepfe"
+          value="<?=$neu?"Einf&uuml;gen":"&Auml;ndern"?>" />&nbsp;<input
+          class="absolventen jahrgang formular knoepfe"
+          type="reset" value="Zur&uuml;cksetzen" /></td>
+    </tr>
+  </table>
 </form>
-<?php if ($daten['id']) { ?>
-<form method="post" action="<?=$PHP_SELF?>">
-<input type="hidden" name="aktion" value="jgdbloeschen" />
-<input type="hidden" name="id" value="<?=$daten['id']?>" />
-   <input type="submit"  value="L&ouml;schen" />
-</form>
-<p>Hinweis: Es werden nur Jahrgänge ab 1901 akzeptiert.</p>
+<?php if (!$neu) { ?>
+<form method="post" action="<?=$PHP_SELF?>" class="absolventen jahrgang formular">
+  <input type="hidden" name="aktion" value="jgdbloeschen" />
+  <input type="hidden" name="id" value="<?=$daten['id']?>" />
+  <input type="hidden" name="uid" value="<?=$daten['uid']?>" />
+  <input type="submit"  value="L&ouml;schen" 
+	class="absolventen jahrgang formular knoepfe jg_loeschen" />
+</form><?php } ?>
+<?php if (!empty($fehler)) { ?>
+<form method="post" action="<?=$PHP_SELF?>" class="absolventen jahrgang formular">
+  <input type="hidden" name="aktion" value="jgform" />
+  <input type="submit"  value="Abbrechen" 
+	class="absolventen jahrgang formular knoepfe jg_abbrechen" />
+</form><?php } ?>
+<p class="absolventen jahrgang formular hinweis">Hinweis: Es werden nur Jahrgänge ab 1901
+ akzeptiert.</p>
 <?php
-    }
-  }
+   }
 
-  function checkdaten($daten) {
+
+  function checkdaten(&$daten,$neu) {
     global $klasse;
-    $fehler="";
-    if (!ereg("^[0-9]*$",$daten['id'])) 
-      $fehler.="<br />Fehlerhafte id";
-    if (!ereg("^[0-9]*$",$daten['uid']))
-      $fehler.="<br />Fehlerhafte uid";
-    if (!ereg("^[0-9]*$",$daten['jahrgang']))
-      $fehler.="<br />Der Jahrgang sollte eine sinnvolle Jahreszahl sein.";
-    if (!in_array($daten['klasse'],$klasse)) 
-      $fehler.="<br />Ung&uuml;ltige Klasse";
-    if (!ereg("^[0-9]*$",$daten['drin']))
-      $fehler.="<br />Wie denn nun? Drin oder nicht drin?";
-    if (!($daten['uid']==$_SESSION['uid']))
-      $fehler.="<br />Ung&uuml;ltige Nutzeridentifikation";
+    $fehler=array();
+    if (!empty($daten['id']) && !ereg("^[0-9]*$",$daten['id'])) 
+      $fehler['id'] ="Fehlerhafte id";
+    if (empty($daten['uid']) || !ereg("^[0-9]*$",$daten['uid']))
+      $fehler['uid'] ="Fehlerhafte uid";
+    if (empty($daten['jahrgang'])){
+      $fehler['jahrgang'] = "Diese Angaben machen nur Sinn, wenn Sie eine gültige Jahreszahl eingeben.";
+    } else {
+      if (isset($daten['jahrgang']) && ereg("^[0-9]*$",$daten['jahrgang'])
+	  && $daten['jahrgang']>=0 && $daten['jahrgang']<100)
+	{ if (($daten['jahrgang']+=2000) > date("Y")) $daten['jahrgang']-=100;
+	} else
+	  if (isset($daten['jahrgang']) && (!ereg("^[0-9]*$",$daten['jahrgang']) || 
+					    $daten['jahrgang']<1900 || $daten['jahrgang']>date("Y")+5))
+	    $fehler['jahrgang'] ="Der Jahrgang sollte eine sinnvolle Jahreszahl sein.";
+    }
+    if (!isset($daten['klasse']) || !in_array($daten['klasse'],$klasse)) 
+      $fehler['klasse']="Ung&uuml;ltige Klasse";
+    if (!isset($daten['drin']) || !ereg("^[0-9]+$",$daten['drin']))
+      $fehler['drin']="Wie denn nun? Drin oder nicht drin? "
+	. "Klären Sie bitte Ihr Verhältnis zum Jahrgang.";
+    if (empty($daten['uid']) || empty($_SESSION['mod_absolventen']['uid']) || 
+      ($daten['uid']!=$_SESSION['mod_absolventen']['uid']))
+      $fehler[]="Ung&uuml;ltige Nutzeridentifikation";
     return $fehler;
   }
 }
