@@ -1,4 +1,4 @@
-<?php /* $Id: hp.inc,v 1.5 2004/07/19 22:28:17 keinstein Exp $
+<?php /* $Id: hp.inc,v 1.6 2004/07/25 17:33:34 keinstein Exp $
 Copyright (c) 2000-2004 SchlemmerSoft (Tobias Schlemmer)
 
 This program is free software; you can redistribute it and/or
@@ -18,6 +18,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 Der Autor kann unter der Email: Tobias.Schlemmer@web.de erreicht werden.
 
 $Log: hp.inc,v $
+Revision 1.6  2004/07/25 17:33:34  keinstein
+uid beim Löschformular setzen
+
 Revision 1.5  2004/07/19 22:28:17  keinstein
 globale Variablen nach $GLOBALS
 formular: array nicht mehr komplett löschen
@@ -158,6 +161,7 @@ class homepage   extends dbtabelle{
 <?php if (!$neu) { ?>
 <form method="post" action="<?=$GLOBALS['mod_absolventen_glob']['php_self']?>" class="absolventen homepage formular">
   <input type="hidden" name="aktion" value="hpdbloeschen" />
+  <input type="hidden" name="uid" value="<?=$daten['uid']?>" />
   <input type="hidden" name="id" value="<?=$daten['id']?>" />
   <input type="submit"  value="L&ouml;schen"  class="absolventen homepage formular knoepfe hp_loeschen"/>
 </form>
