@@ -1,4 +1,4 @@
-# $Id: convert-1.0-1.1.sql,v 1.6 2004/07/19 22:13:29 keinstein Exp $
+# $Id: convert-1.0-1.1.sql,v 1.7 2004/07/25 17:28:03 keinstein Exp $
 #
 # $log$
 
@@ -47,10 +47,10 @@ update StAgAdr set anfang=replace(anfang,'<br>','<br />'),
 
 alter table StAgJg
   modify klasse varchar(255),
-  modify jahrgang int(4);
+  modify jahrgang int(4),
   charset utf8,
   type=BDB;
-update StAgJg set klasse="" where klasse="12" or klasse="1" or klasse="0"
+update StAgJg set klasse="" where klasse="12" or klasse="1" or klasse="0";
 update StAgJg set klasse=concat(klasse,"-Zug") where length(klasse)>0;
 
 alter table StAgHP 
