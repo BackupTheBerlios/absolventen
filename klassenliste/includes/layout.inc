@@ -52,16 +52,16 @@ function seitenanfang($title="ehemalige Sch&uuml;ler von St.&nbsp;Augustin",
  if ($title) printf("<h1>%s</h1>\n",$title);
 }
 
-function seitenende($br="",$copy=1){
+function seitenende($br=" | ",$copy=1){
   global $layout;
   global $version;
   global $startzeit;
 ?>
   <p><?=$layout['linie']?>
   <a href="<?=$PHP_SELF?>?aktion=jgauswahl">Abfrage</a><?=$br?>
-  <a href="<?=$PHP_SELF?>?aktion=hinzufuegen">Neu</a>
+  <a href="<?=$PHP_SELF?>?aktion=hinzufuegen">Neu</a><?=$br?>
 <?php if (isset($_SESSION['uid'])) { ?>
-  <a href="<?=$PHP_SELF?>?aktion=bearbmenu">eigene&nbsp;Daten</a>
+  <a href="<?=$PHP_SELF?>?aktion=bearbmenu">eigene&nbsp;Daten</a><?=$br?>
   <a href="<?=$PHP_SELF?>?aktion=logout">Abmelden</a>
  <?php } else { ?>
   <a href="<?=$PHP_SELF?>?aktion=login">Einloggen</a>
