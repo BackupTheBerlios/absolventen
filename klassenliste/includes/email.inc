@@ -1,4 +1,4 @@
-<?php /* $Id: email.inc,v 1.4 2004/07/15 11:38:38 keinstein Exp $
+<?php /* $Id: email.inc,v 1.5 2004/07/19 22:26:49 keinstein Exp $
 Copyright (c) 2000-2004 SchlemmerSoft (Tobias Schlemmer)
 
 This program is free software; you can redistribute it and/or
@@ -18,6 +18,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 Der Autor kann unter der Email: Tobias.Schlemmer@web.de erreicht werden.
 
 $Log: email.inc,v $
+Revision 1.5  2004/07/19 22:26:49  keinstein
+globale Variablen nach $GLOBALS
+Datenfelder(): Werte testen
+formular(): nicht mehr ganzes Array löschen
+xhtml-Fähig gemacht
+
 Revision 1.4  2004/07/15 11:38:38  keinstein
 
 SQLs überprüft und geändert
@@ -35,32 +41,32 @@ checkdaten gibt Fehler-Array zurück
 
 class email  extends dbtabelle{
   function sql($funktion,$args){
-    global $mysql_daten;
+    
     switch ($funktion) {
 	case "erste_person": 
 		return sprintf("select id, uid, adresse, name, link, encode, mailformular"
 		               . " from %s where uid=%d",
-			$mysql_daten['EmailTab'],$args);
+			$GLOBALS['mod_absolventen_glob']['mysql']['EmailTab'],$args);
   	case "diese": 
 		return sprintf("select id,uid, adresse, name, link, encode, mailformular"
 			       . " from %s where id=%d",
-			$mysql_daten['EmailTab'],$args);
+			$GLOBALS['mod_absolventen_glob']['mysql']['EmailTab'],$args);
 	case "insert":
 		return sprintf("insert into %s (id,uid,adresse,name,link,encode,mailformular"
 			       . ") values (%s,%d,%s,%s,%d,%d,%d)",
-			       $mysql_daten['EmailTab'],
+			       $GLOBALS['mod_absolventen_glob']['mysql']['EmailTab'],
 			       empty($args['id'])?"NULL":sprintf('%d',$args['id']),
 			       $args['uid'],
 			       empty($args['adresse'])?"NULL": "'" . addslashes($args['adresse']) . "'",
 			       empty($args['name'])?"NULL":"'" . addslashes($args['name']) . "'",
 			       empty($args['link'])?0:$args['link'],
 			       empty($args['encode'])?0:$args['encode'],
-			       empty($args['mailformular'])?0:$$args['mailformular']);
+			       empty($args['mailformular'])?0:$args['mailformular']);
 	case "update":
 		return sprintf("update %s set uid=%d,adresse=%s,name=%s,"
 			       . "link=%d,encode=%d,mailformular=%d"
 			       . " where id=%d",
-			       $mysql_daten['EmailTab'],
+			       $GLOBALS['mod_absolventen_glob']['mysql']['EmailTab'],
 			       $args['uid'],
 			       empty($args['adresse'])?"NULL": "'" . addslashes($args['adresse']) . "'",
 			       empty($args['name'])?"NULL":"'" . addslashes($args['name']) . "'",
@@ -69,21 +75,21 @@ class email  extends dbtabelle{
 			       empty($args['mailformular'])?0:$args['mailformular'],			       
 			       $args['id']);
 	case "loeschen":
-	        return sprintf("delete from %s where id=%d",$mysql_daten['EmailTab'],$args);
+	        return sprintf("delete from %s where id=%d",$GLOBALS['mod_absolventen_glob']['mysql']['EmailTab'],$args);
 	case "persloeschen":
-	        return sprintf("delete from %s where uid=%d",$mysql_daten['EmailTab'],$args);
+	        return sprintf("delete from %s where uid=%d",$GLOBALS['mod_absolventen_glob']['mysql']['EmailTab'],$args);
         case "mailformopts": 
 	  return sprintf("select %s.id as id, %s.uid as uid, %s.adresse as adresse, "
 			 . "%s.name as name, %s.aktueller_name as aktueller_name, "
 			 . "%s.vorname as vorname"
 			 . " from %s,%s where %s.uid=%d and %s.id=%d and %s.mailformular=1",
-			 $mysql_daten['EmailTab'],$mysql_daten['EmailTab'],
-			 $mysql_daten['EmailTab'],$mysql_daten['EmailTab'],
-			 $mysql_daten['PersTab'],$mysql_daten['PersTab'],
-			 $mysql_daten['EmailTab'],$mysql_daten['PersTab'],
-			 $mysql_daten['EmailTab'],$args,
-			 $mysql_daten['PersTab'],$args,
-			 $mysql_daten['EmailTab']);
+			 $GLOBALS['mod_absolventen_glob']['mysql']['EmailTab'],$GLOBALS['mod_absolventen_glob']['mysql']['EmailTab'],
+			 $GLOBALS['mod_absolventen_glob']['mysql']['EmailTab'],$GLOBALS['mod_absolventen_glob']['mysql']['EmailTab'],
+			 $GLOBALS['mod_absolventen_glob']['mysql']['PersTab'],$GLOBALS['mod_absolventen_glob']['mysql']['PersTab'],
+			 $GLOBALS['mod_absolventen_glob']['mysql']['EmailTab'],$GLOBALS['mod_absolventen_glob']['mysql']['PersTab'],
+			 $GLOBALS['mod_absolventen_glob']['mysql']['EmailTab'],$args,
+			 $GLOBALS['mod_absolventen_glob']['mysql']['PersTab'],$args,
+			 $GLOBALS['mod_absolventen_glob']['mysql']['EmailTab']);
       
     }
   }
@@ -110,32 +116,24 @@ class email  extends dbtabelle{
 
   /* die einzelnen Felder der Person */
 
-  function id() {
-    return $this->Werte["id"];
-  }
-
-  function uid() {
-    return $this->Werte["uid"];
-  }
-
   function adresse() {
-    return $this->Werte["adresse"];
+    return isset($this->Werte["adresse"])?$this->Werte["adresse"]:false;
   }
 
   function name() {
-    return $this->Werte["name"];
+    return isset($this->Werte["name"])?$this->Werte["name"]:false;
   }
 
   function link() {
-    return $this->Werte["link"];
+    return isset($this->Werte["link"])?$this->Werte["link"]:false;
   }
 
   function encode() {
-    return $this->Werte["encode"];
+    return isset($this->Werte["encode"])?$this->Werte["encode"]:false;
   }
 
   function mailformular() {
-    return $this->Werte["mailformular"];
+    return isset($this->Werte["mailformular"])?$this->Werte["mailformular"]:false;
   }
 
   function normprint($erstspalte=""){
@@ -189,11 +187,13 @@ class email  extends dbtabelle{
     return $rueckgabe;
   }
 
-  function formular($neu,$daten=0,$fehler=0) {
-    global $PHP_SELF;
-    if ($neu) $daten=array('uid' => $_SESSION['mod_absolventen']['uid']);
+  function formular($neu,$daten=array(),$fehler=array()) {
+    if ($neu) {
+      $daten['uid'] = $_SESSION['mod_absolventen']['uid'];
+      if (isset($daten['id'])) unset($daten['id']);
+    }
 ?>
-<form method="post" action="<?=$PHP_SELF?>" class="absolventen email formular">
+<form method="post" action="<?=$GLOBALS['mod_absolventen_glob']['php_self']?>" class="absolventen email formular">
   <input type="hidden" name="aktion" value="<?=$neu?"maildbneu":"maildbaendern"?>" />
   <?php if (isset($daten['id'])) { 
 ?><input type="hidden" name="id" value="<?=isset($daten['id'])?$daten['id']:""?>" />
@@ -212,7 +212,7 @@ class email  extends dbtabelle{
     <tr class="absolventen email formular">
       <th class="absolventen email formular emailadr"><label 
           class="absolventen email formular"
-          for="adrtext<?=isset($daten['id'])?$daten['id']:""?>">Adresse</th>
+          for="adrtext<?=isset($daten['id'])?$daten['id']:""?>">Adresse</label></th>
       <td class="absolventen email formular emailadr"><input type="text" 
           size="30" name="adresse" id="adrtext<?=isset($daten['id'])?$daten['id']:""?>"
           class="absolventen email formular emailadr<?=isset($fehler['adresse'])?" fehler":""?>"
@@ -223,7 +223,7 @@ class email  extends dbtabelle{
         <div class="absolventen email formular emaillink checkbox"><input 
             type="checkbox" name="link" value="1" 
             class="absolventen email formular emaillink" id="adrlink<?=isset($daten['id'])?$daten['id']:""?>" 
-            <?=empty($daten['link'])?"":'checked="1" '?> /><label 
+            <?=empty($daten['link'])?"":'checked="checked" '?> /><label 
             class="absolventen email formular checkbox<?=isset($fehler['link'])?" fehler":""?>"
             for="adrlink<?=isset($daten['id'])?$daten['id']:""?>">Diese Adresse soll mit einer 
 	    Verknüpfung versehen werden.</label></div>
@@ -234,19 +234,19 @@ class email  extends dbtabelle{
         <div class="absolventen email formular adrencode checkbox"><input 
             type="checkbox" name="encode" value="1" id="adrencode<?=isset($daten['id'])?$daten['id']:""?>" 
             class="absolventen email formular adrencode"
-            <?=empty($daten['encode'])?"":'checked="1" '?> /><label 
+            <?=empty($daten['encode'])?"":'checked="checked" '?> /><label 
             class="absolventen email formular email_form checkbox<?=isset($fehler['encode'])?" fehler":""?>" 
             for="adrencode<?=isset($daten['id'])?$daten['id']:""?>">Diese Adresse soll 
             kodiert angezeigt werden.</label></div>
       </td>
     </tr>
     <tr class="absolventen email formular">
-      <td colspan=2 class="absolventen email formular email_form">
+      <td colspan="2" class="absolventen email formular email_form">
         <div class="absolventen email formular email_form checkbox"><input 
             type="checkbox" name="mailformular" value="1" 
             class="absolventen email formular email_form"
             id="adrform<?=isset($daten['id'])?$daten['id']:""?>"
-            <?=(empty($daten['mailformular']))?"":'checked="1" '?> /><label 
+            <?=(empty($daten['mailformular']))?"":'checked="checked" '?> /><label 
             class="absolventen email formular email_form checkbox<?=isset($fehler['mailformular'])?" fehler":""?>" 
             for="adrform<?=isset($daten['id'])?$daten['id']:""?>">Auf diese Adresse sollen 
             Emails vom Formular aus gesendet werden können.</label></div>
@@ -262,14 +262,14 @@ class email  extends dbtabelle{
   </table>
 </form>
 <?php if (!$neu) { 
-?><form method="post" action="<?=$PHP_SELF?>" class="absolventen email formular">
+?><form method="post" action="<?=$GLOBALS['mod_absolventen_glob']['php_self']?>" class="absolventen email formular">
   <input type="hidden" name="aktion" value="maildbloeschen" />
   <input type="hidden" name="id" value="<?=$daten['id']?>" />
   <input type="hidden" name="uid" value="<?=$daten['uid']?>" />
   <input type="submit" value="L&ouml;schen" class="absolventen email formular knoepfe email_loeschen" />
 </form>
 <?php } if (!empty($fehler)) { 
-?><form method="post" action="<?=$PHP_SELF?>" class="absolventen email formular">
+?><form method="post" action="<?=$GLOBALS['mod_absolventen_glob']['php_self']?>" class="absolventen email formular">
   <input type="hidden" name="aktion" value="mailform" />
   <input type="submit" value="Abbrechen" class="absolventen email formular knoepfe email_abbrechen" />
 </form>
@@ -278,7 +278,7 @@ class email  extends dbtabelle{
   }
 
   function checkdaten($daten,$neu) {
-    //    global $klasse;
+    //    
     $fehler=array();
     if (!empty($daten['id']) && !ereg("^[0-9]*$",$daten['id'])) 
       $fehler['id'] ="Fehlerhafte id";
