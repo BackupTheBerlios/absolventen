@@ -74,6 +74,8 @@ class jg extends dbtabelle{
 			      addslashes($args['klasse']),
 			      $args['drin'],
 			      $args['id']);
+       case "loeschen":
+	 return sprintf("delete from %s where id=%d",$mysql_daten['JgTab'],$args);
     }
   }
 	
@@ -88,7 +90,6 @@ class jg extends dbtabelle{
     if (!$daten['id'] || !ereg('^[0-9]*$',$daten['id'])) {
       return -1;
     }
-    echo $daten['jahrgang'];
     return $this->update_backend($this->sql("update",$daten),$daten['uid']);
   }
 
@@ -102,19 +103,6 @@ class jg extends dbtabelle{
 
   function erste_nur_jahrgang(){
     return $this->select_backend($this->sql("erste_nur_jahrgang"));
-  }
-
-  function loeschen($id,$uid){
-    $this->puffer_leeren();
-    $sql=sprintf("delete from StAgJg where id=%d",$id);
-    if (!$this->Qresult=$this->db->query($sql)) {
-      fehler("jg-&gt;loeschen(" . $id . ")");
-      return -2;
-    }
-    $person=new personen($this->db);
-    $person->aktualisiere_akt($uid);
-    @$this->puffer_leeren();
-    return 0;
   }
 
   function personen(){
