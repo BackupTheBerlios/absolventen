@@ -19,138 +19,89 @@ Der Autor kann unter der Email: Tobias.Schlemmer@web.de erreicht werden.
 
 */ 
 
-class jg{
-  var $db;
-  var $sql;
-  var $Werte;
-  var $Qresult;
+class jg extends dbtabelle{
   var $personen;
   var $mitjg;
-  
+
   function jg($h_db=0) {
-    $this->db=$h_db;
+    $this->dbtabelle($h_db);
     $this->mitjg=0;
   }
 
-  function dbset($hdb) {
-    $this->db=$hdb;
-  }
-
-  function puffer_leeren() {
-    if ($this->Qresult) {
-      $this->db->puffer_leeren($this->Qresult);
-      $this->Qresult=0;
+  function sql($funktion,$args=0){
+    global $mysql_daten;
+    switch ($funktion) {
+	case "erste_person": 
+		return sprintf("select distinct id,uid,jahrgang,klasse,drin "
+			       . "from %s"
+			       . " where uid=%d"
+			       . " order by jahrgang,drin desc,klasse",
+			       $mysql_daten['JgTab'],$args);
+  	case "diese": 
+		return sprintf("select distinct id,uid,jahrgang,klasse,drin "
+			       . "from %s"
+			       . " where id=%d"
+			       . " order by jahrgang,drin desc,klasse",
+			       $mysql_daten['JgTab'],$args);
+        case "erste_jahrgang": 
+	        return sprintf("select distinct jahrgang,klasse,drin "
+			       . "from %s"
+			       . " where jahrgang=%d"
+			       . " order by jahrgang,drin desc,klasse",
+   			       $mysql_daten['JgTab'],$args);
+        case "erste_nur_jahrgang": 
+	        return sprintf("select distinct jahrgang "
+			       . "from %s"
+			       . " order by jahrgang",
+   			       $mysql_daten['JgTab']);
+	case "insert":
+		return sprintf("insert into %s (%suid,jahrgang,klasse,drin"
+			       . ") values (%s%d,%d,'%s',%d)",
+			       $mysql_daten['JgTab'],
+			       $args['id']?"id,":"",
+			       $args['id']?$args['id'] . ',':"",
+			       $args['uid'],
+			       $args['jahrgang'],
+			       addslashes($args['klasse']),
+			       $args['drin']);
+	case "update":
+	       return sprintf("update %s set uid=%d,jahrgang=%d,"
+			      . "klasse='%s',drin=%d"
+			      . " where id=%d",
+			      $mysql_daten['JgTab'],
+			      $args['uid'],
+			      $args['jahrgang'],
+			      addslashes($args['klasse']),
+			      $args['drin'],
+			      $args['id']);
     }
   }
-
-  function diese($id){
-    return $this->dieser($id);
-  }
-
-  function dieser($id){
-    $this->puffer_leeren();
-    $sql="select distinct id,uid,jahrgang,klasse,drin "
-      . "from StAgJg"
-      . " where id=" . $id
-      . " order by jahrgang,drin desc,klasse";
-    if (!$this->Qresult=$this->db->query($sql)) {
-      fehler("jahrgang-&gt;dieser(" . $jahrgang . ")");
-      return false;
-    }
-    $this->Werte=$this->db->fetch_array($this->Qresult);
-    return ($this->Werte != false);
-  }
-
-  function erste_jahrgang($jahrgang){
-    $this->puffer_leeren();
-    $sql="select distinct jahrgang,klasse,drin "
-      . "from StAgJg"
-      . " where jahrgang=" . $jahrgang
-      . " order by jahrgang,drin desc,klasse";
-    if (!$this->Qresult=$this->db->query($sql)) {
-      fehler("jahrgang-&gt;erste_jahrgang(" . $jahrgang . ")");
-      return false;
-    }
-    $this->Werte=$this->db->fetch_array($this->Qresult);
-    return ($this->Werte != false);
-  }
-
-  function erste_person($uid){
-    $this->puffer_leeren();
-    $sql="select distinct id,uid,jahrgang,klasse,drin "
-      . "from StAgJg"
-      . " where uid=" . $uid
-      . " order by jahrgang,drin desc,klasse";
-    if (!$this->Qresult=$this->db->query($sql)) {
-      fehler("jahrgang-&gt;erste_person(" . $uid . ")");
-      return false;
-    }
-    $this->Werte=$this->db->fetch_array($this->Qresult);
-    return ($this->Werte != false);
-  }
-
-  function erste_nur_jahrgang(){
-    $this->puffer_leeren();
-    $sql="select distinct jahrgang "
-      . "from StAgJg"
-      . " order by jahrgang";
-    if (!$this->Qresult=$this->db->query($sql)){
-      fehler("jahrgang-&gt;erste_nur_jahrgang(" . $jahrgang . ")");
-      return false;
-    }
-    $this->Werte=$this->db->fetch_array($this->Qresult);
-    return ($this->Werte != false);
-  }
-
-  function naechste(){
-    $this->Werte=$this->db->fetch_array($this->Qresult);
-    return ($this->Werte!=false);
-  }
-
+	
   function insert($daten) {
-    $this->puffer_leeren();
     if ($daten['id'] && !ereg('^[0-9]*$',$daten['id'])) {
       return -1;
     }
-    $sql=sprintf("insert into StAgJg (%suid,jahrgang,klasse,drin"
-		 . ") values (%s%d,%d,'%s',%d)",
-		 $daten['id']?"id,":"",
-		 $daten['id']?$daten['id'] . ',':"",
-		 $daten['uid'],
-		 $daten['jahrgang'],
-		 addslashes($daten['klasse']),
-		 $daten['drin']);
-    if (!$this->Qresult=$this->db->query($sql)) {
-      fehler("jg-&gt;insert(" . $daten . ")");
-      return -2;
-    }
-    $person=new personen($this->db);
-    $person->aktualisiere_akt($daten['id']);
-    $id=@$this->puffer_leeren();
-    return $id;
+    return $this->insert_backend($this->sql("insert",$daten),$daten['uid']);
   }
 
   function update($daten) {
-    $this->puffer_leeren();
     if (!$daten['id'] || !ereg('^[0-9]*$',$daten['id'])) {
       return -1;
     }
-    $sql=sprintf("update StAgJg set uid=%d,jahrgang=%d,"
-		 . "klasse='%s',drin=%d"
-		 . " where id=%d",
-		 $daten['uid'],
-		 $daten['jahrgang'],
-		 addslashes($daten['klasse']),
-		 $daten['drin'],
-		 $daten['id']);
-    if (!$this->Qresult=$this->db->query($sql)) {
-      fehler("jg-&gt;update(" . $daten . ")");
-      return -2;
-    }
-    $person=new personen($this->db);
-    $person->aktualisiere_akt($daten['id']);
-    @$this->puffer_leeren();
-    return 0;
+    echo $daten['jahrgang'];
+    return $this->update_backend($this->sql("update",$daten),$daten['uid']);
+  }
+
+  function dieser($id){
+    return $this->diese($id);
+  }
+
+  function erste_jahrgang($jahrgang){
+    return $this->select_backend($this->sql("erste_jahrgang",$jahrgang));
+  }
+
+  function erste_nur_jahrgang(){
+    return $this->select_backend($this->sql("erste_nur_jahrgang"));
   }
 
   function loeschen($id,$uid){
@@ -171,7 +122,6 @@ class jg{
     $pers->erste_jahrgang($this->jahrgang(),$this->klasse(),$this->drin());
     return $pers;
   }
-
 
   /* die einzelnen Felder der Person */
   function id() {
@@ -240,7 +190,7 @@ class jg{
       if ($this->mitjg) 
 	$jgstring .="Jahrgang " . $this->jahrgang() . " ";
       if ($this->klasse()) 
-	$jgstring .= $this->klasse() . "-Zug";
+	$jgstring .= $this->klasse();
       if (!$this->drin()) 
 	$jgstring .= " sonstige nahestehende Personen";
 
@@ -301,12 +251,9 @@ while (list ($key, $val) = each ($klasse)) {
 <input type="hidden" name="id" value="<?=$daten['id']?>" />
    <input type="submit"  value="L&ouml;schen" />
 </form>
+<p>Hinweis: Es werden nur Jahrgänge ab 1901 akzeptiert.</p>
 <?php
     }
-  }
-
-  function datenformular() {
-    $this->formular($this->Werte);
   }
 
   function checkdaten($daten) {
