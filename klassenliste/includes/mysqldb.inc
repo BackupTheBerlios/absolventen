@@ -1,4 +1,4 @@
-<?php /* $Id: mysqldb.inc,v 1.4 2004/07/15 11:50:38 keinstein Exp $
+<?php /* $Id: mysqldb.inc,v 1.5 2004/07/25 17:36:40 keinstein Exp $
 Copyright (c) 2000 SchlemmerSoft (Tobias Schlemmer)
 
 This program is free software; you can redistribute it and/or
@@ -18,6 +18,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 Der Autor kann unter der Email: Tobias.Schlemmer@web.de erreicht werden.
 
 $Log: mysqldb.inc,v $
+Revision 1.5  2004/07/25 17:36:40  keinstein
+Anfragen ohne Puffer
+Fehlernummer/-text
+
 Revision 1.4  2004/07/15 11:50:38  keinstein
 fetch_array(): @mysql_fetch_assoc statt ..._array
 transaction-start() ohne Statusmeldung
@@ -32,6 +36,7 @@ class mysqldb {
   var $login;
   var $password;
   var $db;
+  var $transaction_level=0;
   
   function mysqldb() {
     $this->dbserver="";
@@ -57,6 +62,18 @@ class mysqldb {
     return mysql_query($sql,$this->db);
   }
 
+  function query_direkt($sql) {
+    return mysql_unbuffered_query($sql,$this->db);
+  }
+
+  function fehlernr() {
+    return mysql_errno($this->db);
+  }
+
+  function fehlertext() {
+    return mysql_error($this->db);
+  }
+
   function puffer_leeren($puffer){
     return mysql_free_result($puffer);
   }
@@ -70,8 +87,8 @@ class mysqldb {
   }
 
   function transaction_start() {
-    $x=$this->query("start transaction");
-    return $x;
+    $this->query_direkt("set autocommit=0");
+    return $this->query_direkt("start transaction");
   }
 
   function transaction_stop() {
