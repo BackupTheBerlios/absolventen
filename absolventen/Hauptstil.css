@@ -1,0 +1,10 @@
+
+body { background-color:#e6e6fa; 
+       background-image:url(../bilder/back.gif);
+       font-family:sans-serif;}
+td,a {font-family:sans-serif;text-decoration:none;}
+h1,h2 { font-family:fantasy;}
+h1 { color:#9f0000; font-size:30pt;font-family:fantasy; }
+h2 { color:#006400; }
+a:visited,a:active {color:#cc33cc;font-family:serif;}
+a:link {color:#990099;font-family:serif;}

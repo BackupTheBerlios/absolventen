@@ -1,0 +1,25 @@
+<?php 
+if (ereg("index",$PHP_SELF)){Header("Location: altesg.php");die;}?> 
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//DE">
+<html>
+  <head>
+    <title>Klassenliste für St. Augustin - Fehlerhafter Skriptaufruf.</title>
+  </head>
+
+  <body>
+    <h1>Klassenliste für St. Augustin - Fehlerhafter Skriptaufruf.</h1>
+
+    Diese Seite wurde mit den falschen Parametern aufgerufen:<br>
+
+    <a href="<?=PHP_SELF?>">Klicken Sie hier, um zurück zur Klassenliste zu kommen</a>
+
+
+    <hr>
+    <address><a href="mailto:schlemmi@psynet.net">Tobias Schlemmer</a></address>
+<?php phpinfo();?>
+<!-- Created: Fri Feb 18 17:29:46 CET 2000 -->
+<!-- hhmts start -->
+Last modified: Wed Mar 14 03:29:42 CET 2001
+<!-- hhmts end -->
+  </body>
+</html>

@@ -1,0 +1,288 @@
+<?php if (!$db = @mysql_connect($mysql_daten['Rechner'], $mysql_daten['Nutzer'], $mysql_daten['Passwort'])){
+  authenticate();
+}
+if ($aktion=="termine") $aktion="Termine";
+include('anfang.php');
+echo "<H2>$aktion</H2>";
+//echo "<br> $db <br>";
+
+mysql_select_db($mysql_daten['Datenbank'],$db);
+
+if ($id) {
+  $sql="select name,if(datum_von is null,NULL,DATE_FORMAT(datum_von,'%d.%m.%Y %T')) as datum_von"
+        .",if(datum_bis is null,NULL,DATE_FORMAT(datum_bis,'%d.%m.%Y %T')) as datum_bis from Termine where id=$id";
+  $result=mysql_query($sql,$db);
+  if ($Termin=@mysql_fetch_array($result)){
+?>
+<H3>Termin</H3>
+<table border=2>
+<tr align=center><td>
+<?php if (!($aktion=="Termin löschen")) { ?>
+<form method="post" action="<?php echo $PHP_SELF ?>">
+<input type="hidden" name="id" value="<?php echo $id ?>">
+<?php if (isset($penne)) {?>
+<input type="hidden" name="penne" value="ja">
+<?php } ?>
+<table border="0">
+<tr><td>Beschreibung</td><td align=center><textarea cols=30 rows=5 name="name"><?php echo str_replace("<br>","",$Termin["name"])?></textarea>
+<tr><td>Zeitspanne</td><td align=center><nobr>von <input type="text" maxlength=22 size=22 name="datum_von" value="<?php echo $Termin["datum_von"];?>"></nobr>
+<nobr>bis <input type="text" maxlength=22 size=22 name="datum_bis" value="<?php echo $Termin["datum_bis"];?>"></td></tr>
+<tr align=center><td colspan=2>
+<input type="submit" name="aktion" value="Termin &auml;ndern"> <input type="reset" value="Zur&uuml;cksetzen">
+</td></tr>
+</table>
+</form>
+<?php } else { ?>
+<table border="0">
+<tr><td>Beschreibung</td><td align=center><?php echo htmlspecialchars($Termin["name"]) ?>
+<tr><td>Zeitspanne</td><td align=center><nobr>von <?php echo $Termin["datum_von"];?></nobr>
+<nobr>bis <?php echo $Termin["datum_bis"];?></td></tr>
+</table>
+<?php } ?>
+</table><br><<?php echo $dividier ?> width=50%><br>
+<?php 
+if (ZEIGE_EINGELADENE) {$Anfrage="select id,aktueller_name,geburtsname,vorname,kommentar,DATE_FORMAT(aktualisierung,'%d.%m.%Y %T') as aktualisierung,von,bis,studiengang,"
+    . " DATE_FORMAT(geburtsdatum,'%d.%m.%Y')as geburtsdatum,grad,geschlecht from Personen,Einladung"
+    . " where Einladung.termin=$id and Einladung.uid=Personen.id"
+    . " order by geburtsname,vorname,aktueller_name";
+    $Personen=mysql_query($Anfrage,$db);
+    if ($Person=@mysql_fetch_array($Personen)){
+        $persid=$Person["id"];?>
+<table border=1>
+<tr align=left><th>Geburtsname</th><th>Vorname</th><th colspan=2>Adresse erster Teil</th><th>Vorwahl</th><th>Telefon</th></tr>
+<tr align=left><th></th><th>aktueller Name</th><th>PLZ</th><th>Ort</th><th colspan=2></th></tr>
+<tr align=left><th colspan=2></th><th colspan=2>Adresse zweiter Teil</th><th colspan=2></th></tr>
+<tr align=left><th></th><th>Akad. Grad</th><th>Geschlecht</th><th></th></tr>
+<tr align=left><th></th><th>Zeit</th><th colspan=2>Studiengang</th><th colspan=2>Geburtsdatum</th></tr>
+<tr align=left><th colspan=2><font size=-2>letzte &Auml;nderung</font></th><th colspan=4>Email</th></tr>
+<tr align=left><th colspan=2></th><th colspan=4>Homepage</th></tr>
+<tr align=left><th colspan=6>Bemerkungen</th><tr>
+<tr><td colspan=6 align=center><IMG SRC=\"../../sonstbild/fahne.gif\" HEIGHT=5 WIDTH=700 ALIGN=CENTER></td></tr><?php
+      $sql="select anfang,plz,ort,ende,vorwahl,telefon from Adressen "
+          ."where uid=$persid";
+      $Adressen=mysql_query($sql,$db);
+      if ($Adresse=@mysql_fetch_array($Adressen)){
+         printf("<tr valign=top><td>%s</td><td>%s</td><td colspan=2>%s</td><td>%s</td><td>%s</td></tr>\n",
+           $Person["geburtsname"],$Person["vorname"],$Adresse["anfang"],$Adresse["vorwahl"],$Adresse["telefon"]);
+         printf("<tr valign=top><td></td><td>%s</td><td>%s</td><td>%s</td><td colspan=2></td></tr>\n",
+           $Person["aktueller_name"],$Adresse["plz"],$Adresse["ort"]);
+         if ($Person["ende"])
+           printf("<tr><td colspan=2></td><td colspan=2>%s</td><td colspan=2></td></tr>",
+               $Adresse["ende"]);
+         while ($Adresse=@mysql_fetch_array($Adressen)){
+           printf("<tr valign=top><td></td><td></td><td colspan=2>%s</td><td>%s</td><td>%s</td></tr>\n",
+             $Adresse["anfang"],$Adresse["vorwahl"],$Adresse["telefon"]);
+           printf("<tr valign=top><td></td><td></td><td>%s</td><td>%s</td><td colspan=2></td></tr>\n",
+             $Adresse["plz"],$Adresse["ort"]);
+           if ($Person["ende"])
+             printf("<tr><td colspan=2></td><td colspan=2>%s</td><td colspan=2></td></tr>\n",
+                 $Adresse["ende"]);
+        }
+      } // Adressen
+      else{
+        printf("<tr><td>%s</td><td>%s</td><td colspan=2></td><td></td><td></td></tr>\n",
+           $Person["geburtsname"],$Person["vorname"]);
+        printf("<tr><td></td><td>%s</td><td></td><td colspan=2></td></tr>\n",
+            $Person["aktueller_name"]);
+      }
+      $sql="select vorwahl,telefon from Telefon where uid=$persid";
+      $Adressen=mysql_query($sql,$db);
+      while ($Adresse=@mysql_fetch_array($Adressen))
+        printf("<tr><td colspan=4></td><td>%s</td><td>%s</td>\n",$Adresse["vorwahl"],$Adresse["telefon"]);
+
+      $geschlecht="";
+      switch ($Person["geschlecht"]){
+         case 1: $geschlecht="m&auml;nnlich";break;
+         case 2: $geschlecht="weiblich";break;
+      } // Geschlecht
+
+      printf("<tr><td></td><td>%s</td><td>%s</td><td></td></tr>",$Person["grad"],$geschlecht);
+      printf("<tr><td></td><td>%d-%d</td><td colspan=2>%s</td><td colspan=2 align=right>%s</td></tr>",
+          $Person["von"],$Person["bis"],$Person["studiengang"],$Person["geburtsdatum"]);
+
+      // Emails
+      $sql="select adresse from EMail where uid=$persid";
+      $emails=mysql_query($sql,$db);
+      if ($email=@mysql_fetch_array($emails))
+             $mailstring='<a href="mailto:'.$email["adresse"].'">'.$email["adresse"]."</a>"; else $mailstring="";
+      while ($email=@mysql_fetch_array($emails))
+           $mailstring .= '<br><a href="mailto:'.$email["adresse"].'">'.$email["adresse"]."</a>";
+      printf("<tr><td colspan=\"2\" valign=\"bottom\"><font size=-2>%s</font></td><td colspan=4>%s</td></tr>\n",
+         $Person["aktualisierung"],$mailstring);
+
+      // Homepages
+      $sql="select adresse,name from HP where uid=$persid";
+      $emails=mysql_query($sql,$db);
+      if ($email=@mysql_fetch_array($emails)) {
+           $mailstring='<a href="'.$email["adresse"].'">'.$email["name"]."</a>";
+         while ($email=@mysql_fetch_array($emails))
+           $mailstring .= '<br><a href="'.$email["adresse"].'">'.$email["name"]."</a>";
+        printf("<tr><td colspan=2></td><td colspan=4>%s</td></tr>\n",$mailstring);
+      } //Emails vorhanden
+      if ($Person["kommentar"])
+        printf("<tr><td colspan=6>%s</td></tr>\n",
+         $Person["kommentar"]);
+
+      while($Person=mysql_fetch_array($Personen)){
+        $persid=$Person["id"];
+        echo "<tr><td colspan=6 align=center><IMG SRC=\"../../sonstbild/fahne.gif\" HEIGHT=5 WIDTH=700 ALIGN=CENTER></td></tr>\n";
+        $sql="select anfang,plz,ort,ende,vorwahl,telefon from Adressen "
+            ."where uid=$persid";
+        $Adressen=mysql_query($sql,$db);
+        if ($Adresse=@mysql_fetch_array($Adressen)){
+           printf("<tr valign=top><td>%s</td><td>%s</td><td colspan=2>%s</td><td>%s</td><td>%s</td></tr>\n",
+             $Person["geburtsname"],$Person["vorname"],$Adresse["anfang"],$Adresse["vorwahl"],$Adresse["telefon"]);
+            printf("<tr valign=top><td></td><td>%s</td><td>%s</td><td>%s</td><td colspan=2></td></tr>\n",
+             $Person["aktueller_name"],$Adresse["plz"],$Adresse["ort"]);
+           if ($Person["ende"])
+             printf("<tr><td colspan=2></td><td colspan=2>%s</td><td colspan=2></td></tr>",
+                   $Adresse["ende"]);
+           while ($Adresse=@mysql_fetch_array($Adressen)){
+             printf("<tr valign=top><td></td><td></td><td colspan=2>%s</td><td>%s</td><td>%s</td></tr>\n",
+               $Adresse["anfang"],$Adresse["vorwahl"],$Adresse["telefon"]);
+             printf("<tr valign=top><td></td><td></td><td>%s</td><td>%s</td><td colspan=2></td></tr>\n",
+               $Adresse["plz"],$Adresse["ort"]);
+             if ($Person["ende"])
+               printf("<tr><td colspan=2></td><td colspan=2>%s</td><td colspan=2></td></tr>",
+                   $Adresse["ende"]);
+           } // while adressen
+        }  // if adressen
+        else{
+          printf("<tr><td>%s</td><td>%s</td><td colspan=2></td><td></td><td></td></tr>\n",
+             $Person["geburtsname"],$Person["vorname"]);
+          printf("<tr><td></td><td>%s</td><td></td><td colspan=2></td></tr>\n",
+             $Person["aktueller_name"]);
+        } // else adressen
+        $sql="select vorwahl,telefon from Telefon where uid=$persid";
+        $Adressen=mysql_query($sql,$db);
+        while ($Adresse=@mysql_fetch_array($Adressen))
+          printf("<tr><td colspan=4></td><td>%s</td><td>%s</td>\n",$Adresse["vorwahl"],$Adresse["telefon"]);
+
+        $geschlecht="";
+        switch ($Person["geschlecht"]){
+           case 1: $geschlecht="m&auml;nnlich";break;
+           case 2: $geschlecht="weiblich";break;
+        }
+
+        printf("<tr><td></td><td>%s</td><td>%s</td><td></td></tr>",$Person["grad"],$geschlecht);
+        printf("<tr><td></td><td>%d-%d</td><td colspan=2>%s</td><td colspan=2 align=right>%s</td></tr>",
+            $Person["von"],$Person["bis"],$Person["studiengang"],$Person["geburtsdatum"]);
+
+        // Emails
+        $sql="select adresse from EMail where uid=$persid";
+        $emails=mysql_query($sql,$db);
+        if ($email=@mysql_fetch_array($emails))
+             $mailstring='<a href="mailto:'.$email["adresse"].'">'.$email["adresse"]."</a>"; else $mailstring="";
+        while ($email=@mysql_fetch_array($emails))
+             $mailstring .= '<br><a href="mailto:'.$email["adresse"].'">'.$email["adresse"]."</a>";
+        printf("<tr><td colspan=2 valign=bottom><font size=-2>%s</font></td><td colspan=4>%s</td></tr>\n",
+           $Person["aktualisierung"],$mailstring);
+
+        // Homepages
+        $sql="select adresse,name from HP where uid=$persid";
+        $emails=mysql_query($sql,$db);
+        if ($email=@mysql_fetch_array($emails)){
+             $mailstring='<a href="'.$email["adresse"].'">'.$email["name"]."</a>";
+          while ($email=@mysql_fetch_array($emails))
+             $mailstring .= '<br><a href="'.$email["adresse"].'">'.$email["name"]."</a>";
+          printf("<tr><td colspan=2></td><td colspan=4>%s</td></tr>\n",$mailstring);
+        } // Emails
+        if ($Person["kommentar"])
+        printf("<tr><td colspan=6>%s</td></tr>\n",$Person["kommentar"]);
+      } // Personen vorhanden (while)
+      echo "</table>\n";
+
+?><br><<?php echo $dividier ?> width=50%><br>
+<?php
+    } //Personen vorhanden
+    else { ?>
+Keine Personen. <?php
+    } // Personen vorhanden (else)
+    }
+    echo "<br>";
+    if ($aktion=="Termin löschen") { ?>
+<<?php echo $dividier ?> width=50%><br>
+<form action="<?php echo $PHP_SELF?>">
+<input type="hidden" name="id" value="<?php echo $id ?>">
+Soll dieser Termin wirklich gelöscht werden?<br>
+<nobr><input type="radio" name="wirklich" value="ja"> Ja</nobr>
+<nobr><input type="radio" name="wirklich" value="nein"> Nein</nobr><br>
+<input type="submit" name="aktion" value="Termin löschen"> <input type="reset" value="Zur&uuml;cksetzen">
+</form>
+<?php }
+    else {?>
+<form method="post" action="<?php echo $PHP_SELF ?>">
+<input type="hidden" name="terminid" value="<?php echo $id ?>">
+<input type="submit" name="aktion" value="Einladungen bearbeiten">
+</form>
+<?php
+    }
+  } // Termin vorhanden    
+  else {
+?>
+Der Datensatz wurde leider nicht gefunden.<br>
+Beginnen Sie <a href="<?php echo $PHP_SELF?>?aktion=bearbeiten$penne">hier</a> noch einmal!
+<?php
+  }
+  include("ende.php"); // Personen vorhanden (else)
+} // Einzelner Datensatz
+else {
+  echo "Bitte den zu bearbeitende Termin ausw&auml;hlen!\n";
+
+  $sql="select id,name,DATE_FORMAT(datum_von,'%d.%m.%Y %T')as datum_von"
+        .",DATE_FORMAT(datum_bis,'%d.%m.%Y %T')as datum_bis from Termine order by datum_von";
+  $Termine=mysql_query($sql,$db);?>
+<table border=1>
+<tr align=left><th></th><th>von</th><th>bis</th><th>Beschreibung</th><th>gesamt</th><th>eingeladen</th><th>best&auml;tigt</th><th>angenommen</th></tr>
+<?php 
+  while ($Termin=@mysql_fetch_array($Termine)) {
+    $terminid=$Termin["id"];
+    $sql="select count(*) as anzahl from Einladung "
+        ."where Einladung.termin=$terminid";
+    $Einladungen=mysql_query($sql,$db);
+    if (!($Einladung=@mysql_fetch_array($Einladungen))) $Einladung["anzahl"]=0;?>
+<tr><td><form method="get" action="<?php echo $PHP_SELF;?>">
+<input type="hidden" name="id" value="<?php echo $terminid;?>">
+<input type="submit" name="aktion" value="Termin bearbeiten"><br>
+<input type="submit" name="aktion" value="Termin l&ouml;schen"></form>
+</td><td><?php echo $Termin["datum_von"];?></td><td><?php echo $Termin["datum_bis"];?></td><td><?php echo $Termin["name"];?></td><td><?php printf("%d", $Einladung["anzahl"]);?></td>
+<?php
+    $sql="select count(*) as anzahl from Einladung "
+        ."where Einladung.termin=$terminid and eingeladen is not null";
+    $Einladungen=mysql_query($sql,$db);
+    if (!($Einladung=@mysql_fetch_array($Einladungen))) $Einladung["anzahl"]=0;
+    printf("<td>%d</td>",$Einladung["anzahl"]);
+    $sql="select count(*) as anzahl from Einladung "
+        ."where Einladung.termin=$terminid and antwort is not null";
+    $Einladungen=mysql_query($sql,$db);
+    if (!($Einladung=@mysql_fetch_array($Einladungen))) $Einladung["anzahl"]=0;
+    printf("<td>%d</td>",$Einladung["anzahl"]);
+    $sql="select count(*) as anzahl from Einladung "
+        ."where Einladung.termin=$terminid and (status & 1)";
+    $Einladungen=mysql_query($sql,$db);
+    if (!($Einladung=@mysql_fetch_array($Einladungen))) $Einladung["anzahl"]=0;
+    printf("<td>%d</td></tr>\n",$Einladung["anzahl"]);
+  } // Termine vorhanden
+?>
+</table>
+<H3>Termin hinzuf&uuml;gen</H3>
+<table border=2>
+<tr align=center><td>
+<form method="post" action="<?php echo $PHP_SELF ?>">
+<?php if (isset($penne)) { ?>
+<input type="hidden" name="penne" value="ja">
+<?php } ?>
+<table border="0">
+<tr><td>Beschreibung</td><td align=center><textarea cols=30 rows=5 name="name"></textarea></td></tr>
+<tr><td>Zeitspanne</td><td align=center><nobr>von <input type="text" maxlength=22 size=22 name="datum_von"></nobr>
+<nobr>bis <input type="text" maxlength=22 size=22 name="datum_bis"></td></tr>
+<tr align=center><td colspan=2>
+<input type="submit" name="aktion" value="Termin hinzuf&uuml;gen"> <input type="reset" value="Zur&uuml;cksetzen">
+</td></tr>
+</table>
+</form>
+</table>
+<?php
+  include("ende.php");
+} // einzelner Termin (else)
+?>

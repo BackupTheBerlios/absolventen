@@ -1,0 +1,22 @@
+DirectoryIndex altesg.php
+
+Order allow,deny
+deny from all
+
+ php_value include_path .:includes
+<Files index.php>
+ Order deny,allow
+ deny from all
+ allow from localhost tobias
+</Files>
+<Files index.html>
+ Order deny,allow
+ deny from all
+ allow from localhost tobias.wgs7109
+</Files>
+<Files altesg.php>
+ Order deny,allow
+# deny from all
+ allow from localhost tobias
+ php_value include_path ".:includes"
+</Files>

@@ -1,0 +1,16 @@
+    printf("<input type=\"hidden\" name=\"id[]\" value=\"%s\">",$persid);
+    if ($Person["eingeladen"]) {
+      echo "Eingeladen am ".$Person["eingeladen"];
+      echo " <nobr><input type=checkbox name=\"eingeladen[$persid]\" value=\"nein\"> NICHT eingeladen</nobr><br>";
+    } else 
+      echo " <nobr><input type=\"checkbox\" name=\"eingeladen[$persid]\" value=\"ja\"> Einladen</nobr><br>";
+    if ($Person["antwort"]) {
+      echo "Antwort am ".$Person["antwort"];
+      echo " <nobr><input type=checkbox name=\"antwort[$persid]\" value=\"nein\"> KEINE Antwort </nobr><br>";
+    } else 
+      echo " <nobr><input type=\"checkbox\" name=\"antwort[$persid]\" value=\"ja\"> Antwort</nobr><br>";
+    if ($Person["status"] & 1) {
+      echo "Teilnahme ";
+      echo " <nobr><input type=checkbox name=\"teilnahme[$persid]\" value=\"nein\"> KEINE Teilnahme</nobr><br>";
+    } else 
+      echo " <nobr><input type=\"checkbox\" name=\"teilnahme[$persid]\" value=\"ja\"> Teilnahme</nobr><br>";
