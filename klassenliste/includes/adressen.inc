@@ -53,6 +53,8 @@ class adresse extends dbtabelle{
 		 $args['id']);
 	case "loeschen":
 	        return sprintf("delete from %s where id=%d",$mysql_daten['AdrTab'],$args);
+	case "persloeschen":
+	        return sprintf("delete from %s where uid=%d",$mysql_daten['AdrTab'],$args);
     }
   }
 	
@@ -76,8 +78,31 @@ class adresse extends dbtabelle{
     return $this->update_backend($this->sql("update",$daten),$daten['uid']);
   }
 
-  function loeschen($id,$uid){
-	return parent::loeschen($id,$uid);
+  function loeschen($id,$uid,$tr_aktiv=0){
+    printf ("tr_aktiv: %d\n",$tr_aktiv);
+    if (!$tr_aktiv){
+      $status=!($this->db->transaction_start());
+      printf("transaction_start: %d\n",$status);
+    }
+    if (!$status) {
+      if ($id) {
+	$this->erste_person($uid);
+	do {
+	  $tel= new telefon($this->db);
+	  $status=$tel->adr_loeschen($this->id,$uid);
+	} while ($this->naechste() && !$status);
+        printf("adr_loeschen: %d\n",$status);
+      }
+      if (!$status) {
+	$status=parent::loeschen($id,$uid);
+        printf("loeschen: %d\n",$status);
+      }
+    }
+    if (!$tr_aktiv){
+      if ($status) $this->db->rollback();
+      else $this->db->commit();
+    }
+    return $status;
   }
 
   /* die einzelnen Felder der Person */
