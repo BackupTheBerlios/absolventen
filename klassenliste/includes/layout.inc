@@ -1,5 +1,5 @@
-<?php /*
-Copyright (c) 2000 SchlemmerSoft (Tobias Schlemmer)
+<?php /* $Id: layout.inc,v 1.4 2004/07/15 11:46:50 keinstein Exp $
+Copyright (c) 2000-2004 SchlemmerSoft (Tobias Schlemmer)
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -17,6 +17,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 Der Autor kann unter der Email: Tobias.Schlemmer@web.de erreicht werden.
 
+$Log: layout.inc,v $
+Revision 1.4  2004/07/15 11:46:50  keinstein
+Copyright korrigiert
+$_SESSION  umbenannt
+
 */ 
 
 /* Trennlinie in der Tabelle (komplette Tabellenzeile) */
@@ -32,7 +37,7 @@ function seitenanfang($title="ehemalige Sch&uuml;ler von St.&nbsp;Augustin",
 		      $body='<body background="back.png" bgcolor="#440055" text="#FFFF88" link="#D3EEFF" alink="#FFFFFF" vlink="#DDDD00">',
 		      $target="") 
 {
-  Header("Content-Type: text/html; charset=" . $_SESSION['zeichensatz']);
+  Header("Content-Type: text/html; charset=" . $_SESSION['mod_absolventen']['zeichensatz']);
 ?>
 <?="<?"?>xml version="1.0" encoding="UTF-8"<?="?>"?>
 <?="<?"?>xml-stylesheet type="text/css" href="<?=$style?>"<?="?>"?>
@@ -47,8 +52,8 @@ function seitenanfang($title="ehemalige Sch&uuml;ler von St.&nbsp;Augustin",
 </head>
 <?=$body?>
 <center>
-<?php if ($_SESSION['name']) 
-  printf('<p><font size="-1">%s</font></p>',$_SESSION['name']);
+<?php if ($_SESSION['mod_absolventen']['name']) 
+  printf('<p><font size="-1">%s</font></p>',$_SESSION['mod_absolventen']['name']);
  if ($title) printf("<h1>%s</h1>\n",$title);
 }
 
@@ -60,7 +65,7 @@ function seitenende($br=" | ",$copy=1){
   <p><?=$layout['linie']?>
   <a href="<?=$PHP_SELF?>?aktion=jgauswahl">Abfrage</a><?=$br?>
   <a href="<?=$PHP_SELF?>?aktion=hinzufuegen">Neu</a><?=$br?>
-<?php if (isset($_SESSION['uid'])) { ?>
+<?php if (isset($_SESSION['mod_absolventen']['uid'])) { ?>
   <a href="<?=$PHP_SELF?>?aktion=bearbmenu">eigene&nbsp;Daten</a><?=$br?>
   <a href="<?=$PHP_SELF?>?aktion=logout">Abmelden</a>
  <?php } else { ?>
@@ -78,7 +83,7 @@ function seitenende($br=" | ",$copy=1){
   <p><?=$layout['linie']?><font size="-1">
   <a href="http://absolventen.berlios.de">Klassenliste Version <?=$version?></a></font></p>
   <address><font size="-2">
-   &copy; 2000-2003
+   &copy; 2000-2004
     <a href="mailto:Tobias.Schlemmer@web.de">SchlemmerSoft 
      (Tobias Schlemmer)</a><br />
     Dieses Programm steht unter der 
