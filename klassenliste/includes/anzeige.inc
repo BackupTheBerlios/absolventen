@@ -1,4 +1,4 @@
-<?php /* $Id: anzeige.inc,v 1.5 2004/07/15 00:09:57 keinstein Exp $
+<?php /* $Id: anzeige.inc,v 1.6 2004/07/19 22:19:21 keinstein Exp $
 Copyright (c) 2000-2004 SchlemmerSoft (Tobias Schlemmer)
 
 This program is free software; you can redistribute it and/or
@@ -18,6 +18,13 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 Der Autor kann unter der Email: Tobias.Schlemmer@web.de erreicht werden.
 
 $Log: anzeige.inc,v $
+Revision 1.6  2004/07/19 22:19:21  keinstein
+globale Variablen nach $GLOBALS
+format_kommentar() -> geleert
+HTML XML-fähig gemacht
+Abbrechen bei fehlerhafter Email
+puffer_leeren()
+
 Revision 1.5  2004/07/15 00:09:57  keinstein
 select_jgs(): Neues Formular.
               Automatisches Submit, falls JS eingeschaltet
@@ -33,13 +40,11 @@ anzeige_mailformopt():Session-Var. Umbenannt, HTML-Einrückung
 */ 
 
 function format_kommentar($kommentar) {
-  global $kommentar_tags_suche;
-  global $kommentar_tag_ersetze;
 }
 
 function select_jgs($db,$jahrgang=""){
-  global $PHP_SELF;
-  global $layout;
+  
+  
   $jg=new jg($db);
   if (!$jg->erste_nur_jahrgang()) { 
     echo "Nix gefunden."; 
@@ -47,7 +52,7 @@ function select_jgs($db,$jahrgang=""){
     return; 
   } ;
 ?>
-<form method="get" action="<?=$PHP_SELF?>" enctype="application/x-www-form-urlencoded" 
+<form method="get" action="<?=$GLOBALS['mod_absolventen_glob']['php_self']?>" enctype="application/x-www-form-urlencoded" 
     class="absolventen anzeige select_jgs"><label for="jganzeige_sel">Jahrgang wählen:
     <input type="hidden" name="aktion" value="jganzeige" 
       class="absolventen anzeige select_jgs" /></label><select 
@@ -58,13 +63,13 @@ function select_jgs($db,$jahrgang=""){
 			      . " value=\"\">Wahl</option>\n");
   $jg->optionprint($jahrgang); 
 ?></select>
-<input type="submit" value="Ok." class="absolventen anzeige select_jgs" id="abs_jganzeige_knopf" />
-</form>
-<script language="javascript">
-<!--
-    document.getElementById("abs_jganzeige_knopf").style.display = "none";
--->
+<input type="submit" value="Ok." class="absolventen anzeige select_jgs" id="abs-jganzeige-knopf" />
+<script type="text/javascript">
+<![CDATA[
+    document.getElementById("abs-jganzeige-knopf").style.display = "none";
+    ]]>
 </script>
+</form>
 <?php  // bei meinem Mozilla kann man die Vorauswahl nicht wählen :-(
        // Ansonsten verstecken wir den Knopf einfach, wenn JS eingeschaltet ist.
     $jg->puffer_leeren();
@@ -72,7 +77,7 @@ function select_jgs($db,$jahrgang=""){
 
 
 function anzeige_jg ($jahrgang,&$db) {
-  global $layout;
+  
   $mailformopts=array();
   select_jgs(&$db,$jahrgang);
   $jg=new jg(&$db);
@@ -86,7 +91,7 @@ function anzeige_jg ($jahrgang,&$db) {
 <thead class="absolventen anzeige anzeige_jg">
 <tr class="absolventen anzeige anzeige_jg"><th colspan="5" class="absolventen anzeige anzeige_jahrgang"><font
 size="+2" class="absolventen anzeige anzeige_jahrgang">Jahrgang <?=$jahrgang?></font></th></tr>
-<?=$layout['tabtrenner']?>
+<?=$GLOBALS['mod_absolventen_glob']['layout']['tabtrenner']?>
 <tr align="left" class="absolventen anzeige anzeige_jg">
 <th class="absolventen anzeige anzeige_geburtsname">Geburtsname</th>
 <th class="absolventen anzeige anzeige_vorname">Vorname</th>
@@ -128,15 +133,15 @@ class="absolventen anzeige anzeige_timestamp">letzte &Auml;nderung</font></th>
 
 
 function emailformular($daten,$fehler=0){
-  global $PHP_SELF;
+  
   if (!isset($_SESSION['mod_absolventen']['mailtimestamp'])) $_SESSION['mod_absolventen']['mailtimestamp']=microtime();
   if (!empty($daten['adressen'])  ||  isset($daten['empfaenger'])) {
 ?>
 <div class="absolventen  datenformular">
 <h3 class="absolventen formular emailformular">Einer der obigen Personen eine Nachricht 
    per elektronischer Post zukommen lassen</h3>
-<form method="post" action="<?=$PHP_SELF?>" class="absolventen formular emailformular">
-  <input type="hidden" name="jahrgang" value="<?isset($jahrgang)?$jahrgang:""?>">
+<form method="post" action="<?=$GLOBALS['mod_absolventen_glob']['php_self']?>" class="absolventen formular emailformular">
+  <input type="hidden" name="jahrgang" value="<?=isset($daten['jahrgang'])?$daten['jahrgang']:""?>" />
   <table  class="absolventen formular emailformular">
     <tbody class="absolventen formular emailformular">
       <tr  class="absolventen formular emailformular">
@@ -152,7 +157,7 @@ function emailformular($daten,$fehler=0){
       <?php }
      else 
      { ?><input type="hidden" name="empfaenger" 
-            value="<?=isset($daten['empfaenger'])?$daten['empfaenger']:""?>">Nachricht an:</th>
+            value="<?=isset($daten['empfaenger'])?$daten['empfaenger']:""?>" />Nachricht an:</th>
         <td class="absolventen formular emailform an"><?=isset($daten['an'])?$daten['an']:""?></td>
       </tr>
       <?php
@@ -198,13 +203,20 @@ function emailformular($daten,$fehler=0){
     </tbody>
   </table>
 </form>
+<?php if (!empty($fehler)) { ?>
+<form method="get" action="<?=$GLOBALS['mod_absolventen_glob']['php_self']?>" class="absolventen formular emailformular"><input 
+	    type="hidden" name="jahrgang" value="<?=isset($daten['jahrgang'])?$daten['jahrgang']:""?>" /><input 
+            type="hidden" name="aktion" value="jganzeige" /><input 
+            type="submit" name="Abbrechen" value="Abbrechen"  
+            class="absolventen formular emailform senden"/>
+</form><?php } ?>
 </div>
 <?php
   }
 }
 
 function mailsenden ($db,$daten) {
-  global $version;
+  
   $person=new personen($db);
   $email=new email($db);
   if (empty($daten['empfaenger']) ||
@@ -225,6 +237,8 @@ function mailsenden ($db,$daten) {
   { 
     printf('<ul class="absolventen emailform fehler"><li class="absolventen emailform fehler">%s</li></ul>%s',
     "Interner Fehler 2. Dies kann bei normaler Nutzung nicht passieren.","\n");
+    $person->puffer_leeren();
+    $email->puffer_leeren();
     return;
   }
   if (empty($daten['absender_adr'])) 
@@ -253,7 +267,7 @@ Sender: \"%s\" <%s>
 Return-Path: %s",
 		    mb_encode_mimeheader($daten['absender'],'UTF-8','Q'),
 		    $daten['absender_adr'],
-		    $version,
+		    $GLOBALS['mod_absolventen_glob']['version'],
 		    mb_encode_mimeheader($daten['absender'],'UTF-8','Q'),
 		    $daten['absender_adr'],
 		    $daten['absender_adr']) ;
@@ -300,6 +314,9 @@ Return-Path: %s",
     
     emailformular($daten,$fehler);
   }
+
+  $person->puffer_leeren();
+  $email->puffer_leeren();
 }
 
 
