@@ -1,5 +1,5 @@
 <?php /*
-$Id: telefon.inc,v 1.4 2004/07/15 11:55:05 keinstein Exp $
+$Id: telefon.inc,v 1.5 2004/07/19 22:49:02 keinstein Exp $
 Copyright © 2000-2004 SchlemmerSoft (Tobias Schlemmer)
 
 This program is free software; you can redistribute it and/or
@@ -19,6 +19,13 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 Der Autor kann unter der Email: Tobias.Schlemmer@web.de erreicht werden.
 
 $Log: telefon.inc,v $
+Revision 1.5  2004/07/19 22:49:02  keinstein
+globals ->$GLOBALS
+id() und uid() raus
+sonstige felder: testen vor Rückgabe
+Tipfehler korrigiert im Formular
+ggf. puffer_leeren() aufrufen
+
 Revision 1.4  2004/07/15 11:55:05  keinstein
 SQLs überprüft und geändert
      (z.B. id bei insert auf NULL gesetzt
@@ -43,28 +50,28 @@ Labels für radio-buttons
 
 class telefon extends dbtabelle{
   function sql($funktion,$args){
-    global $mysql_daten;
+    
     switch ($funktion) {
 	case "erste_person": 
 		return sprintf("select id,uid,aid,vorwahl,telefon,kommentar"
 		               . " from %s where uid=%d",
-			$mysql_daten['TelTab'],$args);
+			$GLOBALS['mod_absolventen_glob']['mysql']['TelTab'],$args);
         case "erste_pers_ohne_adr":
                 return sprintf("select id,uid,aid,vorwahl,telefon,kommentar"
 			       . " from %s where uid=%d and aid is null",
-			       $mysql_daten['TelTab'],$args);
+			       $GLOBALS['mod_absolventen_glob']['mysql']['TelTab'],$args);
         case "erste_adresse":
                 return sprintf("select id,uid,aid,vorwahl,telefon,kommentar"
 			       . " from %s where aid=%d",
-			       $mysql_daten['TelTab'],$args);
+			       $GLOBALS['mod_absolventen_glob']['mysql']['TelTab'],$args);
   	case "diese": 
 		return sprintf("select id,uid,aid,vorwahl,telefon,kommentar"
 			       . " from %s where id=%d",
-			$mysql_daten['TelTab'],$args);
+			$GLOBALS['mod_absolventen_glob']['mysql']['TelTab'],$args);
 	case "insert":
 		return sprintf("insert into %s (id,uid,aid,vorwahl,telefon,kommentar"
 			       . ") values (%s,%d,%s,%s,%s,%s)",
-			       $mysql_daten['TelTab'],
+			       $GLOBALS['mod_absolventen_glob']['mysql']['TelTab'],
 			       empty($args['id'])?'NULL':sprintf("%d",$args['id']),
 			       $args['uid'],
 			       empty($args['aid'])?'NULL':sprintf("%d",$args['aid']),
@@ -74,7 +81,7 @@ class telefon extends dbtabelle{
 	case "update":
 		return sprintf("update %s set uid=%d,aid=%s,vorwahl=%s,telefon=%s,kommentar=%s"
 			       . " where id=%d",
-			       $mysql_daten['TelTab'],
+			       $GLOBALS['mod_absolventen_glob']['mysql']['TelTab'],
 			       $args['uid'],
 			       empty($args['aid'])?'NULL':sprintf("%d",$args['aid']),
 			       empty($args['vorwahl'])?'NULL': "'" . addslashes($args['vorwahl']) . "'",
@@ -83,11 +90,11 @@ class telefon extends dbtabelle{
 			       $args['id']);
         case "adr_loeschen":
                 return sprintf("update %s set aid=NULL,uid=%d where aid=%d",
-			       $mysql_daten['TelTab'],$args['uid'],$args['aid']);
+			       $GLOBALS['mod_absolventen_glob']['mysql']['TelTab'],$args['uid'],$args['aid']);
 	case "loeschen":
-	        return sprintf("delete from %s where id=%d",$mysql_daten['TelTab'],$args);
+	        return sprintf("delete from %s where id=%d",$GLOBALS['mod_absolventen_glob']['mysql']['TelTab'],$args);
 	case "persloeschen":
-	        return sprintf("delete from %s where uid=%d",$mysql_daten['TelTab'],$args);
+	        return sprintf("delete from %s where uid=%d",$GLOBALS['mod_absolventen_glob']['mysql']['TelTab'],$args);
     }
   }
 	
@@ -132,28 +139,20 @@ class telefon extends dbtabelle{
   }
   /* die einzelnen Felder der Person */
 
-  function id() {
-    return $this->Werte["id"];
-  }
-
-  function uid() {
-    return $this->Werte["uid"];
-  }
-
   function aid() {
-    return $this->Werte["aid"];
+    return isset($this->Werte["aid"])?$this->Werte["aid"]:false;
   }
 
   function vorwahl() {
-    return $this->Werte["vorwahl"];
+    return isset($this->Werte["vorwahl"])?$this->Werte["vorwahl"]:false;
   }
 
   function telefon_nr() {
-    return $this->Werte["telefon"];
+    return isset($this->Werte["telefon"])?$this->Werte["telefon"]:false;
   }
   
   function kommentar() {
-    return isset($this->Werte["kommentar"])?$this->Werte["kommentar"]:"";
+    return isset($this->Werte["kommentar"])?$this->Werte["kommentar"]:false;
   }
 
   function nurtelprint() {
@@ -173,13 +172,15 @@ class telefon extends dbtabelle{
   }
   /* adresse,name */
 
-  function formular($neu,$daten=0,$fehler=0) {
-    global $PHP_SELF;
-    if ($neu) $daten=array('uid' => $_SESSION['mod_absolventen']['uid']);
+  function formular($neu,$daten=array(),$fehler=array()) {
+    if ($neu) {
+      $daten['uid'] = $_SESSION['mod_absolventen']['uid'];
+      if (isset($daten['id'])) unset($daten['id']);
+    }
     $adressen=new adresse($this->db);
     $adressen->erste_person($daten['uid']);
 ?>      
-<form method="post" action="<?=$PHP_SELF?>" class="absolventen telefon formular">
+<form method="post" action="<?=$GLOBALS['mod_absolventen_glob']['php_self']?>" class="absolventen telefon formular">
   <input type="hidden" name="aktion" 
      value="<?=$neu?"teldbneu":"teldbaendern"?>" />
      <?php if (isset($daten['id'])) { ?>
@@ -198,17 +199,15 @@ class telefon extends dbtabelle{
 								type="radio" 
         id="aidinputnull<?=isset($daten['id'])?$daten['id']:""?>" name="aid" 
         class="absolventen telefon formular adresse tel_adr"
-        value="" <?=(isset($daten['aid'])&& $daten['aid'])?"":"checked=\"1\" "?> /><label 
+        value="" <?=(isset($daten['aid'])&& $daten['aid'])?"":"checked=\"checked\" "?> /><label 
         class="absolventen telefon formular adresse tel_adr<?=isset($fehler['aid'])?" fehler":""?>"
         for="aidinputnull<?=isset($daten['id'])?$daten['id']:""?>">Keine</label></div><?php 
         do { 
 ?><div
         class="absolventen telefon formular adresse tel_adr<?=isset($fehler['aid'])?" fehler":""?>"><input 
-        type="radio" name="aid" 
+        type="radio" name="aid"<?=(isset($daten['aid'])&&$daten['aid']==$adressen->id())?" checked=\"checked\"":""?> 
         id="aid<?=$adressen->id()?>input<?=isset($daten['id'])?$daten['id']:""?>" 
-        value="<?=$adressen->id();?>" 
-        class="absolventen telefon formular adresse tel_adr"
-        <?=(isset($daten['aid'])&&$daten['aid']==$adressen->id())?"checked=\"1\"":""?> /><label 
+        value="<?=$adressen->id();?>" class="absolventen telefon formular adresse tel_adr" /><label 
         class="absolventen telefon formular adresse tel_adr<?=isset($fehler['aid'])?" fehler":""?>"
         for="aid<?=$adressen->id()?>input<?=isset($daten['id'])?$daten['id']:""?>"><?=$adressen->anfang()?><br />
     	      <?=$adressen->plz()?>&nbsp;<?=$adressen->ort()?><br />
@@ -218,28 +217,28 @@ class telefon extends dbtabelle{
     <tr class="absolventen telefon formular tel_vorwahl">
       <th class="absolventen telefon formular tel_vorwahl"><label 
         class="absolventen telefon formular tel_vorwahl"
-        for="abs_vorwahl<?=isset($daten['id'])?$daten['id']:""?>">Vorwahl</label></th>
-      <td class="absolventen telefon formular tel_vorwahl"><input type="text" size=30 name="vorwahl" 
+        for="abs-vorwahl<?=isset($daten['id'])?$daten['id']:""?>">Vorwahl</label></th>
+      <td class="absolventen telefon formular tel_vorwahl"><input type="text" size="30" name="vorwahl" 
         class="absolventen telefon formular tel_vorwahl<?=isset($fehler['vorwahl'])?" fehler":""?>"
-        id="abs_vorwahl<?=isset($daten['id'])?$daten['id']:""?>"
+        id="abs-vorwahl<?=isset($daten['id'])?$daten['id']:""?>"
         value="<?=isset($daten['vorwahl'])?$daten['vorwahl']:""?>" /></td>
     </tr>
     <tr class="absolventen telefon formular tel_telefon">
       <th class="absolventen telefon formular tel_telefon"><label 
         class="absolventen telefon formular tel_telefon"
-        for="abs_telefon<?=isset($daten['id'])?$daten['id']:""?>">Telefon</label></th>
-      <td class="absolventen telefon formular tel_telefon"><input type="text" size=30 name="telefon" 
+        for="abs-telefon<?=isset($daten['id'])?$daten['id']:""?>">Telefon</label></th>
+      <td class="absolventen telefon formular tel_telefon"><input type="text" size="30" name="telefon" 
         class="absolventen telefon formular tel_telefon<?=isset($fehler['telefon'])?" fehler":""?>"
-        id="abs_telefon<?=isset($daten['id'])?$daten['id']:""?>"
+        id="abs-telefon<?=isset($daten['id'])?$daten['id']:""?>"
         value="<?=isset($daten['telefon'])?$daten['telefon']:""?>" /></td>
     </tr>
     <tr class="absolventen telefon formular tel_bem">
       <th class="absolventen telefon formular tel_bem"><label 
         class="absolventen telefon formular tel_bem"
-        for="abs_bemerkung<?=isset($daten['id'])?$daten['id']:""?>">Bemerkung</label></th>
-      <td class="absolventen telefon formular tel_bem"><input type="text" size=30 name="kommentar" 
+        for="abs-bemerkung<?=isset($daten['id'])?$daten['id']:""?>">Bemerkung</label></th>
+      <td class="absolventen telefon formular tel_bem"><input type="text" size="30" name="kommentar" 
         class="absolventen telefon formular tel_bem<?=isset($fehler['kommentar'])?" fehler":""?>"
-        id="abs_bemerkung<?=isset($daten['id'])?$daten['id']:""?>"
+        id="abs-bemerkung<?=isset($daten['id'])?$daten['id']:""?>"
         value="<?=isset($daten['kommentar'])?$daten['kommentar']:""?>" /></td>
     </tr>
     <tr class="absolventen telefon formular knoepfe">
@@ -251,7 +250,7 @@ class telefon extends dbtabelle{
   </table>
 </form>
 <?php if (!$neu) { ?>
-<form method="post" action="<?=$PHP_SELF?>">
+<form method="post" action="<?=$GLOBALS['mod_absolventen_glob']['php_self']?>">
   <input type="hidden" name="aktion" value="teldbloeschen" />
   <input type="hidden" name="id" value="<?=$daten['id']?>" />
   <input type="hidden" name="uid" value="<?=$daten['uid']?>" />
@@ -259,7 +258,7 @@ class telefon extends dbtabelle{
 </form>
 <?php  }
 if (!empty($fehler)) { ?>
-<form method="post" action="<?=$PHP_SELF?>">
+<form method="post" action="<?=$GLOBALS['mod_absolventen_glob']['php_self']?>">
   <input type="hidden" name="aktion" value="telform" />
   <input type="submit"  value="Abbrechen" class="absolventen telefon formular knoepfe tel_abbrechen" />
 </form>
@@ -269,7 +268,7 @@ if (!empty($fehler)) { ?>
   }
 
   function checkdaten($daten,$neu) {
-    //    global $klasse;
+    //    
     $fehler=array();
     if (!empty($daten['id']) && !ereg("^[0-9]*$",$daten['id'])) 
       $fehler['id']="Fehlerhafte id";
@@ -285,6 +284,7 @@ if (!empty($fehler)) { ?>
 	$adressen->diese($daten['aid']);
 	if ($adressen->uid()!=$daten['uid']) 
 	  $fehler['aid']="Die Adresse existiert nicht oder gehört nicht zu Ihnen.";
+	$adressen->puffer_leeren();
       }
     }
     if (empty($daten['vorwahl']) && empty($daten['telefon']) && empty($daten['kommentar'])){
