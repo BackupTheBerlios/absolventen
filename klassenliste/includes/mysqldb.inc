@@ -27,30 +27,38 @@ class mysqldb {
   var $db;
   
   function mysqldb() {
-    $dbserver="";
-    $server="";
-    $login="";
-    $password="";
+    $this->dbserver="";
+    $this->server="";
+    $this->login="";
+    $this->password="";
   }
   
-  function connect() {
-    $db=mysql_connect($server,$login,$password);
+  function connect($my_server,$my_login,$my_password) {
+    $this->server=$my_server;
+    $this->login=$my_login;
+    $this->password=$my_password;
+    $this->db=mysql_connect($this->server,$this->login,$this->password);
   }
 
-  function selectdb() {
-    mysql_select_db($dbname,$db);
+  function selectdb($dbname) {
+    $this->dbname=$dbname;
+    mysql_select_db($dbname,$this->db);
   }
 
-  function query($query) {
-    return mysql_query($query,$db);
+  function query($sql) {
+    return mysql_query($sql,$this->db);
   }
 
-  function fetch_array($query){
-    return mysql_fetch_array($query);
+  function puffer_leeren($puffer){
+    return mysql_free_result($puffer);
+  }
+
+  function fetch_array($qu){
+    return mysql_fetch_array($qu,$this->db);
   }
   
   function insert_id() {
-    return mysql_insert_id($db);
+    return mysql_insert_id($this->db);
   }
 
 }

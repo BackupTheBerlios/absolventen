@@ -111,7 +111,7 @@ echo "<img src=\"../scanbild/schulefarb1.jpg\" vspace=20>\n";
 <tr><td>Email</td><td><input type="text" size=40 maxlength=255 name="mail" value="<?php echo $mail?>"></td></tr>
 </table></td></tr>
 </table>
-
+y
 <H3>WWW-Adressen</H3>
 <table border="2">
 <tr align=center><td>
@@ -126,12 +126,12 @@ echo "<img src=\"../scanbild/schulefarb1.jpg\" vspace=20>\n";
 </form>
 <p><<?php echo $dividier ?> width=50%><p>
 <sup>*</sup>Bei den mit diesen Angaben gekennzeichneten Feldern muss immer mindestens eines f&uuml;r jede Person ausgef&uuml;llt sein.
-D.h. z.B. es muss mindestens ein Jahrgang für die Person angegeben werden.
+D.h. z.B. es muss mindestens ein Jahrgang fï¿½ die Person angegeben werden.
 <?php include('ende.php');
 } else { // Eingaben OK, Aktualisiere Tabelle
 
   if (!$db = @mysql_connect($mysql_daten['Rechner'], $mysql_daten['Nutzer'], $mysql_daten['Passwort'])){
-    Fehlermeldung('Die Verbindung zum Datenbank-Server ist nicht möglich.');
+    Fehlermeldung('Die Verbindung zum Datenbank-Server ist nicht mï¿½lich.');
   }
 
   mysql_select_db($mysql_daten['DB'],$db);

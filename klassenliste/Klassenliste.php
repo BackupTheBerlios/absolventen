@@ -23,7 +23,7 @@ Der Autor kann unter der Email: Tobias.Schlemmer@web.de erreicht werden.
 function  Fehlermeldung($error) {
    echo "Schade! Leider ist ein Fehler aufgetreten.\n<p>";
    echo "Uns wurde folgendes gemeldet:\n<br>$error.\n<p>";?>
-Das beste wäre, Sie setzen sich mit dem Seitenbetreuer
+Das beste w~e, Sie setzen sich mit dem Seitenbetreuer
 unter der Email <a href="mailto:schlemmi@psynet.net">schlemmi@psynet.net</a>
 in Verbindung.
 <?php
@@ -32,10 +32,10 @@ in Verbindung.
 
 }
 
-$mysql_daten['Nutzer']='Nutzername';
-$mysql_daten['Passwort']='Passwort';
-$mysql_daten['Rechner']='Datenbankserver';
-$mysql_daten['DB']='datenbank';
+$mysql_daten['Nutzer']='www';
+$mysql_daten['Passwort']='web';
+$mysql_daten['Rechner']='localhost';
+$mysql_daten['DB']='stag';
 
 switch ($aktion) {
       case 'Abbrechen':unset($id);unset($wirklich);
