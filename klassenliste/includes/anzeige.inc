@@ -56,9 +56,9 @@ function anzeige_jg ($jahrgang,$db) {
 ?>
 <table border="1">
 <tr><th colspan="5"><font size="+2">Jahrgang <?=$jahrgang?></font></th></tr>
-<tr align="left"><th>Geburtsname</th><th>Vorname</th><th colspan="2">Adresse erster Teil</th><th>Telefon</th></tr>
-<tr align="left"><th></th><th>aktueller Name</th><th>PLZ</th><th>Ort</th><th></th></tr>
-<tr align="left"><th colspan="2"></th><th colspan="2">Adresse zweiter Teil</th><th ></th></tr>
+<tr align="left"><th>Geburtsname</th><th>Vorname</th><th colspan="2">Adresse erster Teil</th><th rowspan="3">Telefon</th></tr>
+<tr align="left"><th></th><th>aktueller Name</th><th>PLZ</th><th>Ort</th></tr>
+<tr align="left"><th colspan="2"></th><th colspan="2">Adresse zweiter Teil</th></tr>
 <tr align="left"><th colspan="2"><font size="-2">letzte &Auml;nderung</font></th><th colspan="3">Email</th></tr>
 <tr align="left"><th colspan="2"></th><th colspan="3">Homepage</th></tr>
 <tr align="left"><th colspan="5">Bemerkungen</th></tr>
