@@ -57,6 +57,21 @@ class email  extends dbtabelle{
 			       $args['id']);
 	case "loeschen":
 	        return sprintf("delete from %s where id=%d",$mysql_daten['EmailTab'],$args);
+	case "persloeschen":
+	        return sprintf("delete from %s where id=%d",$mysql_daten['EmailTab'],$args);
+        case "mailformopts": 
+	  return sprintf("select %s.id as id, %s.uid as uid, %s.adresse as adresse, "
+			 . "%s.name as name, %s.aktueller_name as aktueller_name, "
+			 . "%s.vorname as vorname"
+			 . " from %s,%s where %s.uid=%d and %s.id=%d and %s.mailformular=1",
+			 $mysql_daten['EmailTab'],$mysql_daten['EmailTab'],
+			 $mysql_daten['EmailTab'],$mysql_daten['EmailTab'],
+			 $mysql_daten['PersTab'],$mysql_daten['PersTab'],
+			 $mysql_daten['EmailTab'],$mysql_daten['PersTab'],
+			 $mysql_daten['EmailTab'],$args,
+			 $mysql_daten['PersTab'],$args,
+			 $mysql_daten['EmailTab']);
+      
     }
   }
 	
@@ -139,6 +154,27 @@ class email  extends dbtabelle{
   }
 
   /* adresse,name,link,encode,mailformular */
+
+  function erste_nurformular($uid) {
+    return $this->select_backend($this->sql('mailformopts',$uid));
+  }
+
+  function mailformopts() {
+    $rueckgabe=array();
+    $status=1;
+    while ($status) {
+      $rueckgabe[sprintf('%s %s %s/%d/%d',
+			 urlencode($this->Werte['aktueller_name']),
+			 urlencode($this->Werte['vorname']),			 
+			 urlencode($this->name()),
+			 $this->uid(),$this->id())]
+	=sprintf("%s %s %s",$this->Werte['vorname'], 
+		 $this->Werte['aktueller_name'],
+		 $this->name()?"(" . $this->name() . ")":"");
+      $status=$this->naechste();
+    } 
+    return $rueckgabe;
+  }
 
   function formular($daten=0) {
     if (!$daten) $daten=array('uid' => $_SESSION['uid']);
