@@ -103,6 +103,55 @@ switch ($aktion) {
 		      seitenende();
 		      break;
  
+ case 'mailform':      seitenanfang();
+                      untertabdatenform(new email($db));
+		      seitenende();
+		      break;
+
+ case 'maildbneu':		      
+ case 'maildbaendern': seitenanfang();
+                     untertabdatenaendern(new email($db),mystripslashes($HTTP_POST_VARS));
+		     seitenende();
+		     break;
+ 
+ case 'maildbloeschen': seitenanfang();
+                      untertabdatenloeschen(new email($db),
+					    mystripslashes($HTTP_POST_VARS));
+		      seitenende();
+		      break;
+ 
+ case 'hpform':      seitenanfang();
+                      untertabdatenform(new homepage($db));
+		      seitenende();
+		      break;
+
+ case 'hpdbneu':		      
+ case 'hpdbaendern': seitenanfang();
+                     untertabdatenaendern(new homepage($db),mystripslashes($HTTP_POST_VARS));
+		     seitenende();
+		     break;
+ 
+ case 'hpdbloeschen': seitenanfang();
+                      untertabdatenloeschen(new homepage($db),
+					    mystripslashes($HTTP_POST_VARS));
+		      seitenende();
+		      break;
+ case 'telform':      seitenanfang();
+                      untertabdatenform(new telefon($db));
+		      seitenende();
+		      break;
+
+ case 'teldbneu':		      
+ case 'teldbaendern': seitenanfang();
+                     untertabdatenaendern(new telefon($db),mystripslashes($HTTP_POST_VARS));
+		     seitenende();
+		     break;
+ 
+ case 'teldbloeschen': seitenanfang();
+                      untertabdatenloeschen(new telefon($db),
+					    mystripslashes($HTTP_POST_VARS));
+		      seitenende();
+		      break;
    
 }
 	  ?>
