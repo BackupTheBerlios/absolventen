@@ -51,6 +51,8 @@ class adresse extends dbtabelle{
 		 addslashes($args['ort']),
 		 addslashes($args['ende']),
 		 $args['id']);
+	case "loeschen":
+	        return sprintf("delete from %s where id=%d",$mysql_daten['AdrTab'],$args);
     }
   }
 	
@@ -75,16 +77,7 @@ class adresse extends dbtabelle{
   }
 
   function loeschen($id,$uid){
-    $this->puffer_leeren();
-    $sql=sprintf("delete from StAgAdr where id=%d",$id);
-    if (!$this->Qresult=$this->db->query($sql)) {
-      fehler("adresse-&gt;loeschen(" . $id . ")");
-      return -2;
-    }
-    $person=new personen($this->db);
-    $person->aktualisiere_akt($uid);
-    @$this->puffer_leeren();
-    return 0;
+	return parent::loeschen($id,$uid);
   }
 
   /* die einzelnen Felder der Person */
