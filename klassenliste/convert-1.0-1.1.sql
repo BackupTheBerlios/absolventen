@@ -1,6 +1,6 @@
 alter table StAg 
   add login varchar(255) not null default '';
-update StAg set login=id;
+update StAg set login=id,aktualisierung=aktualisierung;
 alter table StAg
   add unique login (login);
 
@@ -11,6 +11,7 @@ alter table StAgMail
   add Encode bool not null default 1,
   add Formular bool not null default 1;
 update StAgMail set encode=0,Link=1;
+update StAgMail set name='F&uuml;r Spam' where id=1;
 
 alter table StAgTel 
   add aid int(11) default null after uid,
@@ -21,5 +22,7 @@ insert into StAgTel (uid,aid,vorwahl,telefon)
 alter table StAgAdr 
   drop vorwahl, 
   drop telefon;
+alter table StAgJg
+  modify klasse varchar(255);
+update StAgJg set klasse=concat(klasse,"-Zug") where length(klasse)>0;
 
-update StAgMail set name='F&uuml;r Spam' where id=1;
