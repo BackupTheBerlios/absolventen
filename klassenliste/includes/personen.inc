@@ -19,51 +19,100 @@ Der Autor kann unter der Email: Tobias.Schlemmer@web.de erreicht werden.
 
 */ 
 
-class personen {
-  var $db;
-  var $sql;
-  var $Werte;
-  var $Qresult;
-  
-  function personen ($h_db=0) {
-    $this->db=$h_db;
-  }
+class personen extends dbtabelle {
+  function sql($funktion,$args){
+    global $mysql_daten;
+    switch ($funktion) {
+	case "erste_person": 
+  	case "diese": 
+		return sprintf("select id,login,aktueller_name,geburtsname,vorname,kommentar,"
+			       . "DATE_FORMAT(aktualisierung,'%%d.%%m.%%Y %%T') as aktualisierung "
+			       . "from %s where id=%d",
+			       $mysql_daten['PersTab'],$args);
 
-  function puffer_leeren() {
-    if ($this->Qresult) {
-      $this->db->puffer_leeren($this->Qresult);
-      $this->Qresult=0;
+	case "insert":
+	        return sprintf("insert into %s (%slogin,aktueller_name,geburtsname,"
+			       . "vorname,kommentar,pw) values (%s'%s','%s','%s','%s','%s',"
+			       . "encrypt('%s'))",$args['id']?"id,":"",
+			       $mysql_daten['PersTab'],
+			       $args['id']?addslashes($args['id']) . ',':"",
+			       addslashes($args['login']),
+			       addslashes($args['aktueller_name']),
+			       addslashes($args['geburtsname']),
+			       addslashes($args['vorname']),
+			       addslashes(nl2br($args['kommentar'])),
+			       addslashes($args['pw']));
+
+	case "update":
+                return sprintf("update %s set login='%s',aktueller_name='%s',"
+			       . "geburtsname='%s',vorname='%s',kommentar='%s'%s"
+			       . "where id=%d",
+			       $mysql_daten['PersTab'],
+			       addslashes($daten['login']),
+			       addslashes($daten['aktueller_name']),
+			       addslashes($daten['geburtsname']),
+			       addslashes($daten['vorname']),
+			       addslashes(nl2br($daten['kommentar'])),
+			       $daten['pw']?",pw=encrypt('" 
+			       . addslashes($daten['pw']) . "')":"",
+			       $daten['id']);
+
+        case "loeschen":
+	        return sprintf("delete from %s where id=%d",$mysql_daten['PersTab'],$args);
+
+        case "erste_jahrgang":
+	        return sprintf("select %s.id as "
+			       . "id,login,aktueller_name,geburtsname,vorname,kommentar,"
+			       . "DATE_FORMAT(aktualisierung,'%%d.%%m.%%Y %%T') as aktualisierung "
+			       . "from %s,%s"
+			       . " where %s.jahrgang=%d"
+			       . " and %s.klasse='%s' and %s.drin=%d". $drin
+			       . " and %s.uid=%s.id"
+			       . " order by geburtsname,vorname,aktueller_name",
+			       $mysql_daten['PersTab'],
+			       $mysql_daten['PersTab'],
+			       $mysql_daten['JgTab'],
+			       $mysql_daten['JgTab'],
+			       $args['jahrgang'],
+			       $mysql_daten['JgTab'],
+			       addslashes($args['klasse']),
+			       $mysql_daten['JgTab'],
+			       $args['drin'],
+			       $mysql_daten['JgTab'],
+			       $mysql_daten['PersTab']);
+        case "aktualisiere_akt":
+                return sprintf("update %s set aktualisierung=now() "
+			       . "where id=%d",
+			       $mysql_daten['PersTab'],
+			       $args);
+        case "pruefe_login":
+        	return sprintf("select aktueller_name,geburtsname,vorname,"
+			       . "id,pw=encrypt('%s',pw) as richtig "
+			       . "from %s where login='%s'",
+			       addslashes($args['pw']),
+			       $mysql_daten['PersTab'],
+			       $args['login']);
+        case "login_exists":
+	  return sprintf("select id from %s where login='%s'",
+			 $mysql_daten['PersTab'],addslashes($args));
+
     }
+  }
+	
+  function personen ($h_db=0) {
+    $this->dbtabelle($h_db);
   }
 
   function erste_jahrgang($jahrgang,$klasse,$drin){
     $this->puffer_leeren();
-    $sql="select StAg.id as "
-      . "id,login,aktueller_name,geburtsname,vorname,kommentar,"
-      . "DATE_FORMAT(aktualisierung,'%d.%m.%Y %T') as aktualisierung "
-      . "from StAg,StAgJg"
-      . " where StAgJg.jahrgang=" . $jahrgang 
-      . " and StAgJg.klasse='" . $klasse
-      . "' and StAgJg.drin=". $drin
-      . " and StAgJg.uid=StAg.id"
-      . " order by geburtsname,vorname,aktueller_name";
-    if (!$this->Qresult=$this->db->query($sql)) {
+    if (!$this->Qresult=$this->db->query(
+	       $this->sql('erste_jahrgang',
+			array('jahrgang' => $jahrgang,
+			      'klasse'   => $klasse,
+			      'drin'     => $drin)))) 
+    {
       fehler("personen-&gt;erste_jahrgang(" . $jahrgang . ','
 	     . $klasse . "," . $drin . ")");
-      return false;
-    }
-    $this->Werte=$this->db->fetch_array($this->Qresult);
-    return ($this->Werte != false);
-  }
-
-  function diese($id){
-    $this->puffer_leeren();
-    $sql="select id,login,aktueller_name,geburtsname,vorname,kommentar,"
-      . "DATE_FORMAT(aktualisierung,'%d.%m.%Y %T') as aktualisierung "
-      . "from StAg"
-      . " where id=" . $id;
-    if (!$this->Qresult=$this->db->query($sql)) {
-      fehler("personen-&gt;diese(" . $id . ")");
       return false;
     }
     $this->Werte=$this->db->fetch_array($this->Qresult);
@@ -75,46 +124,15 @@ class personen {
     if ($daten['id'] && !ereg('^[0-9]*$',$daten['id'])) {
       return -1;
     }
-    $sql=sprintf("insert into StAg (%slogin,aktueller_name,geburtsname,"
-		 . "vorname,kommentar,pw) values (%s'%s','%s','%s','%s','%s',"
-		 . "encrypt('%s'))",$daten['id']?"id,":"",
-		 $daten['id']?addslashes($daten['id']) . ',':"",
-		 addslashes($daten['login']),
-		 addslashes($daten['aktueller_name']),
-		 addslashes($daten['geburtsname']),
-		 addslashes($daten['vorname']),
-		 addslashes(nl2br($daten['kommentar'])),
-		 addslashes($daten['pw']));
-    if (!$this->Qresult=$this->db->query($sql)) {
-      fehler("personen-&gt;insert(" . $daten . ")");
-      return -2;
-    }
-    $id=@$this->puffer_leeren();
-    return $id;
+    return $this->insert_backend($this->sql("insert",$daten));
   }
 
   function update($daten) {
     $this->puffer_leeren();
-    if (!$daten['id'] ||  !ereg('^[0-9]*$',$daten['id'])) {
+    if (!$daten['id'] || !ereg('^[0-9]*$',$daten['id'])) {
       return -1;
     }
-    $sql=sprintf("update StAg set login='%s',aktueller_name='%s',"
-		 . "geburtsname='%s',vorname='%s',kommentar='%s'%s"
-		 . "where id=%d",
-		 addslashes($daten['login']),
-		 addslashes($daten['aktueller_name']),
-		 addslashes($daten['geburtsname']),
-		 addslashes($daten['vorname']),
-		 addslashes(nl2br($daten['kommentar'])),
-		 $daten['pw']?",pw=encrypt('" 
-		   . addslashes($daten['pw']) . "')":"",
-		 $daten['id']);
-    if (!$this->Qresult=$this->db->query($sql)) {
-      fehler("personen-&gt;update(" . $daten . ")");
-      return -2;
-    }
-    @$this->puffer_leeren();
-    return 0;
+    return $this->update_backend($this->sql("update",$daten));
   }
 
   function aktualisiere_akt($id){
@@ -122,10 +140,7 @@ class personen {
     if (!$id ||  !ereg('^[0-9]*$',$id)) {
       return -1;
     }
-    $sql=sprintf("update StAg set aktualisierung=now() "
-		 . "where id=%d",
-		 $id);
-    if (!$this->Qresult=$this->db->query($sql)) {
+    if (!$this->Qresult=$this->db->query($this->sql('aktualisiere_akt',$id))) {
       fehler("personen-&gt;aktualisiere_akt(" . $id . ")");
       return -2;
     }
@@ -134,10 +149,8 @@ class personen {
   }
 
   function pruefe_login($login,$pw){
-    $sql="select aktueller_name,geburtsname,vorname,"
-      . "id,pw=encrypt('" . $pw . "',pw) as richtig "
-      . "from StAg where login='" . $login . "'";
-    if (!$this->Qresult=$this->db->query($sql)) {
+    if (!$this->Qresult=$this->db->query(
+		 $this->sql('pruefe_login',array('pw' => $pw, 'login' => $login)))) {
       fehler("personen-&gt;pruefe_login(" . $login . ',passwort)');
       return false;
     }
@@ -146,18 +159,12 @@ class personen {
   }
 
   function login_exists($login){
-    $sql="select id "
-      . "from StAg where login='" . $login . "'";
-    if (!$this->Qresult=$this->db->query($sql)) {
-      fehler("personen-&gt;pruefe_login(" . $login . ',passwort)');
+    if (!$this->Qresult=$this->db->query($this->sql('login_exists',$login))) {
+      fehler("personen-&gt;login_exists(" . $login . ')');
       return false;
     }
     $this->Werte=$this->db->fetch_array($this->Qresult);
     return $this->Werte['id'];
-  }
-
-  function naechste(){
-    return $this->Werte=$this->db->fetch_array($this->Qresult);
   }
 
   /* die einzelnen Felder der Person */
@@ -278,10 +285,6 @@ class personen {
 </table>
 </form>
 <?php
-  }
-
-  function datenformular() {
-    $this->formular($this->Werte);
   }
 
   function checkdaten($daten,$pwforce=0) {
