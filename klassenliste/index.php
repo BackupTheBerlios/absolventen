@@ -75,12 +75,12 @@ switch ($aktion) {
  
  case 'jgdbneu':		      
  case 'jgdbaendern': seitenanfang();
-                     jgdatenaendern($db,mystripslashes($HTTP_POST_VARS));
+                     untertabdatenaendern(new jg($db),mystripslashes($HTTP_POST_VARS));
 		     seitenende();
 		     break;
  
  case 'jgdbloeschen': seitenanfang();
-                      jgdatenloeschen(new jg($db),
+                      untertabdatenloeschen(new jg($db),
 				      mystripslashes($HTTP_POST_VARS));
 		      seitenende();
 		      break;
@@ -93,7 +93,7 @@ switch ($aktion) {
 
  case 'adrdbneu':		      
  case 'adrdbaendern': seitenanfang();
-                     adrdatenaendern($db,mystripslashes($HTTP_POST_VARS));
+                     untertabdatenaendern(new adresse($db),mystripslashes($HTTP_POST_VARS));
 		     seitenende();
 		     break;
  
