@@ -1,5 +1,5 @@
-<?php /*
-Copyright (c) 2000 SchlemmerSoft (Tobias Schlemmer)
+<?php /* $Id: includes.inc,v 1.5 2004/07/15 11:41:34 keinstein Exp $
+Copyright (c) 2000-2004 SchlemmerSoft (Tobias Schlemmer)
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -16,6 +16,12 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 Der Autor kann unter der Email: Tobias.Schlemmer@web.de erreicht werden.
+
+$Log: includes.inc,v $
+Revision 1.5  2004/07/15 11:41:34  keinstein
+mystripslashes.inc eingebunden
+require_once für layout
+$_session umbenannt
 
 */ 
 
@@ -34,14 +40,15 @@ require_once('email.inc');
 require_once('anzeige.inc');
 require_once('login.inc');
 require_once('bearbeiten.inc');
+require_once('mystripslashes.inc');
 
-echo $layoutid;
+#echo $layoutid;
 unset($layout);
-if (file_exists("layout" . $_SESSION['layoutid'] . ".inc")) 
-     include("layout" . $_SESSION['layoutid'] . ".inc");
+if (file_exists("layout" . $_SESSION['mod_absolventen']['layoutid'] . ".inc")) 
+     require_once("layout" . $_SESSION['mod_absolventen']['layoutid'] . ".inc");
 else {
-  echo "default";
+#  echo "default";
   $layoutid="";
-  include("layout.inc");
+  require_once("layout.inc");
 }
 ?>
