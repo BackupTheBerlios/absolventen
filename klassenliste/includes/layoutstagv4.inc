@@ -1,4 +1,4 @@
-<?php /* $Id: layoutstagv4.inc,v 1.3 2004/07/25 17:34:50 keinstein Exp $
+<?php /* $Id: layoutstagv4.inc,v 1.4 2004/07/26 16:58:31 keinstein Exp $
 Copyright (c) 2000-2004 SchlemmerSoft (Tobias Schlemmer)
 
 This program is free software; you can redistribute it and/or
@@ -18,6 +18,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 Der Autor kann unter der Email: Tobias.Schlemmer@web.de erreicht werden.
 
 $Log: layoutstagv4.inc,v $
+Revision 1.4  2004/07/26 16:58:31  keinstein
+Header auskommentiert
+
 Revision 1.3  2004/07/25 17:34:50  keinstein
 Tippfehler in Fußzeile: Hilfe
 
@@ -44,7 +47,7 @@ function seitenanfang($title="",
 		      $target="") 
 {
   
-  Header("Content-Type: text/html; charset=" . $_SESSION['mod_absolventen']['zeichensatz']);
+//  Header("Content-Type: text/html; charset=" . $_SESSION['mod_absolventen']['zeichensatz']);
 ?><div class="absolventen">
    <?php if (isset($_SESSION['mod_absolventen']['name'])) 
      printf('<div class="absolventen loginstatus">%s</div>',$_SESSION['mod_absolventen']['name']);
