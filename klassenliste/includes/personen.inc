@@ -70,6 +70,69 @@ class personen {
     return ($this->Werte != false);
   }
 
+  function insert($daten) {
+    $this->puffer_leeren();
+    if ($daten['id'] && !ereg('^[0-9]*$',$daten['id'])) {
+      return -1;
+    }
+    $sql=sprintf("insert into StAg (%slogin,aktueller_name,geburtsname,"
+		 . "vorname,kommentar,pw) values (%s'%s','%s','%s','%s','%s',"
+		 . "encrypt('%s'))",$daten['id']?"id,":"",
+		 $daten['id']?addslashes($daten['id']) . ',':"",
+		 addslashes($daten['login']),
+		 addslashes($daten['aktueller_name']),
+		 addslashes($daten['geburtsname']),
+		 addslashes($daten['vorname']),
+		 addslashes(nl2br($daten['kommentar'])),
+		 addslashes($daten['pw']));
+    if (!$this->Qresult=$this->db->query($sql)) {
+      fehler("personen-&gt;insert(" . $daten . ")");
+      return -2;
+    }
+    $id=@$this->puffer_leeren();
+    return $id;
+  }
+
+  function update($daten) {
+    $this->puffer_leeren();
+    if (!$daten['id'] ||  !ereg('^[0-9]*$',$daten['id'])) {
+      return -1;
+    }
+    $sql=sprintf("update StAg set login='%s',aktueller_name='%s',"
+		 . "geburtsname='%s',vorname='%s',kommentar='%s'%s"
+		 . "where id=%d",
+		 addslashes($daten['login']),
+		 addslashes($daten['aktueller_name']),
+		 addslashes($daten['geburtsname']),
+		 addslashes($daten['vorname']),
+		 addslashes(nl2br($daten['kommentar'])),
+		 $daten['pw']?",pw=encrypt('" 
+		   . addslashes($daten['pw']) . "')":"",
+		 $daten['id']);
+    if (!$this->Qresult=$this->db->query($sql)) {
+      fehler("personen-&gt;update(" . $daten . ")");
+      return -2;
+    }
+    @$this->puffer_leeren();
+    return 0;
+  }
+
+  function aktualisiere_akt($id){
+    $this->puffer_leeren();
+    if (!$id ||  !ereg('^[0-9]*$',$id)) {
+      return -1;
+    }
+    $sql=sprintf("update StAg set aktualisierung=now() "
+		 . "where id=%d",
+		 $id);
+    if (!$this->Qresult=$this->db->query($sql)) {
+      fehler("personen-&gt;aktualisiere_akt(" . $id . ")");
+      return -2;
+    }
+    @$this->puffer_leeren();
+    return 0;
+  }
+
   function pruefe_login($login,$pw){
     $sql="select aktueller_name,geburtsname,vorname,"
       . "id,pw=encrypt('" . $pw . "',pw) as richtig "
@@ -167,14 +230,14 @@ class personen {
      $email->normprint($erstespalte);
    }
    if ($hp->erste_person($this->id())) {
-     echo "<tr><td colspan=2></td><td colspan=3>";
+     echo "</td></tr>\n";
+     echo '<tr><td colspan="2"></td><td colspan="3">';
      $hp->normprint($erstespalte);
-     echo "</td></tr>";
    } ?>
 </td></tr>
 <?php
       if ($this->kommentar()) {
-     ?><tr><td colspan=5><?=$this->kommentar()?></td></tr>
+     ?><tr><td colspan="5"><?=$this->kommentar()?></td></tr>
 <?php
       }
     } while ($this->naechste());
@@ -192,7 +255,7 @@ class personen {
 <?php if ($daten['id']) { ?>
 <input type="hidden" name="id" value="<?=$daten['id']?>" />
 			  <?php } ?>
-<table border=0>
+<table border="0">
 <tr><td>Geburtsname</td><td><input type="text" name="geburtsname"
    value="<?=$daten['geburtsname']?>" size="40" maxlength="40" /></td></tr>
 <tr><td>aktueller Name</td><td><input type="text" name="aktueller_name"
@@ -201,17 +264,17 @@ class personen {
    value="<?=$daten['vorname']?>" size="40" maxlength="40" /></td></tr>
 <tr><td>Bemerkungen</td>
 <td><textarea name="kommentar" cols="40" rows="5" 
-><?=str_replace("<br>","",$daten["kommentar"])?></textarea></td></tr>
+><?=preg_replace("/<br[^>]*>/i","",$daten["kommentar"])?></textarea></td></tr>
 <tr><td>Nutzername</td><td><input type="text" name="login"
    value="<?=$daten['login']?>" size="40" maxlength="255" /></td></tr>
 <tr><td>Passwort</td><td><input type="password" name="pw1"
    value="<?=$daten['pw1']?>" size="40" maxlength="40" /></td></tr>
-<tr><td>Passwort wiederholen</td><td><input type="text" name="pw2"
+<tr><td>Passwort wiederholen</td><td><input type="password" name="pw2"
    value="<?=$daten['pw2']?>" size="40" maxlength="40" /></td></tr>
 <tr><td colspan="2" align="center">
    <input type="submit" 
-   value="<?=$daten['id']?"&Auml;ndern":"Einf&uuml;gen"?>">&nbsp;<input
-   type="reset" value="Zur&uuml;cksetzen"></td></tr>
+   value="<?=$daten['id']?"&Auml;ndern":"Einf&uuml;gen"?>" />&nbsp;<input
+   type="reset" value="Zur&uuml;cksetzen" /></td></tr>
 </table>
 </form>
 <?php
@@ -236,6 +299,7 @@ class personen {
       $fehler.="<br/>Es wurden keine zwei identischen " 
 	. "Passw&ouml;rter eingegeben.";
     return $fehler;
+    if ($daten['pw1']) $daten['pw']=$daten['pw1'];
   }
 }
 ?>
