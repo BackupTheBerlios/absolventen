@@ -1,0 +1,1744 @@
+<?php
+
+function  Fehlermeldung($error) {
+   echo "Schade! Leider ist ein Fehler aufgetreten.\n<p>";
+   echo "Uns wurde folgendes gemeldet:\n<br>$error.\n<p>";?>
+Das beste wäre, Sie setzen sich mit dem Seitenbetreuer
+unter der Email <a href="mailto:schlemmi@psynet.net">schlemmi@psynet.net</a>
+in Verbindung.
+<?php
+   include('ende.php');
+   die;
+
+}
+
+$mysql_daten['Nutzer']='schlemmi';
+$mysql_daten['Passwort']='3jun1978';
+$mysql_daten['Rechner']='db.schlemmi.f2s.com';
+$mysql_daten['DB']='schlemmi';
+
+switch ($aktion) {
+      case 'Abbrechen':unset($id);unset($wirklich);
+      case '':
+      case 'menue':
+      case 'anzeige': include('anzeige.php');break;
+      case 'Löschen': include('loeschen.php');break;
+      case 'Bearbeiten':
+      case 'bearbeiten': include('bearbeiten.php');break;
+      case 'Ändern':include('aendern.php');break;
+      case 'Jahrgang hinzufügen':
+      case 'Jahrgang löschen':
+      case 'Jahrgang ändern':include('jgaendern.php');break;
+      case 'Adresse hinzufügen':
+      case 'Adresse löschen':
+      case 'Adresse ändern':include('adraendern.php');break;
+      case 'Telefonnummer hinzufügen':
+      case 'Telefonnummer löschen':
+      case 'Telefonnummer ändern':include('telaendern.php');break;
+      case 'Email hinzufügen':
+      case 'Email löschen':
+      case 'Email ändern':include('mailaendern.php');break;
+      case 'WWW-Adresse hinzufügen':
+      case 'WWW-Adresse löschen':
+      case 'WWW-Adresse ändern':include('hpaendern.php');break;
+      case 'Hinzufügen':
+      case 'hinzufuegen':include('hinzufuegen.php');break;
+      default: include('index.html');
+}
+?>
+<?php
+if ($passwort){
+  $db=mysql_connect("localhost","www142",$passwort);
+  mysql_select_db($mysql_daten['DB'],$db);
+
+  $sql="select id,aktueller_name,geburtsname,vorname,kommentar,pw,aktualisierung from StAg order by id";
+  $erg=mysql_query($sql,$db);
+  header("Content-Type: application/StAg-klassenliste-dump; charset=iso-8859-1");
+  while ($satz=@mysql_fetch_array($erg)){
+    printf("insert into StAg values (%d,'%s','%s','%s',%s,%s,%s);\n",
+      $satz["id"],AddSlashes($satz["aktueller_name"]),
+      AddSlashes($satz["geburtsname"]),AddSlashes($satz["vorname"]),
+      $satz["kommentar"]?"'".AddSlashes($satz["kommentar"])."'":"NULL",
+      $satz["pw"]?"'".AddSlashes($satz["pw"])."'":"NULL",AddSlashes($satz["aktualisierung"]));
+  }
+
+  $sql="select id,uid,anfang,plz,ort,ende,vorwahl,telefon from StAgAdr order by id";
+  $erg=mysql_query($sql,$db);
+  while ($satz=@mysql_fetch_array($erg)){
+    printf("insert into StAgAdr values (%d,%d,%s,'%s','%s',%s,%s,%s);\n",
+      $satz["id"],$satz["uid"],
+      $satz["anfang"]?"'".AddSlashes($satz["anfang"])."'":"NULL",
+      AddSlashes($satz["plz"]),AddSlashes($satz["ort"]),
+      $satz["ende"]?"'".AddSlashes($satz["ende"])."'":"NULL",
+      $satz["vorwahl"]?"'".AddSlashes($satz["vorwahl"])."'":"NULL",
+      $satz["telefon"]?"'".AddSlashes($satz["aktualisierung"])."'":"NULL");
+  }
+ 
+  $sql="select id,uid,adresse,name from StAgHP order by id";
+  $erg=mysql_query($sql,$db);
+  while ($satz=@mysql_fetch_array($erg)){
+    printf("insert into StAgHP values (%d,%d,%s,%s);\n",
+      $satz["id"],$satz["uid"],
+      $satz["adresse"]?"'".AddSlashes($satz["adresse"])."'":"NULL",
+      $satz["name"]?"'".AddSlashes($satz["name"])."'":"NULL");
+  }
+ 
+  $sql="select id,uid,jahrgang, klasse,drin from StAgJg order by id";
+  $erg=mysql_query($sql,$db);
+  while ($satz=@mysql_fetch_array($erg)){
+    printf("insert into StAgJg values (%d,%d,%d,'%s',%d);\n",
+      $satz["id"],$satz["uid"],$satz["jahrgang"],$satz["klasse"],$satz["drin"]);
+  }
+ 
+  $sql="select id,uid,adresse from StAgMail order by id";
+  $erg=mysql_query($sql,$db);
+  while ($satz=@mysql_fetch_array($erg)){
+    printf("insert into StAgMail values (%d,%d,%s);\n",
+      $satz["id"],$satz["uid"],
+      $satz["adresse"]?"'".AddSlashes($satz["adresse"])."'":"NULL");
+  }
+ 
+  $sql="select id,uid,vorwahl,telefon from StAgTel order by id";
+  $erg=mysql_query($sql,$db);
+  while ($satz=@mysql_fetch_array($erg)){
+    printf("insert into StAgTel values (%d,%d,%s,%s);\n",
+      $satz["id"],$satz["uid"],
+      $satz["vorwahl"]?"'".AddSlashes($satz["vorwahl"])."'":"NULL",
+      $satz["telefon"]?"'".AddSlashes($satz["aktualisierung"])."'":"NULL");
+  }
+} else { 
+  include("anfang.php");
+  include("pwabfrage.php");
+  include("ende.php");
+}?>
+     
+<?php
+if ($passwort){
+  $db=mysql_connect("localhost","www142",$passwort);
+  mysql_select_db($mysql_daten['DB'],$db);
+  $sql="select id,uid,anfang,plz,ort,ende from StAgAdr order by id";
+  $erg=mysql_query($sql,$db);
+  header("Content-Type: application/StAg-klassenliste-dump; charset=iso-8859-1");
+#  header("Content-Type: text/plain; charset=iso-8859-1");
+  while ($satz=@mysql_fetch_array($erg)){
+    printf("%d\t%d\t%s\t'%s'\t'%s'\t%s\n",
+      $satz["id"],$satz["uid"],
+      $satz["anfang"]?"'".$satz["anfang"]."'":"NULL",
+      $satz["plz"],$satz["ort"],
+      $satz["ende"]?"'".$satz["ende"]."'":"NULL");
+  }
+} else { 
+  include("anfang.php");
+  include("pwabfrage.php");
+  include("ende.php");
+}?>
+     
+<?php
+if ($passwort){
+  $db=mysql_connect("localhost","www142",$passwort);
+  mysql_select_db($mysql_daten['DB'],$db);
+  $sql="select id,uid,adresse,name from StAgHP order by id";
+  $erg=mysql_query($sql,$db);
+  header("Content-Type: application/StAg-klassenliste-dump; charset=iso-8859-1");
+#  header("Content-Type: text/plain; charset=iso-8859-1");
+  while ($satz=@mysql_fetch_array($erg)){
+    printf("%d\t%d\t%s\t%s\n",
+      $satz["id"],$satz["uid"],
+      $satz["adresse"]?"'".$satz["adresse"]."'":"NULL",
+      $satz["name"]?"'".$satz["name"]."'":"NULL");
+  }
+} else { 
+  include("anfang.php");
+  include("pwabfrage.php");
+  include("ende.php");
+}?>
+     
+<?php
+if ($passwort){
+  $db=mysql_connect("localhost","www142",$passwort);
+  mysql_select_db($mysql_daten['DB'],$db);
+  $sql="select id,uid,jahrgang,klasse,drin from StAgJg order by id";
+  $erg=mysql_query($sql,$db);
+  header("Content-Type: application/StAg-klassenliste-dump; charset=iso-8859-1");
+#  header("Content-Type: text/plain; charset=iso-8859-1");
+  while ($satz=@mysql_fetch_array($erg)){
+    printf("%d\t%d\t%d\t'%s'\t%d\n",
+      $satz["id"],$satz["uid"],$satz["jahrgang"],$satz["klasse"],$satz["drin"]);
+#      $satz["adresse"]?"'".$satz["adresse"]."'":"NULL",
+#      $satz["name"]?"'".$satz["name"]."'":"NULL");
+  }
+} else { 
+  include("anfang.php");
+  include("pwabfrage.php");
+  include("ende.php");
+}?>
+     
+<?php
+if ($passwort){
+  $db=mysql_connect("localhost","www142",$passwort);
+  mysql_select_db($mysql_daten['DB'],$db);
+  $sql="select id,uid,adresse from StAgMail order by id";
+  $erg=mysql_query($sql,$db);
+  header("Content-Type: application/StAg-klassenliste-dump; charset=iso-8859-1");
+#  header("Content-Type: text/plain; charset=iso-8859-1");
+  while ($satz=@mysql_fetch_array($erg)){
+    printf("%d\t%d\t%s\n",
+      $satz["id"],$satz["uid"],
+      $satz["adresse"]?"'".$satz["adresse"]."'":"NULL");
+#      $satz["name"]?"'".$satz["name"]."'":"NULL");
+  }
+} else { 
+  include("anfang.php");
+  include("pwabfrage.php");
+  include("ende.php");
+}?>
+     
+<?php
+if ($passwort){
+  $db=mysql_connect("localhost","www142",$passwort);
+  mysql_select_db($mysql_daten['DB'],$db);
+  $sql="select id,uid,AID,vorwahl,telefon from StAgTel order by id";
+  $erg=mysql_query($sql,$db);
+  header("Content-Type: application/StAg-klassenliste-dump; charset=iso-8859-1");
+#  header("Content-Type: text/plain; charset=iso-8859-1");
+  while ($satz=@mysql_fetch_array($erg)){
+    printf("%d\t%d\t%s\t%s\t%s\n",
+      $satz["id"],$satz["uid"],
+      $satz["AID"]?$satz["AID"]:"NULL",
+      $satz["vorwahl"]?"'".$satz["vorwahl"]."'":"NULL",
+      $satz["telefon"]?"'".$satz["telefon"]."'":"NULL");
+  }
+} else { 
+  include("anfang.php");
+  include("pwabfrage.php");
+  include("ende.php");
+}?>
+     
+<?php
+  function  authenticate($id)  {
+    Header( sprintf("WWW-authenticate: Basic realm=\"Klassenliste Authentifikation. Als Nutzer-ID bitte %d eingeben.\"",$id));
+    Header( "HTTP/1.0  401  Unauthorized");
+    include('anfang.php');
+    echo  "<font size=7 color=red><blink>Zugriff verweigert.</blink></font>\n";
+    include('ende.php');
+    exit;
+  }
+
+
+
+if (!$db = @mysql_connect($mysql_daten['Rechner'], $mysql_daten['Nutzer'], $mysql_daten['Passwort'])){
+  include('anfang.php');
+  Fehlermeldung('Die Verbindung zum Datenbank-Server ist nicht möglich.');
+}
+
+function nochmal(){
+          Fehlermeldung('Die Passw&ouml;rter sind nicht identisch.');  
+}
+
+
+mysql_select_db($mysql_daten['DB'],$db);
+
+if ($id) {
+  $sql="select encrypt('$PHP_AUTH_PW',pw)=pw as richtig,"
+      ."to_days(now())-to_days(aktualisierung)=0 and time_to_sec(now())-time_to_sec(aktualisierung)<600 as zeit" 
+      ." from StAg where id=$id";
+  $result=mysql_query($sql,$db);
+  if ($Ergebnis=@mysql_fetch_array($result)){ 
+    if ($Ergebnis["richtig"]==1&&$PHP_AUTH_USER==$id){
+      
+        $anfang=nl2br(str_replace("&amp;","&",htmlspecialchars($anfang)));
+        $plz=str_replace("&amp;","&",htmlspecialchars($plz));
+        $ort=str_replace("&amp;","&",htmlspecialchars($ort));
+        $ende=nl2br(str_replace("&amp;","&",htmlspecialchars($ende)));
+        $vorwahl=str_replace("&amp;","&",htmlspecialchars($vorwahl));
+        $telefon=str_replace("&amp;","&",htmlspecialchars($telefon));
+
+        if ($aktion=="Adresse hinzufügen"){
+          if ($anfang||$plz||$ort||$ende)
+             $sql=sprintf("insert StAgAdr (anfang,plz,ort,ende,vorwahl,telefon,uid) values (%s,\"%s\",\"%s\",%s,%s,%s,%s)",
+                 $anfang?'"'.AddSlashes($anfang).'"':"NULL",
+                 AddSlashes($plz),AddSlashes($ort),
+                 $ende?'"'.AddSlashes($ende).'"':"NULL",
+                 $vorwahl?'"'.AddSlashes($vorwahl).'"':"NULL",
+                 $telefon?'"'.AddSlashes($telefon).'"':"NULL",
+                 $id);
+
+           else if ($vorwahl||$telefon)
+            $sql=sprintf("insert StAgTel (vorwahl,telefon,uid) values (%s,%s,%s)",
+                 $vorwahl?'"'.AddSlashes($vorwahl).'"':"NULL",
+                 $telefon?'"'.AddSlashes($telefon).'"':"NULL",
+                 $id);
+           else $sql="";
+          if (ereg("^[0-9]*$",$id) && $sql) mysql_query($sql,$db);
+                       
+        } else{
+          if ($aktion=="Adresse ändern")
+            if ($anfang||$plz||$ort||$ende)
+              $sql=sprintf("update StAgAdr set anfang=%s, plz=\"%s\",ort=\"%s\",ende=%s,vorwahl=%s,telefon=%s where id=%s and uid=%s",
+                 $anfang?'"'.AddSlashes($anfang).'"':"NULL",
+                 AddSlashes($plz),AddSlashes($ort),
+                 $ende?'"'.AddSlashes($ende).'"':"NULL",
+                 $vorwahl?'"'.AddSlashes($vorwahl).'"':"NULL",
+                 $telefon?'"'.AddSlashes($telefon).'"':"NULL",
+                 $aid,$id);
+            else {
+              $aktion="Adresse löschen";
+              if ($vorwahl||$telefon) {
+                $sql=sprintf("insert StAgTel (vorwahl,telefon,uid) values (%s,%s,%s)",
+                  $vorwahl?'"'.AddSlashes($vorwahl).'"':"NULL",
+                  $telefon?'"'.AddSlashes($telefon).'"':"NULL",
+                  $id);
+                if (ereg("^[0-9]*$",$id) && $sql) mysql_query($sql,$id);
+              }
+            }
+          if($aktion=="Adresse löschen")
+            $sql="delete from StAgAdr where id=$aid and uid=$id";         
+          if (ereg("^[0-9]*$",$aid)&&ereg("^[0-9]*$",$id)&& $sql)
+            mysql_query($sql,$db);
+        }
+        include('bearbeiten.php');
+    } else authenticate($id);
+  } else { include('index.html');die;}
+} else { include('index.html');die;
+}
+//include('ende.php'); 
+  
+?><?php
+  function  authenticate($id)  {
+    Header( sprintf("WWW-authenticate: Basic realm=\"Klassenliste Authentifikation. Als Nutzer-ID bitte %d eingeben.\"",$id));
+    Header( "HTTP/1.0  401  Unauthorized");
+    include('anfang.php');
+    echo  "<font size=7 color=red><blink>Zugriff verweigert.</blink></font>\n";
+    include('ende.php');
+    exit;
+  }
+
+
+
+if (!$db = @mysql_connect($mysql_daten['Rechner'], $mysql_daten['Nutzer'], $mysql_daten['Passwort'])){ 
+  include('anfang.php');
+  Fehlermeldung('Die Verbindung zum Datenbank-Server ist nicht möglich.');
+}
+
+function nochmal($Fehler,$id,$geburtsname,$vorname,$aktname,$kommentar,$neupass1,$neupass2,$PHP_SELF){
+    include('anfang.php');
+    echo $Fehler;
+?>
+<table border=2>
+<tr align=center><td>
+<form method="post" action="<?php echo $PHP_SELF; ?>">
+<input type="hidden" name="id" value="<?php echo $id;?>">
+<?php if (isset($penne)) {?>
+<input type="hidden" name="penne" value="ja">
+<?php }?>
+<table border="0">
+<tr><td>Geburtsname<sup>*</sup></td><td><input type="text" name="geburtsname" 
+  value="<?php echo $geburtsname;?>" maxlength=40 size=30></td></tr>
+<tr><td>Vorname<sup>*</sup></td><td><input type="text" name="vorname" 
+  value="<?php echo $vorname;?>" maxlength=40 size=30></td></tr>
+<tr><td>aktueller Name<sup>*</sup></td><td><input type="text" name="aktname" 
+  value="<?php echo $aktname;?>" maxlength=40 size=30></td></tr>
+<tr><td>Bemerkungen</td><td><textarea cols=30 rows=5 name="kommentar"><?php echo str_replace("<br>","",nl2br(str_replace("&amp;","&",htmlspecialchars($kommentar))));?></textarea>
+<tr><td>neues Passwort</td><td><input type="password" size=8 maxlength=8 name="neupass1"></td></tr>
+<tr><td>neues Passwort wiederholen</td><td><input type="password" size=8 maxlength=8 name="neupass2"></td></tr>
+<tr align=center><td colspan=2>
+<input type="submit" name="aktion" value="&Auml;ndern"> <input type="reset" value="Zur&uuml;cksetzen">
+</td></tr>
+</table>
+</form>
+</table>
+
+<?php
+    include('ende.php');
+    die;
+}
+
+
+mysql_select_db($mysql_daten['DB'],$db);
+
+if ($id){
+  $sql="select encrypt('$PHP_AUTH_PW',pw)=pw as richtig"
+//      ."to_days(now())-to_days(aktualisierung)=0 and time_to_sec(now())-time_to_sec(aktualisierung)<600 as zeit" 
+      ." from StAg where id=$id";
+  $result=mysql_query($sql,$db);
+  if ($Ergebnis=@mysql_fetch_array($result)){ 
+    if ($Ergebnis["richtig"]==1&&$PHP_AUTH_USER==$id){
+#      printf("%d %s, %d %s, %d %s",strlen($vorname),$vorname,);
+      if(strlen($vorname)==0 || strlen($geburtsname)==0 || strlen($aktname)==0) 
+        nochmal("Vorname,aktueller Name und Geburtsname m&uuml;ssen angegeben werden.",$id,$geburtsname,$vorname,$aktname,$kommentar,$neupass1,$neupass2,$PHP_SELF);
+
+      $vorname=str_replace("&amp;","&",htmlspecialchars($vorname));
+      
+      $geburtsname=str_replace("&amp;","&",htmlspecialchars($geburtsname));
+      $aktname=str_replace("&amp;","&",htmlspecialchars($aktname));
+      $kommentar=nl2br(str_replace("&amp;","&",htmlspecialchars($kommentar)));
+      $sql=sprintf("update StAg set vorname=\"%s\", geburtsname=\"%s\""
+           .", aktueller_name=\"%s\", kommentar=\"%s\"",
+           AddSlashes($vorname),AddSlashes($geburtsname),AddSlashes($aktname),AddSlashes($kommentar));
+      if ($neupass1||$neupass2) {
+        if ($neupass1==$neupass2) 
+          $sql .= sprintf(", pw=encrypt(\"%s\")",AddSlashes($neupass1));
+        else { 
+          nochmal('Die beiden Passw&ouml;rter m&uuml;ssen identisch sein.',$id,$geburtsname,$vorname,$aktname,$kommentar,$neupass1,$neupass2,$PHP_SELF);
+        }
+      }
+      $sql .= " where id=$id";
+      mysql_query($sql,$db);
+      include('bearbeiten.php');
+    } else authenticate($id);
+  } else { include('index.html');die;}
+} else { include('index.html');die;
+}
+//include('ende.php'); 
+  
+?><?php $startzeit=ereg_replace("^0.([0-9]*) ([0-9]*)$","\\2.\\1",microtime())*1000.;?>
+<html>
+<head>
+   <META http-equiv="PICS-Label" content='(PICS-1.1 "http://www.icra.org/ratingsv02.html" l gen true for "http://www.schlemmi.f2s.com" r (cz 1 lc 1 nz 1 oz 1 vz 1) "http://www.rsac.org/ratingsv01.html" l gen true for "http://www.schlemmi.f2s.com" r (n 0 s 0 v 0 l 1))'> 
+  <title><?php if (isset($penne)) {$penne="&penne=ja"; ?>ehemalige Sch&uuml;ler
+<?php } else {?>Klassenlisten von St. Augustin<?php }?></title>
+<?php if (isset($penne)) {?>
+<link rel=stylesheet type="text/css" href="http://www.uni-leipzig.de/~stag/css/standard.css">
+<script language="JavaScript">
+var br = 0;if(navigator.appVersion.substring(0,1) >= "4" && self.location != top.location){br = 1;}
+</script>
+<?php $dividier="img src=\"http://www.uni-leipzig.de/~stag/graphics/dividier.gif\" border=\"0\" alt=\"\" height=\"2\" align=\"center\"";} else $dividier='hr'; ?>
+<?php if ($target) echo "   <base target=\"$target\">\n";?>
+</head>
+<?php if (isset($penne)) {?>
+<body text="#000000" bgcolor="#FFFFF0" link="#0000AD" alink="#AD0000" vlink="#0000AD" onLoad="window.defaultStatus='ehemalige Sch&uuml;ler'; return true">
+<?php } else {?>
+<body background="../sonstbild/gewebe3.gif" bgcolor=#440055 text=#FFFF88 link=#D3EEFF alink=#FFFFFF vlink=#DDDD00>
+<?php } ?>
+<center>
+<?php if (!($aktion=="menue")) echo "<H1>Klassenlisten von St. Augustin</H1>";?>
+<?php include('anfang.php');
+if (!($aktion=="menue")) echo "<img src=\"../scanbild/schulefarb1.jpg\" vspace=20>\n<H2>- Anzeigen -</H2>\n"; 
+else 
+ echo "<p><img src=\"../scanbild/schulesw1.jpg\" vspace=20>\n<p>\n";
+
+//echo "<br> $db <br>";
+if (!$db = @mysql_connect($mysql_daten['Rechner'], $mysql_daten['Nutzer'], $mysql_daten['Passwort'])){
+  Fehlermeldung('Die Verbindung zum Datenbank-Server ist nicht möglich.');
+}
+
+mysql_select_db($mysql_daten['DB'],$db);
+
+if ($jahrgang){
+  $sql="select StAg.id as id,aktueller_name,geburtsname,vorname,kommentar,DATE_FORMAT(aktualisierung,'%d.%m.%Y %T') as aktualisierung,klasse from StAg,StAgJg"
+   . " where StAgJg.jahrgang=$jahrgang and StAgJg.uid=StAg.id"
+   . " order by jahrgang,klasse, drin desc,geburtsname,vorname,aktueller_name";
+  $Personen=mysql_query($sql,$db);
+  if ($Person=@mysql_fetch_array($Personen)){
+    $persid=$Person["id"];
+    echo "<table border=1>\n";
+    echo "<tr><th colspan=6><font size=+2>Jahrgang $jahrgang</th></tr>\n";
+    echo "<tr align=left><th>Geburtsname</th><th>Vorname</th><th colspan=2>Adresse erster Teil</th><th>Vorwahl</th><th>Telefon</th></tr>\n";
+    echo "<tr align=left><th></th><th>aktueller Name</th><th>PLZ</th><th>Ort</th><th colspan=2></th></tr>\n";
+    echo "<tr align=left><th colspan=2></th><th colspan=2>Adresse zweiter Teil</th><th colspan=2></th></tr>\n";
+    echo "<tr align=left><th colspan=2><font size=-2>letzte &Auml;nderung</font></th><th colspan=4>Email</th></tr>\n";
+    echo "<tr align=left><th colspan=2></th><th colspan=4>Homepage</th></tr>\n";
+    echo "<tr align=left><th colspan=6>Bemerkungen</th><tr>\n";
+    echo "<tr><td colspan=6 align=center><IMG SRC=\"../sonstbild/fahne.gif\" HEIGHT=5 WIDTH=700 ALIGN=CENTER></td></tr>\n";
+    $sql="select anfang,plz,ort,ende,vorwahl,telefon from StAgAdr "
+        ."where StAgAdr.uid=$persid"; 
+    $Adressen=mysql_query($sql,$db);
+  if ($Adresse=@mysql_fetch_array($Adressen)){    
+       printf("<tr valign=top><td>%s</td><td>%s</td><td colspan=2>%s</td><td>%s</td><td>%s</td></tr>\n",
+         $Person["geburtsname"],$Person["vorname"],$Adresse["anfang"],$Adresse["vorwahl"],$Adresse["telefon"]);
+       printf("<tr valign=top><td></td><td>%s</td><td>%s</td><td>%s</td><td colspan=2></td></tr>\n",
+         $Person["aktueller_name"],$Adresse["plz"],$Adresse["ort"]);
+       if ($Person["ende"]) 
+         printf("<tr><td colspan=2></td><td colspan=2>%s</td><td colspan=2></td></tr>",
+               $Adresse["ende"]);
+       while ($Adresse=@mysql_fetch_array($Adressen)){    
+         printf("<tr valign=top><td></td><td></td><td colspan=2>%s</td><td>%s</td><td>%s</td></tr>\n",
+           $Adresse["anfang"],$Adresse["vorwahl"],$Adresse["telefon"]);
+         printf("<tr valign=top><td></td><td></td><td>%s</td><td>%s</td><td colspan=2></td></tr>\n",
+           $Adresse["plz"],$Adresse["ort"]);
+         if ($Person["ende"]) 
+           printf("<tr><td colspan=2></td><td colspan=2>%s</td><td colspan=2></td></tr>\n",
+               $Adresse["ende"]);
+      }
+    }else{
+      printf("<tr><td>%s</td><td>%s</td><td colspan=2></td><td></td><td></td></tr>\n",
+         $Person["geburtsname"],$Person["vorname"]);
+      printf("<tr><td></td><td>%s</td><td></td><td colspan=2></td></tr>\n",
+         $Person["aktueller_name"]);
+    }
+    $sql="select vorwahl,telefon from StAgTel where uid=$persid";
+    $Adressen=mysql_query($sql,$db);    
+    while ($Adresse=@mysql_fetch_array($Adressen)) 
+      printf("<tr><td colspan=4></td><td>%s</td><td>%s</td>\n",$Adresse["vorwahl"],$Adresse["telefon"]);
+
+    // Emails  
+    $sql="select adresse from StAgMail where uid=$persid";
+    $emails=mysql_query($sql,$db);
+    if ($email=@mysql_fetch_array($emails)) 
+           $mailstring='<a href="mailto:'.$email["adresse"].'">'.$email["adresse"]."</a>"; else $mailstring="";
+    while ($email=@mysql_fetch_array($emails)) 
+         $mailstring .= '<br><a href="mailto:'.$email["adresse"].'">'.$email["adresse"]."</a>";
+    printf("<tr><td colspan=\"2\" valign=\"bottom\"><font size=-2>%s</font></td><td colspan=4>%s</td></tr>\n",
+       $Person["aktualisierung"],$mailstring);
+
+    // Homepages
+    $sql="select adresse,name from StAgHP where uid=$persid";
+    $emails=mysql_query($sql,$db);
+    if ($email=@mysql_fetch_array($emails)) {
+         $mailstring='<a href="'.$email["adresse"].'">'.$email["name"]."</a>";
+       while ($email=@mysql_fetch_array($emails)) 
+         $mailstring .= '<br><a href="'.$email["adresse"].'">'.$email["name"]."</a>";
+      printf("<tr><td colspan=2></td><td colspan=4>%s</td></tr>\n",$mailstring);
+    }
+    if ($Person["kommentar"])
+      printf("<tr><td colspan=6>%s</td></tr>\n",
+       $Person["kommentar"]);
+  
+    while($Person=mysql_fetch_array($Personen)){
+      $persid=$Person["id"];
+      echo "<tr><td colspan=6 align=center><IMG SRC=\"../sonstbild/fahne.gif\" HEIGHT=5 WIDTH=700 ALIGN=CENTER></td></tr>\n";
+      $sql="select anfang,plz,ort,ende,vorwahl,telefon from StAgAdr "
+          ."where StAgAdr.uid=$persid"; 
+      $Adressen=mysql_query($sql,$db);
+      if ($Adresse=@mysql_fetch_array($Adressen)){    
+         printf("<tr valign=top><td>%s</td><td>%s</td><td colspan=2>%s</td><td>%s</td><td>%s</td></tr>\n",
+           $Person["geburtsname"],$Person["vorname"],$Adresse["anfang"],$Adresse["vorwahl"],$Adresse["telefon"]);
+         printf("<tr valign=top><td></td><td>%s</td><td>%s</td><td>%s</td><td colspan=2></td></tr>\n",
+           $Person["aktueller_name"],$Adresse["plz"],$Adresse["ort"]);
+         if ($Person["ende"]) 
+           printf("<tr><td colspan=2></td><td colspan=2>%s</td><td colspan=2></td></tr>",
+                 $Adresse["ende"]);
+         while ($Adresse=@mysql_fetch_array($Adressen)){    
+           printf("<tr valign=top><td></td><td></td><td colspan=2>%s</td><td>%s</td><td>%s</td></tr>\n",
+             $Adresse["anfang"],$Adresse["vorwahl"],$Adresse["telefon"]);
+           printf("<tr valign=top><td></td><td></td><td>%s</td><td>%s</td><td colspan=2></td></tr>\n",
+             $Adresse["plz"],$Adresse["ort"]);
+           if ($Person["ende"]) 
+             printf("<tr><td colspan=2></td><td colspan=2>%s</td><td colspan=2></td></tr>",
+                 $Adresse["ende"]);
+         }
+      }else{
+        printf("<tr><td>%s</td><td>%s</td><td colspan=2></td><td></td><td></td></tr>\n",
+           $Person["geburtsname"],$Person["vorname"]);
+        printf("<tr><td></td><td>%s</td><td></td><td colspan=2></td></tr>\n",
+           $Person["aktueller_name"]);
+      }
+      $sql="select vorwahl,telefon from StAgTel where uid=$persid";
+      $Adressen=mysql_query($sql,$db);    
+      while ($Adresse=@mysql_fetch_array($Adressen)) 
+        printf("<tr><td colspan=4></td><td>%s</td><td>%s</td>\n",$Adresse["vorwahl"],$Adresse["telefon"]);
+
+      // Emails  
+      $sql="select adresse from StAgMail where uid=$persid";
+      $emails=mysql_query($sql,$db);
+      if ($email=@mysql_fetch_array($emails)) 
+           $mailstring='<a href="mailto:'.$email["adresse"].'">'.$email["adresse"]."</a>"; else $mailstring="";
+      while ($email=@mysql_fetch_array($emails)) 
+           $mailstring .= '<br><a href="mailto:'.$email["adresse"].'">'.$email["adresse"]."</a>";
+      printf("<tr><td colspan=2 valign=bottom><font size=-2>%s</font></td><td colspan=4>%s</td></tr>\n",
+         $Person["aktualisierung"],$mailstring);
+
+      // Homepages
+      $sql="select adresse,name from StAgHP where uid=$persid";
+      $emails=mysql_query($sql,$db);
+      if ($email=@mysql_fetch_array($emails)){ 
+           $mailstring='<a href="'.$email["adresse"].'">'.$email["name"]."</a>";
+        while ($email=@mysql_fetch_array($emails)) 
+           $mailstring .= '<br><a href="'.$email["adresse"].'">'.$email["name"]."</a>";
+        printf("<tr><td colspan=2></td><td colspan=4>%s</td></tr>\n",$mailstring);
+      }
+      if ($Person["kommentar"])
+        printf("<tr><td colspan=6>%s</td></tr>\n",$Person["kommentar"]);
+    }
+    echo "</table>\n";
+  } else {?>
+  <p>Leider nichts gefunden.</p>
+  <p><a href="<?php echo $PHP_SELF?>?aktion=anzeige<?php echo $penne?>">Hier gehts zur&uuml;ck zum Anfang</a></p>
+  <?php }
+} else if ($aktion=="menue"){
+
+  $sql="select jahrgang from StAgJg group by jahrgang order by jahrgang";
+  $result=mysql_query($sql,$db);
+  if ($result){
+      while($myrow=mysql_fetch_array($result)){
+        printf("<a href=\"%s?aktion=anzeige%s&jahrgang=%s\">%s</a><br>\n",$PHP_SELF,$penne,$myrow["jahrgang"],$myrow["jahrgang"]);
+    }
+  }
+} else { 
+  $sql="select jahrgang from StAgJg group by jahrgang order by jahrgang";
+  $result=mysql_query($sql,$db);
+  if ($result){
+?>
+<table border=0><tr><td align=center>
+<form method="get" action="<?php echo $PHP_SELF?>">
+  <input type="hidden" name="aktion" value="anzeige">
+<?php if (isset($penne)) echo "  <input type=\"hidden\" name=\"penne\" value=\"ja\">";?>
+  <select name="jahrgang">
+<?php
+      while($myrow=mysql_fetch_array($result)){
+        printf("<option>%s\n",$myrow["jahrgang"]);
+   
+    }?>
+</select><br>
+<input type="submit" value="Ok">
+</form></td></tr></table> <?php
+  }
+}
+include('ende.php');?>
+<?php include('anfang.php');
+echo "<img src=\"../scanbild/schulefarb1.jpg\" vspace=20><br>\n";
+echo "<H2>Datensatz Bearbeiten/L&ouml;schen</H2>";
+//echo "<br> $db <br>";
+if (!$db = @mysql_connect($mysql_daten['Rechner'], $mysql_daten['Nutzer'], $mysql_daten['Passwort'])){
+  Fehlermeldung('Die Verbindung zum Datenbank-Server ist nicht möglich.');
+}
+
+mysql_select_db($mysql_daten['DB'],$db);
+
+if ($id){
+  $sql="select aktueller_name,vorname,geburtsname,aktualisierung,kommentar from StAg where id=$id";
+  $result=mysql_query($sql,$db);
+  if ($Person=@mysql_fetch_array($result)){
+?>
+<H3>Pers&ouml;nliche Daten</H3>
+<table border=2>
+<tr align=center><td>
+<form method="post" action="<?php echo $PHP_SELF ?>">
+<input type="hidden" name="id" value="<?php echo $id?>">
+<?php if (isset($penne)) {?>
+<input type="hidden" name="penne" value="ja">
+<?php } ?>
+<table border="0">
+<tr><td>Geburtsname<sup>*</sup></td><td><input type="text" name="geburtsname" 
+  value="<?php echo $Person["geburtsname"]?>" maxlength=40 size=30></td></tr>
+<tr><td>Vorname<sup>*</sup></td><td><input type="text" name="vorname" 
+  value="<?php echo $Person["vorname"]?>" maxlength=40 size=30 name="vorname"></td></tr>
+<tr><td>aktueller Name<sup>*</sup></td><td><input type="text" name="aktname" 
+  value="<?php echo $Person["aktueller_name"]?>" maxlength=40 size=30></td></tr>
+<tr><td>Bemerkungen</td><td><textarea cols=30 rows=5 name="kommentar"><?php echo str_replace("<br>","",$Person["kommentar"])?></textarea>
+<tr><td>neues Passwort</td><td><input type="password" size=8 maxlength=8 name="neupass1"></td></tr>
+<tr><td>neues Passwort wiederholen</td><td><input type="password" size=8 maxlength=8 name="neupass2"></td></tr>
+<tr align=center><td colspan=2>
+<input type="submit" name="aktion" value="&Auml;ndern"> <input type="reset" value="Zur&uuml;cksetzen">
+</td></tr>
+</table>
+</form>
+</table>
+
+<?php
+    $sql="select id,jahrgang,klasse,drin from StAgJg "
+        ."where StAgJg.uid=$id"; 
+    $Adressen=mysql_query($sql,$db);
+  ?><br><<?php echo $dividier ?> width="95%"><br>
+<H3>Jahrg&auml;nge</H3>
+<table border="2">
+<?php
+  while ($Adresse=@mysql_fetch_array($Adressen)){    
+?>
+<tr align=center><td>
+<form method="post" action="<?php echo $PHP_SELF ?>">
+<?php if (isset($penne)) {?>
+<input type="hidden" name="penne" value="ja">
+<?php }?>
+<input type="hidden" name="id" value="<?php echo $id?>">
+<input type="hidden" name="jid" value="<?php echo $Adresse["id"]?>">
+<table border=0>
+<tr><td>Jahrgang<sup>*</sup></td><td><input type="text" size=4  maxlength=4 name="jahrgang" value="<?php echo $Adresse["jahrgang"]?>"></td></tr>
+<tr><td>Klasse</td><td><input type="text" size=2 maxlength=2 name="klasse" value="<?php echo $Adresse["klasse"];?>"></td></tr>
+<tr><td>Haben Sie Ihr Abitur im gleichen Jahr gemacht?<sup>*</sup></td>
+<td><input type="radio" name="drin" value="ja" <?php if ($Adresse["drin"]) echo "checked";?>>Ja
+<input type="radio" name="drin" value="nein" <?php if (!$Adresse["drin"]) echo "checked";?>>Nein</td></tr>
+<tr align=center><td colspan=2><input type="submit" name="aktion" value="Jahrgang &auml;ndern"> 
+<input type="submit" name="aktion" value="Jahrgang l&ouml;schen"> 
+<input type="reset" value="Zur&uuml;cksetzen"></td></tr>
+</table>
+</form>
+</td></tr>
+<?php
+}
+?>
+<tr align=center><td>
+<form method="post" action="<?php echo $PHP_SELF ?>">
+<?php if (isset($penne)) {?>
+<input type="hidden" name="penne" value="ja">
+<?php }?>
+<input type="hidden" name="id" value="<?php echo $id?>">
+<table border=0>
+<tr><td>Jahrgang<sup>*</sup></td><td><input type="text" size=4  maxlength=4 name="jahrgang"></td></tr>
+<tr><td>Klasse</td><td><input type="text" size=2 maxlength=2 name="klasse"></td></tr>
+<tr><td>Haben Sie Ihr Abitur im gleichen Jahr gemacht?<sup>*</sup></td>
+<td><input type="radio" name="drin" value="ja">Ja
+<input type="radio" name="drin" value="nein">Nein</td></tr>
+<tr align=center><td colspan=2><input type="submit" name="aktion" value="Jahrgang hinzuf&uuml;gen"> <input type="reset" value="Zur&uuml;cksetzen"></td></tr>
+</table>
+</form></td></tr>
+</table>
+
+<?php
+    $sql="select StAgAdr.id as aid,anfang,plz,ort,ende,vorwahl,telefon from StAgAdr "
+        ."where StAgAdr.uid=$id"; 
+    $Adressen=mysql_query($sql,$db);
+  ?><br><<?php echo $dividier ?> width="95%"><br>
+<H3>Adressen</H3>
+<table border="2">
+<?php
+  while ($Adresse=@mysql_fetch_array($Adressen)){    
+?>
+<tr align=center><td>
+<form method="post" action="<?php echo $PHP_SELF ?>">
+<?php if (isset($penne)) {?>
+<input type="hidden" name="penne" value="ja">
+<?php }?>
+<input type="hidden" name="id" value="<?php echo $id?>">
+<input type="hidden" name="aid" value="<?php echo $Adresse["aid"]?>">
+<table border=0>
+<tr><td>Adresse erster Teil</td><td><textarea cols=30 rows=2 name="anfang"><?php echo $Adresse["anfang"]?></textarea></td></tr>
+<tr><td>PLZ Ort</td><td><input type="text" size=5 maxlength=25 name="plz" value="<?php echo $Adresse["plz"];?>"> 
+  <input type="text" size=20 maxlength=40 name="ort" value="<?php echo $Adresse["ort"];?>"></td></tr>
+<tr><td>Adresse zweiter Teil</td><td><textarea cols=30 rows=2 name="ende"><?php echo $Adresse["ende"]?></textarea></td></tr>
+<tr><td>Vorwahl</td><td><input type="text" size=20 maxlength=30 name="vorwahl" value="<?php echo $Adresse["vorwahl"]?>"></td></tr>
+<tr><td>Telefon</td><td><input type="text" size=20 maxlength=30 name="telefon" value="<?php echo $Adresse["telefon"]?>"></td></tr>
+<tr align=center><td colspan=2><input type="submit" name="aktion" value="Adresse &auml;ndern">
+<input type="submit" name="aktion" value="Adresse l&ouml;schen">
+<input type="reset" value="Zur&uuml;cksetzen"></td></tr>
+</table>
+</form>
+<?php
+}
+?>
+<tr align=center><td>
+<form method="post" action="<?php echo $PHP_SELF ?>">
+<?php if (isset($penne)) {?>
+<input type="hidden" name="penne" value="ja">
+<?php }?>
+<input type="hidden" name="id" value="<?php echo $id?>">
+<table border=0>
+<tr><td>Adresse erster Teil</td><td><textarea cols=30 rows=2 name="anfang"></textarea></td></tr>
+<tr><td>PLZ Ort</td><td><input type="text" size=5 maxlength=25 name="plz"> 
+  <input type="text" size=20 maxlength=40 name="ort"></td></tr>
+<tr><td>Adresse zweiter Teil</td><td><textarea cols=30 rows=2 name="ende"></textarea></td></tr>
+<tr><td>Vorwahl</td><td><input type="text" size=20 maxlength=30 name="vorwahl"></td></tr>
+<tr><td>Telefon</td><td><input type="text" size=20 maxlength=30 name="telefon"></td></tr>
+<tr align=center><td colspan=2><input type="submit" name="aktion" value="Adresse hinzuf&uuml;gen"> <input type="reset" value="Zur&uuml;cksetzen"></td></tr>
+</table></td></tr></form>
+</table>
+
+
+<?php
+    $sql="select id,vorwahl,telefon from StAgTel "
+        ."where uid=$id"; 
+    $Adressen=mysql_query($sql,$db);
+  ?><br><<?php echo $dividier ?> width="95%"><br>
+<H3>Sonstige Telefonnummern</H3>
+<table border="2">
+<?php
+  while ($Adresse=@mysql_fetch_array($Adressen)){    
+?>
+<tr align=center><td>
+<form method="post" action="<?php echo $PHP_SELF ?>">
+<?php if (isset($penne)) {?>
+<input type="hidden" name="penne" value="ja">
+<?php }?>
+<input type="hidden" name="id" value="<?php echo $id?>">
+<input type="hidden" name="tid" value="<?php echo $Adresse["id"]?>">
+<table border=0>
+<tr><td>Vorwahl</td><td><input type="text" size=20 maxlength=30 name="vorwahl" value="<?php echo $Adresse["vorwahl"]?>"></td></tr>
+<tr><td>Telefon</td><td><input type="text" size=20 maxlength=30 name="telefon" value="<?php echo $Adresse["telefon"]?>"></td></tr>
+<tr align=center><td colspan=2><input type="submit" name="aktion" value="Telefonnummer &auml;ndern">
+<input type="submit" name="aktion" value="Telefonnummer l&ouml;schen">
+<input type="reset" value="Zur&uuml;cksetzen"></td></tr>
+</table>
+</form>
+<?php
+}
+?>
+<tr align=center><td>
+<form method="post" action="<?php echo $PHP_SELF ?>">
+<?php if (isset($penne)) {?>
+<input type="hidden" name="penne" value="ja">
+<?php }?>
+<input type="hidden" name="id" value="<?php echo $id?>">
+<table border=0>
+<tr><td>Vorwahl</td><td><input type="text" size=20 maxlength=30 name="vorwahl"></td></tr>
+<tr><td>Telefon</td><td><input type="text" size=20 maxlength=30 name="telefon"></td></tr>
+<tr align=center><td colspan=2><input type="submit" name="aktion" value="Telefonnummer hinzuf&uuml;gen"> <input type="reset" value="Zur&uuml;cksetzen"></td></tr>
+</table></td></tr></form>
+</table>
+
+<?php
+    $sql="select id,adresse from StAgMail "
+        ."where uid=$id"; 
+    $Adressen=mysql_query($sql,$db);
+  ?><br><<?php echo $dividier ?> width="95%"><br>
+<H3>E-Mail-Adressen</H3>
+<table border="2">
+<?php
+  while ($Adresse=@mysql_fetch_array($Adressen)){    
+?>
+<tr align=center><td>
+<form method="post" action="<?php echo $PHP_SELF ?>">
+<?php if (isset($penne)) {?>
+<input type="hidden" name="penne" value="ja">
+<?php }?>
+<input type="hidden" name="id" value="<?php echo $id?>">
+<input type="hidden" name="mid" value="<?php echo $Adresse["id"]?>">
+<table border=0>
+<tr><td>Email</td><td><input type="text" size=40 maxlength=255 name="adresse" value="<?php echo $Adresse["adresse"]?>"></td></tr>
+<tr align=center><td colspan=2><input type="submit" name="aktion" value="Email &auml;ndern">
+<input type="submit" name="aktion" value="Email l&ouml;schen">
+<input type="reset" value="Zur&uuml;cksetzen"></td></tr>
+</table>
+</form>
+<?php
+}
+?>
+<tr align=center><td>
+<form method="post" action="<?php echo $PHP_SELF ?>">
+<?php if (isset($penne)) {?>
+<input type="hidden" name="penne" value="ja">
+<?php }?>
+<input type="hidden" name="id" value="<?php echo $id?>">
+<table border=0>
+<tr><td>Email</td><td><input type="text" size=40 maxlength=255 name="adresse"></td></tr>
+<tr align=center><td colspan=2><input type="submit" name="aktion" value="Email hinzuf&uuml;gen"> <input type="reset" value="Zur&uuml;cksetzen"></td></tr>
+</table></td></tr></form>
+</table>
+
+<?php
+    $sql="select id,adresse,name from StAgHP "
+        ."where uid=$id"; 
+    $Adressen=mysql_query($sql,$db);
+  ?><br><<?php echo $dividier ?> width="95%"><br>
+<H3>WWW-Adressen</H3>
+<table border="2">
+<?php
+  while ($Adresse=@mysql_fetch_array($Adressen)){    
+?>
+<tr align=center><td>
+<form method="post" action="<?php echo $PHP_SELF ?>">
+<?php if (isset($penne)) {?>
+<input type="hidden" name="penne" value="ja">
+<?php }?>
+<input type="hidden" name="id" value="<?php echo $id?>">
+<input type="hidden" name="hpid" value="<?php echo $Adresse["id"]?>">
+<table border=0>
+<tr><td>Adresse</td><td><input type="text" size=40 maxlength=255 name="adresse" value="<?php echo $Adresse["adresse"]?>"></td></tr>
+<tr><td>Name</td><td><input type="text" size=40 maxlength=255 name="name" value="<?php echo $Adresse["name"]?>"></td></tr>
+<tr align=center><td colspan=2><input type="submit" name="aktion" value="WWW-Adresse &auml;ndern">
+<input type="submit" name="aktion" value="WWW-Adresse l&ouml;schen">
+<input type="reset" value="Zur&uuml;cksetzen"></td></tr>
+</table>
+</form>
+<?php
+}
+?>
+<tr align=center><td>
+<form method="post" action="<?php echo $PHP_SELF ?>">
+<?php if (isset($penne)) {?>
+<input type="hidden" name="penne" value="ja">
+<?php }?>
+<input type="hidden" name="id" value="<?php echo $id?>">
+<table border=0>
+<tr><td>Adresse</td><td><input type="text" size=40 maxlength=255 name="adresse"></td></tr>
+<tr><td>Name</td><td><input type="text" size=40 maxlength=255 name="name"></td></tr>
+<tr align=center><td colspan=2><input type="submit" name="aktion" value="WWW-Adresse hinzuf&uuml;gen">
+<input type="reset" value="Zur&uuml;cksetzen"></td></tr>
+</table></td></tr></form>
+</table>
+<br><<?php echo $dividier ?> width=50%><br>
+<sup>*</sup>Bei den mit diesen Angaben gekennzeichneten Feldern muss immer mindestens eines f&uuml;r jede Person ausgef&uuml;llt sein.
+D.h. z.B. es muss mindestens ein Jahrgang für die Person angegeben werden.
+
+<?php
+}
+else{
+?>
+Der Datensatz wurde leider nicht gefunden.<br>
+Beginnen Sie <a href="<?php echo $PHP_SELF?>?aktion=bearbeiten$penne">hier</a> noch einmal!
+<?php
+  }
+}else
+if ($jahrgang){
+  echo "Bitte den zu bearbeitenden Datensatz auswählen!\n";
+  printf("<form method=\"get\" action=\"%s\">",$PHP_SELF);
+  if (isset($penne)) {?>
+<input type="hidden" name="penne" value="ja">
+<?php }
+  $sql="select StAg.id as id,aktueller_name,geburtsname,vorname,kommentar,DATE_FORMAT(aktualisierung,'%d.%m.%Y %T') as aktualisierung,klasse from StAg,StAgJg"
+   . " where StAgJg.jahrgang=$jahrgang and StAgJg.uid=StAg.id"
+   . " order by jahrgang,klasse, drin desc,geburtsname,vorname,aktueller_name";
+  $Personen=mysql_query($sql,$db);
+  if ($Person=@mysql_fetch_array($Personen)){
+    $persid=$Person["id"];
+    echo "<table border=1>\n";
+    echo "<tr><th colspan=7><font size=+2>Jahrgang $jahrgang</th></tr>\n";
+    echo "<tr align=left><th></th><th>Geburtsname</th><th>Vorname</th><th colspan=2>Adresse erster Teil</th><th>Vorwahl</th><th>Telefon</th></tr>\n";
+    echo "<tr align=left><th></th><th></th><th>aktueller Name</th><th>PLZ</th><th>Ort</th><th colspan=2></th></tr>\n";
+    echo "<tr align=left><th></th><th colspan=2></th><th colspan=2>Adresse zweiter Teil</th><th colspan=2></th></tr>\n";
+    echo "<tr align=left><th></th><th colspan=2><font size=-2>letzte &Auml;nderung</font></th><th colspan=4>Email</th></tr>\n";
+    echo "<tr align=left><th></th><th colspan=2></th><th colspan=4>Homepage</th></tr>\n";
+    echo "<tr align=left><th></th><th colspan=6>Bemerkungen</th><tr>\n";
+    echo "<tr><td colspan=7 align=center><IMG SRC=\"../sonstbild/fahne.gif\" HEIGHT=5 WIDTH=700 ALIGN=CENTER></td></tr>\n";
+    $sql="select anfang,plz,ort,ende,vorwahl,telefon from StAgAdr "
+        ."where StAgAdr.uid=$persid"; 
+    $Adressen=mysql_query($sql,$db);
+  if ($Adresse=@mysql_fetch_array($Adressen)){    
+       printf("<tr valign=top><td rowspan=2><input type=\"radio\" name=\"id\" value=\"%s\"></td><td>%s</td><td>%s</td><td colspan=2>%s</td><td>%s</td><td>%s</td></tr>\n",
+         $persid,$Person["geburtsname"],$Person["vorname"],$Adresse["anfang"],$Adresse["vorwahl"],$Adresse["telefon"]);
+       printf("<tr valign=top><td></td><td>%s</td><td>%s</td><td>%s</td><td colspan=2></td></tr>\n",
+         $Person["aktueller_name"],$Adresse["plz"],$Adresse["ort"]);
+       if ($Person["ende"]) 
+         printf("<tr><td></td><td colspan=2></td><td colspan=2>%s</td><td colspan=2></td></tr>",
+               $Adresse["ende"]);
+       while ($Adresse=@mysql_fetch_array($Adressen)){    
+         printf("<tr valign=top><td></td><td></td><td></td><td colspan=2>%s</td><td>%s</td><td>%s</td></tr>\n",
+           $Adresse["anfang"],$Adresse["vorwahl"],$Adresse["telefon"]);
+         printf("<tr valign=top><td></td><td></td><td></td><td>%s</td><td>%s</td><td colspan=2></td></tr>\n",
+           $Adresse["plz"],$Adresse["ort"]);
+         if ($Person["ende"]) 
+           printf("<tr><td></td><td colspan=2></td><td colspan=2>%s</td><td colspan=2></td></tr>\n",
+               $Adresse["ende"]);
+      }
+    }else{
+      printf("<tr><td rowspan=2><input type=\"radio\" name=\"id\" value=\"%s\"></td><td>%s</td><td>%s</td><td colspan=2></td><td></td><td></td></tr>\n",
+         $persid,$Person["geburtsname"],$Person["vorname"]);
+      printf("<tr><td></td><td>%s</td><td></td><td colspan=2></td></tr>\n",
+         $Person["aktueller_name"]);
+    }
+    $sql="select vorwahl,telefon from StAgTel where uid=$persid";
+    $Adressen=mysql_query($sql,$db);    
+    while ($Adresse=@mysql_fetch_array($Adressen)) 
+      printf("<tr><td></td><td colspan=4></td><td>%s</td><td>%s</td>\n",$Adresse["vorwahl"],$Adresse["telefon"]);
+
+    // Emails  
+    $sql="select adresse from StAgMail where uid=$persid";
+    $emails=mysql_query($sql,$db);
+    if ($email=@mysql_fetch_array($emails)) 
+           $mailstring='<a href="mailto:'.$email["adresse"].'">'.$email["adresse"]."</a>"; else $mailstring="";
+    while ($email=@mysql_fetch_array($emails)) 
+         $mailstring .= '<br><a href="mailto:'.$email["adresse"].'">'.$email["adresse"]."</a>";
+    printf("<tr><td></td><td colspan=\"2\" valign=\"bottom\"><font size=-2>%s</font></td><td colspan=4>%s</td></tr>\n",
+       $Person["aktualisierung"],$mailstring);
+
+    // Homepages
+    $sql="select adresse,name from StAgHP where uid=$persid";
+    $emails=mysql_query($sql,$db);
+    if ($email=@mysql_fetch_array($emails)) {
+         $mailstring='<a href="'.$email["adresse"].'">'.$email["name"]."</a>";
+    while ($email=@mysql_fetch_array($emails)) 
+         $mailstring .= '<br><a href="'.$email["adresse"].'">'.$email["name"]."</a>";
+    printf("<tr><td></td><td colspan=2></td><td colspan=4>%s</td></tr>\n",$mailstring);
+    }
+    if ($Person["kommentar"])
+      printf("<tr><td></td><td colspan=6>%s</td></tr>\n",
+       $Person["kommentar"]);
+    while($Person=mysql_fetch_array($Personen)){
+      $persid=$Person["id"];
+      echo "<tr><td colspan=7 align=center><IMG SRC=\"../sonstbild/fahne.gif\" HEIGHT=5 WIDTH=700 ALIGN=CENTER></td></tr>\n";
+      $sql="select anfang,plz,ort,ende,vorwahl,telefon from StAgAdr "
+          ."where StAgAdr.uid=$persid"; 
+      $Adressen=mysql_query($sql,$db);
+      if ($Adresse=@mysql_fetch_array($Adressen)){    
+         printf("<tr valign=top><td rowspan=2><input type=\"radio\" name=\"id\" value=\"%s\"></td><td>%s</td><td>%s</td><td colspan=2>%s</td><td>%s</td><td>%s</td></tr>\n",
+           $persid,$Person["geburtsname"],$Person["vorname"],$Adresse["anfang"],$Adresse["vorwahl"],$Adresse["telefon"]);
+         printf("<tr valign=top><td></td><td>%s</td><td>%s</td><td>%s</td><td colspan=2></td></tr>\n",
+           $Person["aktueller_name"],$Adresse["plz"],$Adresse["ort"]);
+         if ($Person["ende"]) 
+           printf("<tr><td></td><td colspan=2></td><td colspan=2>%s</td><td colspan=2></td></tr>",
+                 $Adresse["ende"]);
+         while ($Adresse=@mysql_fetch_array($Adressen)){    
+           printf("<tr valign=top><td></td><td></td><td></td><td colspan=2>%s</td><td>%s</td><td>%s</td></tr>\n",
+             $Adresse["anfang"],$Adresse["vorwahl"],$Adresse["telefon"]);
+           printf("<tr valign=top><td></td><td></td><td></td><td>%s</td><td>%s</td><td colspan=2></td></tr>\n",
+             $Adresse["plz"],$Adresse["ort"]);
+           if ($Person["ende"]) 
+             printf("<tr><td></td><td colspan=2></td><td colspan=2>%s</td><td colspan=2></td></tr>",
+                 $Adresse["ende"]);
+         }
+      }else{
+        printf("<tr><td rowspan=2><input type=\"radio\" name=\"id\" value=\"%s\"></td><td>%s</td><td>%s</td><td colspan=2></td><td></td><td></td></tr>\n",
+           $persid,$Person["geburtsname"],$Person["vorname"]);
+        printf("<tr><td></td><td>%s</td><td></td><td colspan=2></td></tr>\n",
+           $Person["aktueller_name"]);
+      }
+      $sql="select vorwahl,telefon from StAgTel where uid=$persid";
+      $Adressen=mysql_query($sql,$db);    
+      while ($Adresse=@mysql_fetch_array($Adressen)) 
+        printf("<tr><td></td><td colspan=4></td><td>%s</td><td>%s</td>\n",$Adresse["vorwahl"],$Adresse["telefon"]);
+
+      // Emails  
+      $sql="select adresse from StAgMail where uid=$persid";
+      $emails=mysql_query($sql,$db);
+      if ($email=@mysql_fetch_array($emails)) 
+           $mailstring='<a href="mailto:'.$email["adresse"].'">'.$email["adresse"]."</a>"; else $mailstring="";
+      while ($email=@mysql_fetch_array($emails)) 
+           $mailstring .= '<br><a href="mailto:'.$email["adresse"].'">'.$email["adresse"]."</a>";
+      printf("<tr><td></td><td colspan=2><font size=-2>%s</font></td><td colspan=4>%s</td></tr>\n",
+         $Person["aktualisierung"],$mailstring);
+
+      // Homepages
+      $sql="select adresse,name from StAgHP where uid=$persid";
+      $emails=mysql_query($sql,$db);
+      if ($email=@mysql_fetch_array($emails)) {
+           $mailstring='<a href="'.$email["adresse"].'">'.$email["name"]."</a>"; 
+        while ($email=@mysql_fetch_array($emails)) 
+           $mailstring .= '<br><a href="'.$email["adresse"].'">'.$email["name"]."</a>";
+        printf("<tr><td></td><td colspan=2></td><td colspan=4>%s</td></tr>\n",$mailstring);
+      }
+      if ($Person["kommentar"])
+        printf("<tr><td></td><td colspan=6>%s</td></tr>\n",$Person["kommentar"]);
+    }
+    echo "</table><table border=0><tr><td align=center>\n";
+    echo "<input type=\"submit\" name=\"aktion\" value=\"Bearbeiten\"> ";
+    echo "<input type=\"submit\" name=\"aktion\" value=\"L&ouml;schen\"> ";
+    echo "<input type=\"reset\" value=\"Zur&uuml;cksetzen\">\n";
+    echo "</td></tr></table></form>\n";
+  } else {?>
+  <p>Leider nichts gefunden.</p>
+  <p><a href="<?php echo $PHP_SELF?>?aktion=bearbeiten$penne">Hier gehts zur&uuml;ck zum Anfang</a></p>
+  <?php }
+} else {
+
+  $sql="select jahrgang from StAgJg group by jahrgang order by jahrgang";
+  $result=mysql_query($sql,$db);
+  if ($result){
+?>
+<table border=0>
+<tr><td align=center>
+<form method="get" action="<?php echo $PHP_SELF?>" style="background-color=#000000;">
+<?php if (isset($penne)) {?>
+<input type="hidden" name="penne" value="ja">
+<?php }?>
+  <input type="hidden" name="aktion" value="bearbeiten">
+  <select name="jahrgang" style="background-color=#000000;">
+<?php
+      while($myrow=mysql_fetch_array($result)){
+        printf("<option>%s\n",$myrow["jahrgang"]);
+   
+    }?>
+</select><br>
+<input type="submit" value="Ok" style="background-color=#000000;">
+</form> </td></tr></table><?php
+  }
+
+}
+include('ende.php');?><?
+function  db_abfrage($sql) {// Funktion mit Rückgabewert
+   global $db;
+   $result = mysql_query($sql,$db);
+   return $result;
+}
+
+function  db_verbindung($host = "localhost", $user="www142", $pass="3jun78") {
+   echo "${user}:${pass}@$host <br>";
+// Funktion mit default-Parametern
+   $db = mysql_connect($host, $username, $password);
+   echo gettype($db);
+   return $db;
+}
+
+
+?><?php 
+  echo "<p><$dividier";
+ if (!($aktion=="menue")) echo '  width="50%"'; else echo ' width="95%"';
+	  echo "><p>\n";
+  echo "<a href=\"$PHP_SELF?aktion=anzeige$penne\">Abfrage</a>\n";
+  if ($aktion=="menue") echo "<br>\n";
+  echo "<a href=\"$PHP_SELF?aktion=bearbeiten$penne\">Bearbeiten</a>\n";
+  if ($aktion=="menue") echo "<br>\n";
+  echo "<a href=\"$PHP_SELF?aktion=hinzufuegen$penne\">Hinzuf&uuml;gen</a>\n";
+  echo "<p><$dividier";
+  if (!($aktion=="menue")) echo' width="50%"'; else echo ' width="95%"';
+      echo"><p>\n";
+  echo "<a href=\"http://www.uni-leipzig.de/~stag/\">";
+  if (isset($penne)){?>
+<a href="http://www.uni-leipzig.de/~stag/start.htm" <?php 
+#onClick="if(br==1){parent.Navigation.MenuClick(1)}" onmouseover="if(br==1){parent.Navigation.MenuMoveOn(1); window.status='zur Homepage'; return true}" onmouseout="if(br==1){parent.Navigation.MenuMoveOff(1)}
+?>"><?php 
+if (!($aktion==menue)) echo "zur&uuml;ck zur"; ?> Homepage<?php
+   } else {
+  if (!($aktion=="menue")) echo "Gymnasium ";
+  echo "St. Augustin";
+  if (!($aktion=="menue")) echo " zu Grimma";}
+  echo "</a>\n<br>\n";
+  echo "<a href=\"http://www.psynet.net/schlemmi\">";
+  if (!($aktion=="menue")) echo "Homepage von ";
+  echo "Schlemmi </a>\n";
+  if (!($aktion=="menue")) 
+  { 
+    echo "<p><$dividier width=\"50%\"><p>\n";
+    echo "Klassenliste Version 1.0<br>\n";
+    echo "<address>&copy; 2000 <a href=\"mailto:Tobias.Schlemmer@web.de\">SchlemmerSoft (Tobias schlemmer)</a></address>\n";
+    printf("<font size=-3>Rechenzeit: %.3f ms</font>",ereg_replace("^0.([0-9]*) ([0-9]*)$","\\2.\\1",microtime())*1000.-$startzeit);
+    if (isset($penne)) { ?>
+<!--INC:"reference.inc"--><div align="center"><font size="-2" color="#000000">
+<br>Gymnasium St.Augustin zu Grimma - Homepage
+<br>www.uni-leipzig.de/~stag
+</font></div><!--/INC:"reference.inc"-->
+<?php } 
+    echo "<p>Besonderer Dank gilt <a href=\"http://www.f2s.com\">Freedom2Surf</a> f&uuml;r die Bereitstellung des WWW-Servers mit MySQL-Datenbank.";
+  }
+?>
+</center>
+</body>
+</html><?php 
+//echo "<br> $db <br>";
+unset($Fehler);
+if (isset($vorname)){
+//|| $geburtsname || $aktname || $kommentar || $neupass1 || $neupass2 || $jahrgang || $klasse
+//    || $drin || $anfang || $plz || $ort || $ende || $vorwahl || $telefon || $zvorwahl || $ztelefon || $mail || $hpadresse || $hpname){
+
+   if(!$vorname)     $Fehler = "Der Vorname fehlt.<br>\n";
+   if(!$geburtsname) $Fehler .= "Der Geburtsname fehlt.<br>\n";
+   if(!$aktname)     $Fehler .= "Der aktuelle Name fehlt.<br>\n";
+   if(!ereg("^[0-9]{0,4}$",$jahrgang))    $Fehler .= "Der Abiturjahrgang fehlt oder ist ung&uuml;ltig.<br>\n";
+
+   if(!ereg("^(ja|nein)$",$drin))	     $Fehler .= "Es fehlt die Angabe, ob Sie im gleichen Jahr ihr Abitur an dieser Schule gemacht haben.<br>\n";
+
+   if((!$neupass1)||$neupass1!=$neupass2) $Fehler .= "Es wurden keine zwei identischen Passw&ouml;rter angegeben.<br>\n";
+   if ($klasse && !(ereg("^[a-zA-Z0-9]{0,2}$",$klasse))) $Fehler .= "Die Klasse ist ung&uuml;ltig<br>\n";
+
+   if ($mail && !ereg( "^[-!#$%&\'*+\\./0-9=?A-Z^_`a-z{|}~]+@[-!#$%&\'*+\\/0-9=?A-Z^_`a-z{|}~]+\.[-!#$%&\'*+\\./0-9=?A-Z^_`a-z{|}~]+$",$mail))
+     $Fehler .= "Die Mailadresse scheint ung&uuml;ltig zu sein.<br>\n";
+
+   if ($hpadresse && (!ereg( "^http://[-!#$%&\'*+\\./0-9=?A-Z^_`a-z{|}~]+\.[-!#$%&\'*+\\./0-9=?A-Z^_`a-z{|}~]+/.*$",$hpadresse)))
+     $Fehler .= "Die WWW-Adresse scheint fehlerhaft zu sein.<br>\n";
+
+
+} else $Fehler=0;
+
+if (isset($Fehler)){
+include('anfang.php'); 
+echo "<img src=\"../scanbild/schulefarb1.jpg\" vspace=20>\n";
+?>
+<H2>Neuen Datensatz hinzuf&uuml;gen</H2>
+<?php if ($Fehler) {
+     echo "<font color=\"#FF0000\"><br><blink>Ung&uuml;ltige Eingabe</blink>\n<br>";
+     echo $Fehler;
+     echo "</font>";
+}?>
+<form method="post" action="<?php echo $PHP_SELF ?>">
+<?php if (isset($penne)) echo "  <input type=\"hidden\" name=\"penne\" value=\"ja\">";?>
+ <H3>Pers&ouml;nliche Daten</H3>
+<table border=2>
+<tr align=center><td>
+<table border="0">
+<tr><td>Geburtsname<sup>*</sup></td><td><input type="text" name="geburtsname" value="<?php echo $geburtsname;?>" maxlength=40 size=30></td></tr>
+<tr><td>Vorname<sup>*</sup></td><td><input type="text" name="vorname" maxlength=40 size=30 name="vorname" value="<?php echo $vorname;?>"></td></tr>
+<tr><td>aktueller Name<sup>*</sup></td><td><input type="text" name="aktname" 
+  value="<?php echo $aktname;?>" maxlength=40 size=30></td></tr>
+<tr><td>Bemerkungen</td><td><textarea cols=30 rows=5 name="kommentar"><?php echo str_replace("<br>","",$kommentar);?></textarea>
+<tr><td>Passwort</td><td><input type="password" size=8 maxlength=8 name="neupass1"></td></tr>
+<tr><td>Passwort wiederholen</td><td><input type="password" size=8 maxlength=8 name="neupass2"></td></tr>
+</table>
+</table>
+
+<H3>Jahrg&auml;nge</H3>
+<table border="2">
+<tr align=center><td>
+<table border=0>
+<tr><td>Jahrgang<sup>*</sup></td><td><input type="text" size=4  maxlength=4 name="jahrgang" value="<?php echo $jahrgang;?>"></td></tr>
+<tr><td>Klasse</td><td><input type="text" size=2 maxlength=2 name="klasse" value="<?php echo $klasse?>"></td></tr>
+<tr><td>Haben Sie Ihr Abitur im gleichen Jahr gemacht?<sup>*</sup></td>
+<td><input type="radio" name="drin" value="ja" <?php if ($drin=="ja") echo "checked";?>>Ja
+<input type="radio" name="drin" value="nein" <?php if ($drin=="nein") echo "checked";?>>Nein</td></tr>
+</table>
+</td></tr>
+</table>
+
+<H3>Adressen</H3>
+<table border="2">
+<tr align=center><td>
+<tr><td>Adresse erster Teil</td><td><textarea cols=30 rows=2 name="anfang"><?php echo str_replace("<br>","",$anfang);?></textarea></td></tr>
+<tr><td>PLZ Ort</td><td><input type="text" size=5 maxlength=25 name="plz" value="<?php echo $plz?>"> 
+  <input type="text" size=20 maxlength=40 name="ort" value="<?php echo $ort;?>"></td></tr>
+<tr><td>Adresse zweiter Teil</td><td><textarea cols=30 rows=2 name="ende"><?php echo str_replace("<br>","",$ende);?></textarea></td></tr>
+<tr><td>Vorwahl</td><td><input type="text" size=20 maxlength=30 name="vorwahl" value="<?php echo $vorwahl?>"></td></tr>
+<tr><td>Telefon</td><td><input type="text" size=20 maxlength=30 name="telefon" value="<?php echo $telefon?>"></td></tr>
+</table></td></tr>
+</table>
+
+
+<H3>Sonstige Telefonnummern</H3>
+<table border="2">
+<tr align=center><td>
+<table border=0>
+<tr><td>Vorwahl</td><td><input type="text" size=20 maxlength=30 name="zvorwahl" value="<?php echo $zvorwahl?>"></td></tr>
+<tr><td>Telefon</td><td><input type="text" size=20 maxlength=30 name="ztelefon" value="<?php echo $ztelefon?>"></td></tr>
+</table></td></tr>
+</table>
+
+<H3>E-Mail-Adressen</H3>
+<table border="2">
+<tr align=center><td>
+<table border=0>
+<tr><td>Email</td><td><input type="text" size=40 maxlength=255 name="mail" value="<?php echo $mail?>"></td></tr>
+</table></td></tr>
+</table>
+
+<H3>WWW-Adressen</H3>
+<table border="2">
+<tr align=center><td>
+<table border=0>
+<tr><td>Adresse</td><td><input type="text" size=40 maxlength=255 name="hpadresse" value="<?php echo $hpadresse;?>"></td></tr>
+<tr><td>Name</td><td><input type="text" size=40 maxlength=255 name="hpname" value="<?php echo $hpname;?>"></td></tr>
+</table></td></tr>
+</table>
+<br>
+<input type="submit" name="aktion" value="Hinzuf&uuml;gen"> <input type="reset" value="Zur&uuml;cksetzen">
+<br>
+</form>
+<p><<?php echo $dividier ?> width=50%><p>
+<sup>*</sup>Bei den mit diesen Angaben gekennzeichneten Feldern muss immer mindestens eines f&uuml;r jede Person ausgef&uuml;llt sein.
+D.h. z.B. es muss mindestens ein Jahrgang für die Person angegeben werden.
+<?php include('ende.php');
+} else { // Eingaben OK, Aktualisiere Tabelle
+
+  if (!$db = @mysql_connect($mysql_daten['Rechner'], $mysql_daten['Nutzer'], $mysql_daten['Passwort'])){
+    Fehlermeldung('Die Verbindung zum Datenbank-Server ist nicht möglich.');
+  }
+
+  mysql_select_db($mysql_daten['DB'],$db);
+
+
+  $vorname=str_replace("&amp;","&",htmlspecialchars($vorname));
+  $geburtsname=str_replace("&amp;","&",htmlspecialchars($geburtsname));
+  $aktname=str_replace("&amp;","&",htmlspecialchars($aktname));
+  $kommentar=nl2br(str_replace("&amp;","&",htmlspecialchars($kommentar)));
+
+  $anfang=nl2br(str_replace("&amp;","&",htmlspecialchars($anfang)));
+  $plz=str_replace("&amp;","&",htmlspecialchars($plz));
+  $ort=str_replace("&amp;","&",htmlspecialchars($ort));
+  $ende=nl2br(str_replace("&amp;","&",htmlspecialchars($ende)));
+  $vorwahl=str_replace("&amp;","&",htmlspecialchars($vorwahl));
+  $telefon=str_replace("&amp;","&",htmlspecialchars($telefon));
+
+  $zvorwahl=str_replace("&amp;","&",htmlspecialchars($zvorwahl));
+  $ztelefon=str_replace("&amp;","&",htmlspecialchars($ztelefon));
+  
+  $mail=str_replace("&amp;","&",htmlspecialchars($mail));
+
+  $hpname=str_replace("&amp;","&",htmlspecialchars($hpname));
+  $hpadresse=str_replace("&amp;","&",htmlspecialchars($hpadresse));
+    
+  $sql=sprintf("insert into StAg (vorname,geburtsname,aktueller_name,kommentar,pw) values (\"%s\",\"%s\""
+           .",\"%s\",\"%s\",encrypt(\"%s\"))",
+           AddSlashes($vorname),AddSlashes($geburtsname),AddSlashes($aktname),AddSlashes($kommentar),AddSlashes($neupass1));
+  mysql_query($sql,$db);
+  $id=mysql_insert_id($db);
+
+  $sql=sprintf("insert StAgJg (jahrgang,klasse,drin,uid) values (%s,\"%s\",%d,%s)",$jahrgang,$klasse,($drin=="ja"?1:0),$id);
+  mysql_query($sql,$db);
+
+  if ($anfang||$plz||$ort||$ende)
+    $sql=sprintf("insert StAgAdr (anfang,plz,ort,ende,vorwahl,telefon,uid) values (%s,\"%s\",\"%s\",%s,%s,%s,%s)",
+                 $anfang?'"'.AddSlashes($anfang).'"':"NULL",
+                 AddSlashes($plz),AddSlashes($ort),
+                 $ende?'"'.AddSlashes($ende).'"':"NULL",
+                 $vorwahl?'"'.AddSlashes($vorwahl).'"':"NULL",
+                 $telefon?'"'.AddSlashes($telefon).'"':"NULL",
+                 $id);
+   else if ($vorwahl||$telefon)
+    $sql=sprintf("insert StAgTel (vorwahl,telefon,uid) values (%s,%s,%s)",
+                 $vorwahl?'"'.AddSlashes($vorwahl).'"':"NULL",
+                 $telefon?'"'.AddSlashes($telefon).'"':"NULL",
+                 $id);
+   else $sql="";
+  if ($sql) mysql_query($sql,$db);
+  if ($zvorwahl||$ztelefon){
+    $sql=sprintf("insert StAgTel (vorwahl,telefon,uid) values (%s,%s,%s)",
+                 $vorwahl?'"'.AddSlashes($zvorwahl).'"':"NULL",
+                 $telefon?'"'.AddSlashes($ztelefon).'"':"NULL",
+                 $id);
+    mysql_query($sql,$db);
+  }
+
+  if ($mail){
+    $sql=sprintf("insert StAgMail (adresse,uid) values (\"%s\",%s)",
+                 $mail,$id);
+    mysql_query($sql,$db);
+  } 
+
+  if ($hpadresse){
+    if (!$hpname) $hpname=$hpadresse;
+  
+    $sql=sprintf("insert StAgHP (adresse,name,uid) values (%s,%s,%s)",
+                 $adresse?'"'.AddSlashes($hpadresse).'"':"NULL",
+                 $name?'"'.AddSlashes($hpname).'"':"NULL",
+                 $id);
+    mysql_query($sql,$db);
+  } 
+
+  include("bearbeiten.php");
+}
+?><?php
+  function  authenticate($id)  {
+    Header( sprintf("WWW-authenticate: Basic realm=\"Klassenliste Authentifikation. Als Nutzer-ID bitte %d eingeben.\"",$id));
+    Header( "HTTP/1.0  401  Unauthorized");
+    include('anfang.php');
+    echo  "<font size=7 color=red><blink>Zugriff verweigert.</blink></font>\n";
+    include('ende.php');
+    exit;
+  }
+
+
+
+if (!$db = @mysql_connect($mysql_daten['Rechner'], $mysql_daten['Nutzer'], $mysql_daten['Passwort'])){
+  include('anfang.php');
+  Fehlermeldung('Die Verbindung zum Datenbank-Server ist nicht möglich.');
+}
+
+function nochmal(){
+          Fehlermeldung('Die Passw&ouml;rter sind nicht identisch.');  
+}
+
+
+mysql_select_db($mysql_daten['DB'],$db);
+
+if ($id) {
+  $sql="select encrypt('$PHP_AUTH_PW',pw)=pw as richtig,"
+      ."to_days(now())-to_days(aktualisierung)=0 and time_to_sec(now())-time_to_sec(aktualisierung)<600 as zeit" 
+      ." from StAg where id=$id";
+  $result=mysql_query($sql,$db);
+  if ($Ergebnis=@mysql_fetch_array($result)){ 
+    if ($Ergebnis["richtig"]==1&&$PHP_AUTH_USER==$id){
+      if ((!ereg( "^http://[-!#$%&\'*+\\./0-9=?A-Z^_`a-z{|}~]+\.[-!#$%&\'*+\\./0-9=?A-Z^_`a-z{|}~]+$",$adresse))&&
+            (!(aktion=="WWW-Adresse löschen"))) {
+        include('anfang.php');
+?>
+<emph>Bei der Adresse scheint es sich nicht um eine g&uuml;ltige URL zu handeln.<br>
+Bitte nochmal prüfen!</emph>
+<table border="2">
+<tr align=center><td>
+<form method="post" action="<?php echo $PHP_SELF ?>">
+<?php if (isset($penne)) {?>
+<input type="hidden" name="penne" value="ja">
+<?php }?>
+<input type="hidden" name="id" value="<?php echo $id;?>">
+<input type="hidden" name="hpid" value="<?php echo $hpid;?>">
+<table border=0>
+<tr><td>Adresse</td><td><input type="text" size=40 maxlength=255 name="adresse" value="<?php echo $adresse;?>"></td></tr>
+<tr><td>Name</td><td><input type="text" size=40 maxlength=255 name="name" value="<?php echo $adresse;?>"></td></tr>
+<tr align=center><td colspan=2>
+<input type="submit" name="aktion" value="<?php echo $aktion;?>">
+<input type="reset" value="Zur&uuml;cksetzen"></td></tr>
+</table>
+</form>
+</td></tr></table>
+<?php   include('ende.php');
+      } else {
+        
+             
+        $name=str_replace("&amp;","&",htmlspecialchars($name));
+        $adresse=str_replace("&amp;","&",htmlspecialchars($adresse));
+        if (!$name) $name=$adresse;
+
+        if ($aktion=="WWW-Adresse hinzufügen"){
+          if ($adresse)
+            $sql=sprintf("insert StAgHP (adresse,name,uid) values (%s,%s,%s)",
+                 $adresse?'"'.AddSlashes($adresse).'"':"NULL",
+                 $name?'"'.AddSlashes($name).'"':"NULL",
+                 $id);
+           else $sql="";
+          if (ereg("^[0-9]*$",$id) && $sql) mysql_query($sql,$db);
+                       
+        } else{
+          if ($aktion=="WWW-Adresse ändern")
+              if ($adresse) {
+                $sql=sprintf("update StAgHP set adresse=%s,name=%s where uid=%s and id=%s",
+                  $adresse?'"'.AddSlashes($adresse).'"':"NULL",
+                  $name?'"'.AddSlashes($name).'"':"NULL",
+                  $id,$hpid); 
+              } else $aktion="Adresse löschen";
+            
+          if($aktion=="WWW-Adresse löschen")
+            $sql="delete from StAgHP where id=$hpid and uid=$id";         
+          if (ereg("^[0-9]*$",$hpid)&&ereg("^[0-9]*$",$id)&& $sql)
+            mysql_query($sql,$db);
+        }
+        include('bearbeiten.php');
+       }
+    } else authenticate($id);
+  } else { include('index.html');die;}
+} else { include('index.html');die;
+}
+//include('ende.php'); 
+  
+?><?php
+  function  authenticate($id)  {
+    Header( sprintf("WWW-authenticate: Basic realm=\"Klassenliste Authentifikation. Als Nutzer-ID bitte %d eingeben.\"",$id));
+    Header( "HTTP/1.0  401  Unauthorized");
+    include('anfang.php');
+    echo  "<font size=7 color=red><blink>Zugriff verweigert.</blink></font>\n";
+    include('ende.php');
+    exit;
+  }
+
+
+
+if (!$db = @mysql_connect($mysql_daten['Rechner'], $mysql_daten['Nutzer'], $mysql_daten['Passwort'])){
+  include('anfang.php');
+  Fehlermeldung('Die Verbindung zum Datenbank-Server ist nicht möglich.');
+}
+
+function nochmal(){
+          Fehlermeldung('Die Passw&ouml;rter sind nicht identisch.');  
+}
+
+
+mysql_select_db($mysql_daten['DB'],$db);
+
+if ($id) {
+  $sql="select encrypt('$PHP_AUTH_PW',pw)=pw as richtig,"
+      ."to_days(now())-to_days(aktualisierung)=0 and time_to_sec(now())-time_to_sec(aktualisierung)<600 as zeit" 
+      ." from StAg where id=$id";
+  $result=mysql_query($sql,$db);
+  if ($Ergebnis=@mysql_fetch_array($result)){ 
+    if ($Ergebnis["richtig"]==1&&$PHP_AUTH_USER==$id){
+      if (!(ereg("^[a-zA-Z0-9]{0,2}$",$klasse) && ereg("^[0-9]{0,4}$",$jahrgang) && ereg("^(ja|nein)$",$drin))&& 
+            (!(aktion=="Jahrgang löschen"))) {
+        include('anfang.php');
+?>
+<emph>Sie m&uuml;ssen einen Jahrgang zum Datensatz angeben und ob sie in diesem Jahrgang Ihr Abitur gemacht haben!<br>
+Die Klasse darf nur aus maximal 2 alphanumerischen Zeichen bestehen, w&auml;hrend der Jahrgang eine Zahl sein muss.</emph>
+<table border="2">
+<tr align=center><td>
+<form method="post" action="<?php echo $PHP_SELF ?>">
+<?php if (isset($penne)) {?>
+<input type="hidden" name="penne" value="ja">
+<?php }?>
+<input type="hidden" name="id" value="<?php echo $id;?>">
+<input type="hidden" name="jid" value="<?php echo $jid;?>">
+<table border=0>
+<tr><td>Jahrgang</td><td><input type="text" size=4  maxlength=4 name="jahrgang" value="<?php echo $jahrgang; ?>"></td></tr>
+<tr><td>Klasse</td><td><input type="text" size=2 maxlength=2 name="klasse" value="<?php echo $klasse; ?>"></td></tr>
+<tr><td>Haben Sie Ihr Abitur im gleichen Jahr gemacht?</td>
+<td><input type="radio" name="drin" value="ja" <?php if ($drin=="ja") echo "checked";?>>Ja
+<input type="radio" name="drin" value="nein" <?php if ($drin=="nein") echo "checked";?>>Nein</td></tr>
+<tr align=center><td colspan=2><input type="submit" name="aktion" value="<?php echo $aktion;?>"> <input type="reset" value="Zur&uuml;cksetzen"></td></tr>
+</table>
+</form>
+</td></tr></table>
+<?php   include('ende.php');
+      } else {
+        if ($aktion=="Jahrgang hinzufügen")
+          $sql=sprintf("insert StAgJg (jahrgang,klasse,drin,uid) values (%s,\"%s\",%d,%s)",$jahrgang,$klasse,($drin=="ja"?1:0),$id);
+        else{ 
+          $sql="select uid from StAgJg where id=$jid";
+          $result=mysql_query($sql,$db);
+          if ($Ergebnis=@mysql_fetch_array($result))
+            if ($Ergebnis["uid"]==$id){
+              if($aktion=="Jahrgang löschen")
+                $sql="delete from StAgJg where id=$jid";
+               else  
+                $sql=sprintf("update StAgJg set jahrgang=%s, klasse=\"%s\", drin=%d where id=%s and uid=%s",$jahrgang,$klasse,($drin=="ja"?1:0),$jid,$id);
+           }
+        }
+        if (ereg("^[0-9]*$",$jid)&&ereg("^[0-9]*$",$id)&& $sql)
+          mysql_query($sql,$db);
+        include('bearbeiten.php');
+        
+      }
+    } else authenticate($id);
+  } else { include('index.html');die;}
+} else { include('index.html');die;
+}
+//include('ende.php'); 
+  
+?><?php
+  function  authenticate($id)  {
+    Header( sprintf("WWW-authenticate: Basic realm=\"Klassenliste Authentifikation. Als Nutzer-ID bitte %d eingeben.\"",$id));
+    Header( "HTTP/1.0  401  Unauthorized");
+    include('anfang.php');
+    echo  "<font size=7 color=red><blink>Zugriff verweigert.</blink></font>\n";
+    include('ende.php');
+    exit;
+  }
+
+
+
+if (!$db = @mysql_connect($mysql_daten['Rechner'], $mysql_daten['Nutzer'], $mysql_daten['Passwort'])){
+  include('anfang.php');
+  Fehlermeldung('Die Verbindung zum Datenbank-Server ist nicht möglich.');
+}
+
+function nochmal(){
+          Fehlermeldung('Die Passw&ouml;rter sind nicht identisch.');  
+}
+
+
+mysql_select_db($mysql_daten['DB'],$db);
+if ($id) {
+  $sql="select encrypt('$PHP_AUTH_PW',pw)=pw as richtig"
+      ." from StAg where id=$id";
+  $result=mysql_query($sql,$db);
+  if ($Ergebnis=mysql_fetch_array($result)){ 
+    if ($Ergebnis["richtig"]==1&&$PHP_AUTH_USER==$id){
+      if ($wirklich != "ja")
+         {
+        include('anfang.php');
+
+        $sql="select StAg.id as id,aktueller_name,geburtsname,vorname,kommentar,DATE_FORMAT(aktualisierung,'%d.%m.%Y %T') as aktualisierung,klasse from StAg,StAgJg"
+               . " where StAg.id=$id and StAgJg.uid=StAg.id"
+               . " order by jahrgang,klasse, drin desc,geburtsname,vorname,aktueller_name";
+        $Personen=mysql_query($sql,$db);
+        if ($Person=@mysql_fetch_array($Personen)){
+          $persid=$Person["id"];
+          echo "<form action=\"".$PHP_SELF."\"><table border=0><tr><td align=center><table border=1>\n";
+ if (isset($penne)) {?>
+<input type="hidden" name="penne" value="ja">
+<?php }
+          echo "<tr><th colspan=6><font size=+2>Jahrgang $jahrgang</th></tr>\n";
+          echo "<tr align=left><th>Geburtsname</th><th>Vorname</th><th colspan=2>Adresse erster Teil</th><th>Vorwahl</th><th>Telefon</th></tr>\n";
+          echo "<tr align=left><th></th><th>aktueller Name</th><th>PLZ</th><th>Ort</th><th colspan=2></th></tr>\n";
+          echo "<tr align=left><th colspan=2></th><th colspan=2>Adresse zweiter Teil</th><th colspan=2></th></tr>\n";
+          echo "<tr align=left><th colspan=2><font size=-2>letzte &Auml;nderung</font></th><th colspan=4>Email</th></tr>\n";
+          echo "<tr align=left><th colspan=2></th><th colspan=4>Homepage</th></tr>\n";
+          echo "<tr align=left><th colspan=6>Bemerkungen</th><tr>\n";
+          echo "<tr><td colspan=6 align=center><IMG SRC=\"../sonstbild/fahne.gif\" HEIGHT=5 WIDTH=700 ALIGN=CENTER></td></tr>\n";
+          $sql="select anfang,plz,ort,ende,vorwahl,telefon from StAgAdr "
+              ."where StAgAdr.uid=$persid"; 
+          $Adressen=mysql_query($sql,$db);
+          if ($Adresse=@mysql_fetch_array($Adressen)){    
+             printf("<tr valign=top><td>%s</td><td>%s</td><td colspan=2>%s</td><td>%s</td><td>%s</td></tr>\n",
+               $Person["geburtsname"],$Person["vorname"],$Adresse["anfang"],$Adresse["vorwahl"],$Adresse["telefon"]);
+             printf("<tr valign=top><td></td><td>%s</td><td>%s</td><td>%s</td><td colspan=2></td></tr>\n",
+                 $Person["aktueller_name"],$Adresse["plz"],$Adresse["ort"]);
+             if ($Person["ende"]) 
+                 printf("<tr><td colspan=2></td><td colspan=2>%s</td><td colspan=2></td></tr>",
+                        $Adresse["ende"]);
+             while ($Adresse=@mysql_fetch_array($Adressen)){    
+               printf("<tr valign=top><td></td><td></td><td colspan=2>%s</td><td>%s</td><td>%s</td></tr>\n",
+                 $Adresse["anfang"],$Adresse["vorwahl"],$Adresse["telefon"]);
+               printf("<tr valign=top><td></td><td></td><td>%s</td><td>%s</td><td colspan=2></td></tr>\n",
+                 $Adresse["plz"],$Adresse["ort"]);
+               if ($Person["ende"]) 
+                 printf("<tr><td colspan=2></td><td colspan=2>%s</td><td colspan=2></td></tr>\n",
+                     $Adresse["ende"]);
+            }
+          }else{
+            printf("<tr><td>%s</td><td>%s</td><td colspan=2></td><td></td><td></td></tr>\n",
+               $Person["geburtsname"],$Person["vorname"]);
+            printf("<tr><td></td><td>%s</td><td></td><td colspan=2></td></tr>\n",
+               $Person["aktueller_name"]);
+          }
+          $sql="select vorwahl,telefon from StAgTel where uid=$persid";
+          $Adressen=mysql_query($sql,$db);    
+          while ($Adresse=@mysql_fetch_array($Adressen)) 
+            printf("<tr><td colspan=4></td><td>%s</td><td>%s</td>\n",$Adresse["vorwahl"],$Adresse["telefon"]);
+
+          // Emails  
+          $sql="select adresse from StAgMail where uid=$persid";
+          $emails=mysql_query($sql,$db);
+          if ($email=@mysql_fetch_array($emails)) 
+                 $mailstring='<a href="mailto:'.$email["adresse"].'">'.$email["adresse"]."</a>"; else $mailstring="";
+          while ($email=@mysql_fetch_array($emails)) 
+               $mailstring .= '<br><a href="mailto:'.$email["adresse"].'">'.$email["adresse"]."</a>";
+          printf("<tr><td colspan=\"2\" valign=\"bottom\"><font size=-2>%s</font></td><td colspan=4>%s</td></tr>\n",
+             $Person["aktualisierung"],$mailstring);
+
+          // Homepages
+          $sql="select adresse,name from StAgHP where uid=$persid";
+          $emails=mysql_query($sql,$db);
+          if ($email=@mysql_fetch_array($emails)) {
+               $mailstring='<a href="'.$email["adresse"].'">'.$email["name"]."</a>";
+             while ($email=@mysql_fetch_array($emails)) 
+               $mailstring .= '<br><a href="'.$email["adresse"].'">'.$email["name"]."</a>";
+            printf("<tr><td colspan=2></td><td colspan=4>%s</td></tr>\n",$mailstring);
+          }
+          if ($Person["kommentar"])
+            printf("<tr><td colspan=6>%s</td></tr>\n",
+             $Person["kommentar"]);
+          echo "</table></td></tr>\n";
+          echo "<tr><td align=center><input type=\"radio\" name=\"wirklich\" value=\"ja\">";
+          echo "Diese Daten sollen wirklich gel&ouml;scht werden (bitte zum L&ouml;schen ankreuzen. </td></tr>";
+          echo "<tr><td align=center><input type=\"submit\" name=\"aktion\" value=\"L&ouml;schen\"> ";
+          echo "<input type=\"submit\" name=\"aktion\" value=\"Abbrechen\"></td></tr></table>";
+          echo "<input type=\"hidden\" name=\"id\" value=\"$id\"></form>";
+        }
+      } else {
+          $sql="select jahrgang from StAgJg where uid=$id";
+          $anfrage=mysql_query($sql,$db);
+          $werte=@mysql_fetch_array($anfrage);
+          $jahrgang=$werte["jahrgang"];
+          $sql="delete from StAgHP where uid=$id";
+          mysql_query($sql,$db);
+          $sql="delete from StAgAdr where uid=$id";
+          mysql_query($sql,$db);
+          $sql="delete from StAgTel where uid=$id";
+          mysql_query($sql,$db);
+          $sql="delete from StAgMail where uid=$id";
+          mysql_query($sql,$db);
+          $sql="delete from StAgJg where uid=$id";
+          mysql_query($sql,$db);
+          $sql="delete from StAg where id=$id";
+          mysql_query($sql,$db);
+          unset($id);unset($wirklich);unset($werte);unset($anfrage);
+          include('anzeige.php');
+      }
+    } else authenticate($id);
+  } else { include('index.html');die;}
+} else { include('index.html');die;
+}
+//include('ende.php'); 
+  
+?><?php
+  function  authenticate($id)  {
+    Header( sprintf("WWW-authenticate: Basic realm=\"Klassenliste Authentifikation. Als Nutzer-ID bitte %d eingeben.\"",$id));
+    Header( "HTTP/1.0  401  Unauthorized");
+    include('anfang.php');
+    echo  "<font size=7 color=red><blink>Zugriff verweigert.</blink></font>\n";
+    include('ende.php');
+    exit;
+  }
+
+
+
+if (!$db = @mysql_connect($mysql_daten['Rechner'], $mysql_daten['Nutzer'], $mysql_daten['Passwort'])){
+  include('anfang.php');
+  Fehlermeldung('Die Verbindung zum Datenbank-Server ist nicht möglich.');
+}
+
+function nochmal(){
+          Fehlermeldung('Die Passw&ouml;rter sind nicht identisch.');  
+}
+
+
+mysql_select_db($mysql_daten['DB'],$db);
+
+if ($id) {
+  $sql="select encrypt('$PHP_AUTH_PW',pw)=pw as richtig,"
+      ."to_days(now())-to_days(aktualisierung)=0 and time_to_sec(now())-time_to_sec(aktualisierung)<600 as zeit" 
+      ." from StAg where id=$id";
+  $result=mysql_query($sql,$db);
+  if ($Ergebnis=@mysql_fetch_array($result)){ 
+    if ($Ergebnis["richtig"]==1&&$PHP_AUTH_USER==$id){
+
+
+      if ((!ereg( "^[-!#$%&\'*+\\./0-9=?A-Z^_`a-z{|}~]+@[-!#$%&\'*+\\/0-9=?A-Z^_`a-z{|}~]+\.[-!#$%&\'*+\\./0-9=?A-Z^_`a-z{|}~]+$",$adresse))&&
+            !($aktion=="Email löschen")) {
+        include('anfang.php');
+?>
+<emph>Bei der Adresse scheint es sich nicht um eine g&uuml;ltige Mailadresse zu handeln.<br>
+Bitte nochmal prüfen!</emph>
+<table border="2">
+<tr align=center><td>
+<form method="post" action="<?php echo $PHP_SELF ?>">
+<?php if (isset($penne)) {?>
+<input type="hidden" name="penne" value="ja">
+<?php }?>
+<input type="hidden" name="id" value="<?php echo $id;?>">
+<input type="hidden" name="mid" value="<?php echo $mid;?>">
+<table border=0>
+<tr><td>Email</td><td><input type="text" size=40 maxlength=255 name="adresse" value="<?php echo $adresse;?>"></td></tr>
+<tr align=center><td colspan=2><input type="submit" name="aktion" value="<?php echo $aktion;?>">
+<input type="reset" value="Zur&uuml;cksetzen"></td></tr>
+</table>
+</form>
+</td></tr></table>
+<?php   include('ende.php');
+      } else {
+      
+        $adresse=str_replace("&amp;","&",htmlspecialchars($adresse));
+
+        if ($aktion=="Email hinzufügen"){
+          if ($adresse)
+            $sql=sprintf("insert StAgMail (adresse,uid) values (\"%s\",%s)",
+                 $adresse,
+                 $id);
+           else $sql="";
+          if (ereg("^[0-9]*$",$id) && $sql) mysql_query($sql,$db);
+                       
+        } else{
+          if ($aktion=="Email ändern")
+              if ($adresse) {
+                $sql=sprintf("update StAgMail set adresse=\"%s\" where uid=%s and id=%s",
+                  AddSlashes($adresse),$id,$mid); 
+              } else $aktion="Email löschen";
+            
+          if($aktion=="Email löschen")
+            $sql="delete from StAgMail where id=$mid and uid=$id";         
+          if (ereg("^[0-9]*$",$mid)&&ereg("^[0-9]*$",$id)&& $sql)
+            mysql_query($sql,$db);
+        }
+        include('bearbeiten.php');
+      }
+    } else authenticate($id);
+  } else { include('index.html');die;}
+} else { include('index.html');die;
+}
+//include('ende.php'); 
+  
+?><form method="post" action="<?echo $PHP_SELF?>">
+<?php if (isset($penne)) {?>
+<input type="hidden" name="penne" value="ja">
+<?php }?>
+   Das Passwort bitte:<br>
+   <input type="password" name="passwort" size=8 maxlength=8><br>
+   <input type="submit" value="OK">
+</form><?php
+  function  authenticate($id)  {
+    Header( sprintf("WWW-authenticate: Basic realm=\"Klassenliste Authentifikation. Als Nutzer-ID bitte %d eingeben.\"",$id));
+    Header( "HTTP/1.0  401  Unauthorized");
+    include('anfang.php');
+    echo  "<font size=7 color=red><blink>Zugriff verweigert.</blink></font>\n";
+    include('ende.php');
+    exit;
+  }
+
+
+
+if (!$db = @mysql_connect($mysql_daten['Rechner'], $mysql_daten['Nutzer'], $mysql_daten['Passwort'])){
+  include('anfang.php');
+  Fehlermeldung('Die Verbindung zum Datenbank-Server ist nicht möglich.');
+}
+
+function nochmal(){
+          Fehlermeldung('Die Passw&ouml;rter sind nicht identisch.');  
+}
+
+
+mysql_select_db($mysql_daten['DB'],$db);
+
+if ($id) {
+  $sql="select encrypt('$PHP_AUTH_PW',pw)=pw as richtig,"
+      ."to_days(now())-to_days(aktualisierung)=0 and time_to_sec(now())-time_to_sec(aktualisierung)<600 as zeit" 
+      ." from StAg where id=$id";
+  $result=mysql_query($sql,$db);
+  if ($Ergebnis=@mysql_fetch_array($result)){ 
+    if ($Ergebnis["richtig"]==1&&$PHP_AUTH_USER==$id){
+      
+        $vorwahl=str_replace("&amp;","&",htmlspecialchars($vorwahl));
+        $telefon=str_replace("&amp;","&",htmlspecialchars($telefon));
+
+        if ($aktion=="Telefonnummer hinzufügen"){
+          if ($vorwahl||$telefon)
+            $sql=sprintf("insert StAgTel (vorwahl,telefon,uid) values (%s,%s,%s)",
+                 $vorwahl?'"'.AddSlashes($vorwahl).'"':"NULL",
+                 $telefon?'"'.AddSlashes($telefon).'"':"NULL",
+                 $id);
+           else $sql="";
+          if (ereg("^[0-9]*$",$id) && $sql) mysql_query($sql,$db);
+                       
+        } else{
+          if ($aktion=="Telefonnummer ändern")
+              if ($vorwahl||$telefon) {
+                $sql=sprintf("update StAgTel set vorwahl=%s,telefon=%s where uid=%s and id=%s",
+                  $vorwahl?'"'.AddSlashes($vorwahl).'"':"NULL",
+                  $telefon?'"'.AddSlashes($telefon).'"':"NULL",
+                  $id,$tid); echo $sql;
+              } else $aktion="Telefonnummer löschen";
+            
+          if($aktion=="Telefonnummer löschen")
+            $sql="delete from StAgTel where id=$tid and uid=$id";         
+          if (ereg("^[0-9]*$",$aid)&&ereg("^[0-9]*$",$id)&& $sql)
+            mysql_query($sql,$db);
+        }
+        include('bearbeiten.php');
+    } else authenticate($id);
+  } else { include('index.html');die;}
+} else { include('index.html');die;
+}
+//include('ende.php'); 
+  
+?>
