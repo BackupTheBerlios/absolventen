@@ -20,138 +20,102 @@ $db->selectdb($mysql_daten['DB']);
 
 if (!$aktion) $aktion="jgauswahl";
 
+switch($aktion) {
+ case 'logout': logout($db); break;
+ case 'dologin':   tue_login(mystripslashes($HTTP_POST_VARS),$db);
+		   break;
+}
+
+seitenanfang();
 switch ($aktion) {
  case 'jganzeige': if (ereg('^[0-9]*$',$HTTP_GET_VARS['jahrgang'])) {
-                      seitenanfang();
 		      anzeige_jg($HTTP_GET_VARS['jahrgang'],$db);
-		      seitenende();
+		      break;
                    } 
-                   break;
-
- case 'logout':    session_destroy();
-		   unset($_SESSION['uid']);
-		   unset($_SESSION['name']);
-		   session_start();
- case 'jgauswahl': seitenanfang();
-                   select_jgs($db);
-		   seitenende();
+ case 'logout':  
+ case 'jgauswahl': select_jgs($db);
 		   break;
 
- case 'login':     seitenanfang();
-                   anzeige_login();
-		   seitenende();
+ case 'login':     anzeige_login();
 		   break;
 
- case 'dologin':   seitenanfang();
-                   tue_login(mystripslashes($HTTP_POST_VARS),$db);
-		   seitenende();
+ case 'dologin':   if (!isset($_SESSION['uid'])) {
+                     anzeige_login(mystripslashes($HTTP_POST_VARS)); 
+		     break;
+                   }
+ case 'bearbmenu': bearb_menu($db);
 		   break;
 
- case 'bearbmenu': seitenanfang();
-                   bearb_menu($db);
-		   seitenende();
-		   break;
-
- case 'hinzufuegen': seitenanfang();
-                     personen::formular();
-		     seitenende();
+ case 'hinzufuegen': personen::formular();
 		     break;
 
- case 'persformaendern': seitenanfang();
-                     persdatenform($db);
-		     seitenende();
-		     break;
+ case 'persformaendern': persdatenform($db);
+		         break;
  case 'persdbneu':
- case 'persdbaendern': seitenanfang();
-                       persdatenaendern($db,mystripslashes($HTTP_POST_VARS));
-		       seitenende();
-                       break;
+ case 'persdbaendern': persdatenaendern($db,mystripslashes($HTTP_POST_VARS));
+		       break;
+ case 'austragen': austragen($db, mystripslashes($HTTP_POST_VARS));
+                   break;
 		       
- case 'jgform':      seitenanfang();
-                     untertabdatenform(new jg($db));
-                     seitenende();
+ case 'jgform':      untertabdatenform(new jg($db));
                      break;
 
  
  case 'jgdbneu':		      
- case 'jgdbaendern': seitenanfang();
-                     untertabdatenaendern(new jg($db),mystripslashes($HTTP_POST_VARS));
-		     seitenende();
+ case 'jgdbaendern': untertabdatenaendern(new jg($db),mystripslashes($HTTP_POST_VARS));
 		     break;
  
- case 'jgdbloeschen': seitenanfang();
-                      untertabdatenloeschen(new jg($db),
+ case 'jgdbloeschen': untertabdatenloeschen(new jg($db),
 				      mystripslashes($HTTP_POST_VARS));
-		      seitenende();
 		      break;
  
    
- case 'adrform':      seitenanfang();
-                      untertabdatenform(new adresse($db));
-		      seitenende();
+ case 'adrform':      untertabdatenform(new adresse($db));
 		      break;
 
  case 'adrdbneu':		      
- case 'adrdbaendern': seitenanfang();
-                     untertabdatenaendern(new adresse($db),mystripslashes($HTTP_POST_VARS));
-		     seitenende();
-		     break;
- 
- case 'adrdbloeschen': seitenanfang();
-                      untertabdatenloeschen(new adresse($db),
-					    mystripslashes($HTTP_POST_VARS));
-		      seitenende();
+ case 'adrdbaendern': untertabdatenaendern(new adresse($db),mystripslashes($HTTP_POST_VARS));
 		      break;
  
- case 'mailform':      seitenanfang();
-                      untertabdatenform(new email($db));
-		      seitenende();
+ case 'adrdbloeschen': untertabdatenloeschen(new adresse($db),
+					    mystripslashes($HTTP_POST_VARS));
+		       break;
+ 
+ case 'mailform':     untertabdatenform(new email($db));
 		      break;
 
  case 'maildbneu':		      
- case 'maildbaendern': seitenanfang();
-                     untertabdatenaendern(new email($db),mystripslashes($HTTP_POST_VARS));
-		     seitenende();
-		     break;
+ case 'maildbaendern': untertabdatenaendern(new email($db),mystripslashes($HTTP_POST_VARS));
+		       break;
  
- case 'maildbloeschen': seitenanfang();
-                      untertabdatenloeschen(new email($db),
+ case 'maildbloeschen': untertabdatenloeschen(new email($db),
 					    mystripslashes($HTTP_POST_VARS));
-		      seitenende();
-		      break;
+		        break;
  
- case 'hpform':      seitenanfang();
-                      untertabdatenform(new homepage($db));
-		      seitenende();
+ case 'hpform':       untertabdatenform(new homepage($db));
 		      break;
 
  case 'hpdbneu':		      
- case 'hpdbaendern': seitenanfang();
-                     untertabdatenaendern(new homepage($db),mystripslashes($HTTP_POST_VARS));
-		     seitenende();
+ case 'hpdbaendern': untertabdatenaendern(new homepage($db),mystripslashes($HTTP_POST_VARS));
 		     break;
  
- case 'hpdbloeschen': seitenanfang();
-                      untertabdatenloeschen(new homepage($db),
+ case 'hpdbloeschen': untertabdatenloeschen(new homepage($db),
 					    mystripslashes($HTTP_POST_VARS));
-		      seitenende();
 		      break;
- case 'telform':      seitenanfang();
-                      untertabdatenform(new telefon($db));
-		      seitenende();
+ case 'telform':      untertabdatenform(new telefon($db));
 		      break;
 
  case 'teldbneu':		      
- case 'teldbaendern': seitenanfang();
-                     untertabdatenaendern(new telefon($db),mystripslashes($HTTP_POST_VARS));
-		     seitenende();
-		     break;
- 
- case 'teldbloeschen': seitenanfang();
-                      untertabdatenloeschen(new telefon($db),
-					    mystripslashes($HTTP_POST_VARS));
-		      seitenende();
+ case 'teldbaendern': untertabdatenaendern(new telefon($db),mystripslashes($HTTP_POST_VARS));
 		      break;
+ 
+ case 'teldbloeschen': untertabdatenloeschen(new telefon($db),
+					    mystripslashes($HTTP_POST_VARS));
+		       break;
+ case 'email' : mailsenden($db,$HTTP_POST_VARS);
+   break;
+
    
 }
+seitenende();
 	  ?>
