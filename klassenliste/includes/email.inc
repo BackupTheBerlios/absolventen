@@ -1,5 +1,5 @@
-<?php /*
-Copyright (c) 2000 SchlemmerSoft (Tobias Schlemmer)
+<?php /* $Id: email.inc,v 1.4 2004/07/15 11:38:38 keinstein Exp $
+Copyright (c) 2000-2004 SchlemmerSoft (Tobias Schlemmer)
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -17,6 +17,20 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 Der Autor kann unter der Email: Tobias.Schlemmer@web.de erreicht werden.
 
+$Log: email.inc,v $
+Revision 1.4  2004/07/15 11:38:38  keinstein
+
+SQLs überprüft und geändert
+     (z.B. id bei insert auf NULL gesetzt
+       und nicht weggelassen).
+
+Referenz auf Datenbank
+Variablen auf Existenz prüfen
+Klassen in HTML-Ausgaben
+Formular neu formatiert. Fehlerhafte Felder ber CSS markiert
+         Neu als variable
+checkdaten gibt Fehler-Array zurück
+
 */ 
 
 class email  extends dbtabelle{
@@ -32,33 +46,32 @@ class email  extends dbtabelle{
 			       . " from %s where id=%d",
 			$mysql_daten['EmailTab'],$args);
 	case "insert":
-		return sprintf("insert into %s (%suid,adresse,name,link,encode,mailformular"
-			       . ") values (%s%d,'%s','%s',%d,%d,%d)",
+		return sprintf("insert into %s (id,uid,adresse,name,link,encode,mailformular"
+			       . ") values (%s,%d,%s,%s,%d,%d,%d)",
 			       $mysql_daten['EmailTab'],
-			       $args['id']?"id,":"",
-			       $args['id']?$args['id'] . ',':"",
+			       empty($args['id'])?"NULL":sprintf('%d',$args['id']),
 			       $args['uid'],
-			       addslashes($args['adresse']),
-			       addslashes($args['name']),
-			       $args['link'],
-			       $args['encode'],
-			       $args['mailformular']);
+			       empty($args['adresse'])?"NULL": "'" . addslashes($args['adresse']) . "'",
+			       empty($args['name'])?"NULL":"'" . addslashes($args['name']) . "'",
+			       empty($args['link'])?0:$args['link'],
+			       empty($args['encode'])?0:$args['encode'],
+			       empty($args['mailformular'])?0:$$args['mailformular']);
 	case "update":
-		return sprintf("update %s set uid=%d,adresse='%s',name='%s',"
+		return sprintf("update %s set uid=%d,adresse=%s,name=%s,"
 			       . "link=%d,encode=%d,mailformular=%d"
 			       . " where id=%d",
 			       $mysql_daten['EmailTab'],
 			       $args['uid'],
-			       addslashes($args['adresse']),
-			       addslashes($args['name']),
-			       $args['link'],
-			       $args['encode'],
-			       $args['mailformular'],			       
+			       empty($args['adresse'])?"NULL": "'" . addslashes($args['adresse']) . "'",
+			       empty($args['name'])?"NULL":"'" . addslashes($args['name']) . "'",
+			       empty($args['link'])?0:$args['link'],
+			       empty($args['encode'])?0:$args['encode'],
+			       empty($args['mailformular'])?0:$args['mailformular'],			       
 			       $args['id']);
 	case "loeschen":
 	        return sprintf("delete from %s where id=%d",$mysql_daten['EmailTab'],$args);
 	case "persloeschen":
-	        return sprintf("delete from %s where id=%d",$mysql_daten['EmailTab'],$args);
+	        return sprintf("delete from %s where uid=%d",$mysql_daten['EmailTab'],$args);
         case "mailformopts": 
 	  return sprintf("select %s.id as id, %s.uid as uid, %s.adresse as adresse, "
 			 . "%s.name as name, %s.aktueller_name as aktueller_name, "
@@ -75,13 +88,13 @@ class email  extends dbtabelle{
     }
   }
 	
-  function email ($h_db=0) {
-    $this->dbtabelle($h_db);
+  function email (&$h_db) {
+    $this->dbtabelle(&$h_db);
   }
 
   function insert($daten) {
     $this->puffer_leeren();
-    if ($daten['id'] && !ereg('^[0-9]*$',$daten['id'])) {
+    if (!empty($daten['id']) && !ereg('^[0-9]*$',$daten['id'])) {
       return -1;
     }
     return $this->insert_backend($this->sql("insert",$daten),$daten['uid']);
@@ -134,7 +147,7 @@ class email  extends dbtabelle{
     if ($this->name()) 
       print($this->name() . ": ");
     if ($this->link())
-      printf('<a href="mailto:%s">%s</a>',$adr,$adr);
+      printf('<a class="absolventen anzeige anzeige_email" href="mailto:%s">%s</a>',$adr,$adr);
     else 
       print($adr);
     while ($this->naechste()) {
@@ -147,7 +160,7 @@ class email  extends dbtabelle{
       if ($this->name()) 
 	print($this->name() . ": ");
       if ($this->link())
-	printf('<a href="mailto:%s">%s</a>',$adr,$adr);
+	printf('<a class="absolventen anzeige anzeige_email" href="mailto:%s">%s</a>',$adr,$adr);
       else 
 	print($adr);
     }
@@ -176,62 +189,107 @@ class email  extends dbtabelle{
     return $rueckgabe;
   }
 
-  function formular($daten=0) {
-    if (!$daten) $daten=array('uid' => $_SESSION['uid']);
+  function formular($neu,$daten=0,$fehler=0) {
+    global $PHP_SELF;
+    if ($neu) $daten=array('uid' => $_SESSION['mod_absolventen']['uid']);
 ?>
-<form method="post" action="<?=$PHP_SELF?>">
-<input type="hidden" name="aktion" 
-   value="<?=$daten['id']?"maildbaendern":"maildbneu"?>" />
-   <?php if ($daten['id']) { ?>
-<input type="hidden" name="id" value="<?=$daten['id']?>" />
-			  <?php } ?>
-<input type="hidden" name="uid" value="<?=$daten['uid']?>" />
-<table border="0">
-<tr><td>Name der Adresse</td><td>
-<input type="text" size=30 name="name" value="<?=$daten['name']?>" /></td></tr>
-<tr><td>Adresse</td><td>
-<input type="text" size=30 name="adresse" value="<?=$daten['adresse']?>" /></td></tr>
-<tr><td colspan=2>
-<input type="checkbox" name="link" value="1" <?=$daten['link']?"checked=\"1\" ":""?> />
-Diese Adresse soll mit einer Verknüpfung versehen werden.
-</td></tr>
-<tr><td colspan=2>
-<input type="checkbox" name="encode" value="1" <?=$daten['encode']?"checked=\"1\" ":""?> />
-Diese Adresse soll kodiert angezeigt werden.
-</td></tr>
-<tr><td colspan=2>
-<input type="checkbox" name="mailformular" value="1" <?=$daten['mailformular']?"checked=\"1\" ":""?> />
-Auf diese Adresse sollen Emails vom Formular aus gesendet werden.
-</td></tr>
-<tr><td colspan="2" align="center">
-   <input type="submit" 
-   value="<?=$daten['id']?"&Auml;ndern":"Einf&uuml;gen"?>" />&nbsp;<input
-   type="reset" value="Zur&uuml;cksetzen" /></td></tr>
-</table>
+<form method="post" action="<?=$PHP_SELF?>" class="absolventen email formular">
+  <input type="hidden" name="aktion" value="<?=$neu?"maildbneu":"maildbaendern"?>" />
+  <?php if (isset($daten['id'])) { 
+?><input type="hidden" name="id" value="<?=isset($daten['id'])?$daten['id']:""?>" />
+  <?php } 
+?><input type="hidden" name="uid" value="<?=isset($daten['uid'])?$daten['uid']:""?>" />
+  <table class="absolventen email formular" border="0">
+    <tr class="absolventen email formular emailname">
+      <th class="absolventen email formular emailname"><label 
+          class="absolventen email formular"
+          for="adrname<?=isset($daten['id'])?$daten['id']:""?>">Name der Adresse</label></th>
+      <td class="absolventen email formular emailname"><input 
+          type="text" size="30" name="name" id="adrname<?=isset($daten['id'])?$daten['id']:""?>"
+          class="absolventen email formular emailname<?=isset($fehler['name'])?" fehler":""?>"
+          value="<?=isset($daten['name'])?$daten['name']:""?>" /></td>
+    </tr>
+    <tr class="absolventen email formular">
+      <th class="absolventen email formular emailadr"><label 
+          class="absolventen email formular"
+          for="adrtext<?=isset($daten['id'])?$daten['id']:""?>">Adresse</th>
+      <td class="absolventen email formular emailadr"><input type="text" 
+          size="30" name="adresse" id="adrtext<?=isset($daten['id'])?$daten['id']:""?>"
+          class="absolventen email formular emailadr<?=isset($fehler['adresse'])?" fehler":""?>"
+          value="<?=isset($daten['adresse'])?$daten['adresse']:""?>" /></td>
+    </tr>
+    <tr class="absolventen email formular">
+      <td colspan="2" class="absolventen email formular emaillink">
+        <div class="absolventen email formular emaillink checkbox"><input 
+            type="checkbox" name="link" value="1" 
+            class="absolventen email formular emaillink" id="adrlink<?=isset($daten['id'])?$daten['id']:""?>" 
+            <?=empty($daten['link'])?"":'checked="1" '?> /><label 
+            class="absolventen email formular checkbox<?=isset($fehler['link'])?" fehler":""?>"
+            for="adrlink<?=isset($daten['id'])?$daten['id']:""?>">Diese Adresse soll mit einer 
+	    Verknüpfung versehen werden.</label></div>
+      </td>
+    </tr>
+    <tr class="absolventen email formular">
+      <td colspan="2" class="absolventen email formular adrencode">
+        <div class="absolventen email formular adrencode checkbox"><input 
+            type="checkbox" name="encode" value="1" id="adrencode<?=isset($daten['id'])?$daten['id']:""?>" 
+            class="absolventen email formular adrencode"
+            <?=empty($daten['encode'])?"":'checked="1" '?> /><label 
+            class="absolventen email formular email_form checkbox<?=isset($fehler['encode'])?" fehler":""?>" 
+            for="adrencode<?=isset($daten['id'])?$daten['id']:""?>">Diese Adresse soll 
+            kodiert angezeigt werden.</label></div>
+      </td>
+    </tr>
+    <tr class="absolventen email formular">
+      <td colspan=2 class="absolventen email formular email_form">
+        <div class="absolventen email formular email_form checkbox"><input 
+            type="checkbox" name="mailformular" value="1" 
+            class="absolventen email formular email_form"
+            id="adrform<?=isset($daten['id'])?$daten['id']:""?>"
+            <?=(empty($daten['mailformular']))?"":'checked="1" '?> /><label 
+            class="absolventen email formular email_form checkbox<?=isset($fehler['mailformular'])?" fehler":""?>" 
+            for="adrform<?=isset($daten['id'])?$daten['id']:""?>">Auf diese Adresse sollen 
+            Emails vom Formular aus gesendet werden können.</label></div>
+      </td>
+    </tr>
+    <tr class="absolventen email formular knoepfe">
+      <td colspan="2" align="center"  class="absolventen email formular knoepfe">
+	<input type="submit" class="absolventen email formular knoepfe"
+          value="<?=$neu?"Einf&uuml;gen":"&Auml;ndern"?>" />&nbsp;<input
+          type="reset" value="Zur&uuml;cksetzen"  class="absolventen email formular knoepfe" />
+      </td>
+    </tr>
+  </table>
 </form>
-<?php if ($daten['id']) { ?>
-<form method="post" action="<?=$PHP_SELF?>">
-<input type="hidden" name="aktion" value="maildbloeschen" />
-<input type="hidden" name="id" value="<?=$daten['id']?>" />
-   <input type="submit"  value="L&ouml;schen" />
+<?php if (!$neu) { 
+?><form method="post" action="<?=$PHP_SELF?>" class="absolventen email formular">
+  <input type="hidden" name="aktion" value="maildbloeschen" />
+  <input type="hidden" name="id" value="<?=$daten['id']?>" />
+  <input type="hidden" name="uid" value="<?=$daten['uid']?>" />
+  <input type="submit" value="L&ouml;schen" class="absolventen email formular knoepfe email_loeschen" />
+</form>
+<?php } if (!empty($fehler)) { 
+?><form method="post" action="<?=$PHP_SELF?>" class="absolventen email formular">
+  <input type="hidden" name="aktion" value="mailform" />
+  <input type="submit" value="Abbrechen" class="absolventen email formular knoepfe email_abbrechen" />
 </form>
 <?php
     }
   }
 
-  function checkdaten($daten) {
+  function checkdaten($daten,$neu) {
     //    global $klasse;
-    $fehler="";
-    if (!ereg("^[0-9]*$",$daten['id'])) 
-      $fehler.="<br />Fehlerhafte id";
-    if (!ereg("^[0-9]*$",$daten['uid']))
-      $fehler.="<br />Fehlerhafte uid";
-    if (!($daten['uid']==$_SESSION['uid']))
-      $fehler.="<br />Ung&uuml;ltige Nutzeridentifikation";
+    $fehler=array();
+    if (!empty($daten['id']) && !ereg("^[0-9]*$",$daten['id'])) 
+      $fehler['id'] ="Fehlerhafte id";
+    if (!isset($daten['uid']) || !ereg("^[0-9]*$",$daten['uid']))
+      $fehler['uid'] ="Fehlerhafte uid";
+    if (!isset($daten['uid']) || !isset($_SESSION['mod_absolventen']['uid']) || !($daten['uid']==$_SESSION['mod_absolventen']['uid']))
+      $fehler[] ="Ung&uuml;ltige Nutzeridentifikation";
     if (!ereg("^[-!#$%&\'*+\\./0-9=?A-Z^_`a-z{|}~]+"
 	      . "@[-!#$%&\'*+\\/0-9=?A-Z^_`a-z{|}~]+"
 	      . "\.[-!#$%&\'*+\\./0-9=?A-Z^_`a-z{|}~]+$",$daten['adresse'])) 
-      $fehler.="<br />Ung&uuml;ltige Email-Adresse";
+      $fehler['adresse'] ="Ung&uuml;ltige Email-Adresse";
     return $fehler;
   }
 }
