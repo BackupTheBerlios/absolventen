@@ -61,5 +61,22 @@ class mysqldb {
     return mysql_insert_id($this->db);
   }
 
+  function transaction_start() {
+    $x=$this->query("start transaction");
+    echo $x;
+    return $x;
+  }
+
+  function transaction_stop() {
+    return $this->query("end");
+  }
+
+  function rollback() {
+    return $this->query("rollback");
+  }
+
+  function commit () {
+    return $this->query("commit");
+  }
 }
 ?>
