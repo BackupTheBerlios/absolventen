@@ -1,4 +1,4 @@
-<?php /* $Id: hp.inc,v 1.4 2004/07/15 11:40:33 keinstein Exp $
+<?php /* $Id: hp.inc,v 1.5 2004/07/19 22:28:17 keinstein Exp $
 Copyright (c) 2000-2004 SchlemmerSoft (Tobias Schlemmer)
 
 This program is free software; you can redistribute it and/or
@@ -18,6 +18,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 Der Autor kann unter der Email: Tobias.Schlemmer@web.de erreicht werden.
 
 $Log: hp.inc,v $
+Revision 1.5  2004/07/19 22:28:17  keinstein
+globale Variablen nach $GLOBALS
+formular: array nicht mehr komplett löschen
+XHTML-fähig gemacht
+
 Revision 1.4  2004/07/15 11:40:33  keinstein
 
 SQLs überprüft und geändert
@@ -36,20 +41,20 @@ checkdaten gibt Fehler-Array zurück
 
 class homepage   extends dbtabelle{
   function sql($funktion,$args){
-    global $mysql_daten;
+    
     switch ($funktion) {
 	case "erste_person": 
 		return sprintf("select id, uid, adresse, name"
 		               . " from %s where uid=%d",
-			$mysql_daten['HPTab'],$args);
+			$GLOBALS['mod_absolventen_glob']['mysql']['HPTab'],$args);
   	case "diese": 
 		return sprintf("select id,uid, adresse, name"
 			       . " from %s where id=%d",
-			$mysql_daten['HPTab'],$args);
+			$GLOBALS['mod_absolventen_glob']['mysql']['HPTab'],$args);
 	case "insert":
 		return sprintf("insert into %s (id,uid,adresse,name"
 			       . ") values (%s,%d,%s,%s)",
-			       $mysql_daten['HPTab'],
+			       $GLOBALS['mod_absolventen_glob']['mysql']['HPTab'],
 			       empty($args['id'])?'NULL':sprintf('%d',$args['id']),
 			       $args['uid'],
 			       empty($args['adresse'])?'NULL': "'" . addslashes($args['adresse']) . "'",
@@ -57,15 +62,15 @@ class homepage   extends dbtabelle{
 	case "update":
 		return sprintf("update %s set uid=%d,adresse=%s,name=%s"
 			       . " where id=%d",
-			       $mysql_daten['HPTab'],
+			       $GLOBALS['mod_absolventen_glob']['mysql']['HPTab'],
 			       $args['uid'],
 			       empty($args['adresse'])?'NULL': "'" . addslashes($args['adresse']) . "'",
 			       empty($args['name'])?'NULL':"'" . addslashes($args['name']) . "'",
 			       $args['id']);
 	case "loeschen":
-	        return sprintf("delete from %s where id=%d",$mysql_daten['HPTab'],$args);
+	        return sprintf("delete from %s where id=%d",$GLOBALS['mod_absolventen_glob']['mysql']['HPTab'],$args);
 	case "persloeschen":
-	  return sprintf("delete from %s where uid=%d",$mysql_daten['HPTab'],$args);
+	  return sprintf("delete from %s where uid=%d",$GLOBALS['mod_absolventen_glob']['mysql']['HPTab'],$args);
     }
   }
 	
@@ -92,11 +97,11 @@ class homepage   extends dbtabelle{
   /* die einzelnen Felder der Person */
 
   function adresse() {
-    return $this->Werte["adresse"];
+    return isset($this->Werte["adresse"])?$this->Werte["adresse"]:false;
   }
 
   function name() {
-    return $this->Werte["name"];
+    return isset($this->Werte["name"])?$this->Werte["name"]:false;
   }
 
   
@@ -110,22 +115,24 @@ class homepage   extends dbtabelle{
   }
   /* adresse,name */
 
-  function formular($neu,$daten=0,$fehler=0) {
-    global $PHP_SELF;
-    if ($neu) $daten=array('uid' => $_SESSION['mod_absolventen']['uid']);
+  function formular($neu,$daten=array(),$fehler=array()) {
+    if ($neu) {
+      $daten['uid'] = $_SESSION['mod_absolventen']['uid'];
+      if (isset($daten['id'])) unset($daten['id']);
+    }
 ?>
-<form method="post" action="<?=$PHP_SELF?>" class="absolventen homepage formular">
+<form method="post" action="<?=$GLOBALS['mod_absolventen_glob']['php_self']?>" class="absolventen homepage formular">
   <input type="hidden" name="aktion" value="<?=$neu?"hpdbneu":"hpdbaendern"?>" />
   <?php if (!empty($daten['id'])) 
-{ ?><input type="hidden" name="id" value="<?=$daten['id']?>" />
-  <?php 
-} ?><input type="hidden" name="uid" value="<?=$daten['uid']?>" />
+    { ?><input type="hidden" name="id" value="<?=$daten['id']?>" />
+<?php 
+    } ?><input type="hidden" name="uid" value="<?=$daten['uid']?>" />
   <table border="0" class="absolventen homepage formular">
     <tr class="absolventen homepage formular hp-name">
       <th class="absolventen homepage formular hp-name"><label 
           class="absolventen homepage formular hp-name" 
           for="hp-name<?=isset($daten['id'])?$daten['id']:""?>">Name der Adresse</label></th>
-      <td class="absolventen homepage formular hp_name"><input type="text" size=30 name="name" 
+      <td class="absolventen homepage formular hp_name"><input type="text" size="30" name="name" 
           class="absolventen homepage formular hp_name<?=isset($fehler['name'])?" fehler":""?>"
           id="hp-name<?=isset($daten['id'])?$daten['id']:""?>"
           value="<?=isset($daten['name'])?$daten['name']:""?>" /></td>
@@ -134,7 +141,7 @@ class homepage   extends dbtabelle{
       <th class="absolventen homepage formular hp-adr"><label 
           class="absolventen homepage formular hp-adr" 
           for="hp-adr<?=isset($daten['id'])?$daten['id']:""?>">Adresse</label></th>
-      <td class="absolventen homepage formular hp-adr"><input type="text" size=30 name="adresse" 
+      <td class="absolventen homepage formular hp-adr"><input type="text" size="30" name="adresse" 
           class="absolventen homepage formular hp-adr<?=isset($fehler['adresse'])?" fehler":""?>" 
           id="hp-adr<?=isset($daten['id'])?$daten['id']:""?>"
           value="<?=isset($daten['adresse'])?$daten['adresse']:""?>" /></td>
@@ -149,20 +156,20 @@ class homepage   extends dbtabelle{
   </table>
 </form>
 <?php if (!$neu) { ?>
-<form method="post" action="<?=$PHP_SELF?>" class="absolventen homepage formular">
+<form method="post" action="<?=$GLOBALS['mod_absolventen_glob']['php_self']?>" class="absolventen homepage formular">
   <input type="hidden" name="aktion" value="hpdbloeschen" />
   <input type="hidden" name="id" value="<?=$daten['id']?>" />
   <input type="submit"  value="L&ouml;schen"  class="absolventen homepage formular knoepfe hp_loeschen"/>
 </form>
 <?php  
-}
-if (!empty($fehler)) { ?>
-<form method="post" action="<?=$PHP_SELF?>" class="absolventen homepage formular">
+    }
+    if (!empty($fehler)) { ?>
+<form method="post" action="<?=$GLOBALS['mod_absolventen_glob']['php_self']?>" class="absolventen homepage formular">
   <input type="hidden" name="aktion" value="hpform" />
   <input type="submit"  value="Abbrechen"  class="absolventen homepage formular knoepfe hp_abbrechen"/>
 </form>
 <?php  
-} ?>
+   } ?>
 <font size="-1" class="absolventen homepage formular wwwserver"><b 
    class="absolventen homepage formular wwwserver">Hinweis:</b> 
   Es werden nur gültige WWW-Adressen angenommen.
@@ -179,7 +186,7 @@ if (!empty($fehler)) { ?>
 <?php  }
 
   function checkdaten(&$daten,$neu) {
-    //    global $klasse;
+    //    
     $fehler=array();
     if (!empty($daten['id']) && !ereg("^[0-9]*$",$daten['id'])) 
       $fehler['id'] ="Fehlerhafte id";
