@@ -146,10 +146,587 @@ input[type="reset"]:active {
                              } 
 
 
-select,option,select > input { 
+select,option,select > option { 
                                background:transparent; 
                                border-color: #c94; 
                                border-width:1px; 
                                border-style:none; 
                                background-image:none; 
                                }
+
+textarea.absolventen,
+select.absolventen.,
+input.absolventen[type="text"] { 
+                                      width: 300px;
+                                           background:#000;
+                                      }
+body {
+	background-color:		#8388AB;
+
+	padding:				0px;
+	border:					none;
+	margin:					0px;
+}
+
+body, table {
+	font-size:				11pt;
+	font-family:			Verdana, "Nimbus Sans L", Helvetica, Arial;
+}
+
+img {
+	border:					none;
+}
+
+
+/**
+*	Menu an der linken Seite
+*	position:fixed geht nicht, da das menu manchmal zu hoch ist
+*/
+div.menu {
+	position:				absolute;
+	width:					138px;
+	left:					0px;
+	top:					64px;
+}
+div.menu ul {
+	padding:				0px;
+	margin-left:			10px;
+	margin-bottom:			0px;
+}
+div.menu ul.level0 {
+	margin-top:				0px;
+	margin-left:			0px;
+	background-image:		URL( "/graphics/background/m2.jpg");
+	background-repeat:		repeat-y;
+	padding:				2px;
+}
+div.menu li {
+	list-style-type:		none;
+}
+div.dach {
+	position:				absolute;
+	background-image:		URL( "/graphics/background/m1b.png");
+	width:					251px;
+	height:					113px;
+	margin:					0px;
+	padding:				0px;
+	left:					0px;
+	top:					0px;
+}
+div.pfeiler {
+	background-image:		URL( "/graphics/background/m3.gif");
+	width:					138px;
+	height:					125px;
+	margin:					0px;
+	padding:				0px;
+}
+
+div.menu a, div.menu a:link, div.menu a:visited {
+	color:					#412E34;
+	text-decoration:		none;
+	display:block;
+}
+div.menu a:hover {
+	color:					#6E241E;
+	background-color:		#EEE;
+}
+div.menu li.active > a {
+	color:					#6E241E;
+}
+
+/**
+*	Absätze
+*/
+div.content {
+	position:				absolute;
+	top:					30px;
+	left:					200px;
+	width:					600px;
+	padding-bottom:			10px;
+}
+div.text {
+	left:					0px;
+	top:					0px;
+	width:					580px;
+	background-image:		URL( "/graphics/background/portal.jpg");
+	background-attachment:	fixed;
+	background-position:	200px 0px;
+	background-color:		#DDD;
+
+	border:					none;
+	margin:					0px;
+	margin-top:				15px;
+	padding:				5px 10px;
+
+}
+
+div.text h1, div.text h2, div.text h3, div.text h4 {
+	margin:					0px;
+	margin-bottom:			10px;
+}
+
+div.sysmessage {
+	position:				absolute;
+	top:					800px;
+	width:					138px;
+	left:					10px;
+	background-color:		#FFF;
+	padding:				2px;
+}
+h1.title {
+	position:				absolute;
+	left:					0px;
+	width:					795px;
+	top:					0px;
+	background-color:		#CCD0DB;
+	color:					#5A4E30;
+	font-size:				14pt;
+	text-align:				right;
+	margin:					0px;
+	padding:				0px;
+	padding-right:			5px;
+}
+
+/**
+*	Tabellen
+*/
+table {
+	border:				1px solid #000000;
+	border-collapse:	collapse;
+}
+table td, table th {
+	padding-left:		4px;
+	padding-right:		4px;
+}
+table td {
+	border:				1px solid #000000;
+}
+table th {
+	background-color:	#5A4E30;
+	border:				1px solid #000000;
+	color:				#FFFFFF;
+	text-align:			center;
+	padding:			0px;
+	padding-left:		4px;
+	padding-right:		4px;
+	font-size:			11pt;
+	font-weight:		normal;
+	vertical-align:		top;
+}
+
+table.news {
+	border:				none;
+	margin-bottom:		20px;
+	border-top:			2px solid #5A4E30;
+}
+table.news td {
+	border:				none;
+}
+div.newsdetailsteaser {
+	padding:			5px;
+	border-top:			2px solid #5A4E30;
+	border-bottom:		1px solid #5A4E30;
+}
+div.newsdetailstext {
+	padding:			5px;
+	border-bottom:		2px solid #5A4E30;
+}
+div.newsadditionallinks {
+	padding:			5px;
+	border-bottom:		2px solid #5A4E30;
+}
+
+table.news tfoot td {
+	text-align:			right;
+}
+
+table.sitenav, table.sitenav td {
+	border:				none;
+}
+/**
+*	Calendar
+*/
+div.calendarNav {
+	text-align:			center;
+}
+div.calendarNav a.back {
+	float:				left;
+}
+div.calendarNav a.next {
+	float:				right;
+}
+table.calendar td {
+	vertical-align:		top;
+	width:				80px;
+	height:				80px;
+}
+table.calendar th {
+	font-size:			10pt;
+}
+table.calendar th a, table.calendar th a:link, table.calendar th a:visited {
+	color:				#CCD0DB;
+}
+table.calendar td.today {
+	background-color:	#CCD0DB;
+}
+
+div.overdiv {
+	background-image:		URL( "/graphics/background/m2.jpg");
+}
+
+div.calendarteaser {
+	padding:			5px;
+	border-top:			2px solid #5A4E30;
+	border-bottom:		1px solid #5A4E30;
+}
+div.calendartext {
+	padding:			5px;
+	border-bottom:		2px solid #5A4E30;
+}
+div.calendaradditionallinks {
+	padding:			5px;
+	border-bottom:		2px solid #5A4E30;
+}
+
+
+/**
+*	Newsletter
+*/
+table.newsletter, table.newsletter td {
+	border:				none;
+}
+
+/**
+*	Gästebuch
+*/
+div.gbeintrag {
+	margin-top:			10px;
+	padding-top:		5px;
+	border-top:			2px solid #5A4E30;
+}
+table.gbeintragen, table.gbeintragen td {
+	border:				none;
+}
+
+/**
+*	Kontakt
+*/
+table.kontakt, table.kontakt td, table.kontakt th {
+	border:				none;
+}
+table.kontakt th {
+	background-color:	transparent;
+	color:				inherit;
+}
+
+/**
+*      Absolventen
+*/
+
+div.absolventen,
+form.absolventen.select_jgs { 
+                  text-align: center;
+ }
+
+div.absolventen.loginstatus { 
+                          font-size:0.694em;
+                          text-align:center;
+                          margin-bottom:1em;
+                          }
+
+
+div.absolventen input,
+div.absolventen select,
+div.absolventen textarea,
+option.absolventen { 
+                    background-color: transparent;
+                    color: inherit;
+                    border: 2px ridge #B69C60;
+                    }
+
+div.absolventen input[type="submit"],
+div.absolventen input[type="reset"] { 
+                                   border: 2px outset #B69C60;
+                                   }
+.absolventen.formular.fehler:hover,
+.absolventen.formular.fehler:focus,
+.absolventen.formular.fehler:active,
+label.absolventen.formular:hover,
+label.absolventne.formular:focus,
+label.absolventne.formular:active,
+div.absolventen.formular.radio:hover,
+div.absolventen.formular.radio:focus,
+div.absolventen.formular.checkbox:hover,
+div.absolventen.formular.checkbox:focus,
+div.absolventen input:hover,
+div.absolventen input:focus,
+div.absolventen textarea:hover,
+div.absolventen textarea:focus,
+div.absolventen select:hover,
+div.absolventen select:focus { 
+                               background-color: #EEE;
+                               color: #000;
+                               border-color: #EEE;
+                               }
+
+
+table.absolventen th,
+table.absolventen td { 
+                       vertical-align: top;
+                       border: 1px solid  #B69C60;
+ }
+
+td.absolventen.trenner { 
+	background-color:	#B69C60;
+	border:				2px outset #B69C60;
+	color:				#EEE;
+	text-align:			center;
+	padding:			0px;
+	padding-left:		4px;
+	padding-right:		4px;
+	font-size:			2px;
+	font-weight:		normal;
+	vertical-align:		top;
+}
+
+table.absolventen.anzeige { 
+                            font-size: 0.89em;
+                            border: 4px ridge #5A4E30;
+                            margin-left: auto;
+                            margin-right: auto;
+                            width: 580px;
+                            }
+ 
+.absolventen.anzeige,
+.absolventen.anzeige { 
+        text-align: left;
+        border-color: #B69C60;
+}
+
+th.absolventen.anzeige.anzeige_jahrgang { 
+        text-align: center;
+}
+
+.absolventen.anzeige.anzeige_timestamp { 
+        vertical-align: bottom;
+}
+
+
+select.absolventen.emailform,
+input.absolventen.emailform[type="text"] { 
+                                      width: 300px;
+                                      }
+
+textarea.absolventen.emailform { 
+                                 width: 560px;
+                                 }
+
+ul.absolventen.bearbeiten.menu {
+        max-width:                          20em;
+	margin-left:			auto;
+        margin-right:                   auto;
+	padding:				2px;
+        border:                         1px solid #5A4E30;
+}
+li.absolventen.bearbeiten.menu {
+	list-style-type:		none;
+}
+
+li.absolventen.bearbeiten.menu a,
+li.absolventen.bearbeiten.menu a:link,
+li.absolventen.bearbeiten.menu a:visited {
+	color:					#412E34;
+	text-decoration:		none;
+	display: block;
+}
+li.absolventen.bearbeiten.menu a:hover {
+	color:					#6E241E;
+	background-color:		#EEE;
+}
+
+div.absolventen.bearbeiten.datenformular {   
+      border:                         1px solid #5A4E30;
+      padding-top: 1ex;
+ }
+
+table.absolventen.formular,
+td.absolventen.formular,
+th.absolventen.formular{
+                                                   background-color:transparent;
+                                                   width:auto;
+                                                   border-style: none;
+                                                   text-align:left;
+	color:					#000;
+                                                 }
+
+th.absolventen.formular {
+                                 text-align:right;
+                                 }
+
+td.absolventen.formular.knoepfe { 
+                                  padding-top:1em;
+                                  text-align:center;
+                                  }
+
+table.absolventen.formular { 
+                             margin-left:auto;
+                             margin-right:auto;
+                             }
+
+font.anzeige_timestamp { font-size:0.694em; }
+
+div.absolventen a,
+div.absolventen a:active,
+div.absolventen a:visited,
+div.absolventen a:link { 
+                         background-color:transparent;
+                         color: inherit;
+                         }
+
+ul.absolventen.fehler:before { 
+                                     background-color: #edd;
+                                     border: 1px solid #600;
+                                     padding: 0.5ex;
+                                     margin:1ex;
+                                          content: "Es ist ein Fehler aufgetreten:";
+                                          color: #600;
+                                          font-weight: 900;
+                                          }
+
+
+ul.absolventen.fehler li{ 
+                                     text-align:left;
+                                     width: 70%;
+                                     margin-left:auto;
+                                     margin-right:auto;
+                                     list-style-type:none;
+                                     color: #600;
+                                     background-color: #edd;
+                                     font-weight: normal;
+                                     font-size: 0.98em;
+                                     border: 1px solid #600;
+                                     padding: 0.5ex;
+ }
+
+.absolventen.telefon.formular.adresse.fehler,
+.absolventen.formular.fehler{ 
+                                background-color:#f77;
+                                color:#000;
+                                }
+
+table.absolventen.login.formular { 
+                                   padding: 1em;
+                                   border: 1px solid #000;
+ }
+
+input[type="submit"].absolventen.login.formular,
+input[type="reset"].absolventen.login.formular{ 
+                                                margin-top:1ex;
+                                                }
+
+input[type="radio"].absolventen.formular,
+label.absolventen.formular { 
+                                                  background-color: transparent;
+                                                  color: inherit;
+                                                  border:none;
+                                       /*           border-left: 2px ridge #B69C60; */
+                                                  padding:0ex;
+                                             }
+label.absolventen.telefon.formular.adresse,
+label.absolventen.formular.radio,
+label.absolventen.formular.checkbox { 
+                                                  display:block;
+                                                  padding:1ex;
+                                                  text-align:left;
+                                                  float:left;
+                                             }
+
+input[type="checkbox"].absolventen.formular,
+input[type="radio"].absolventen.formular{ 
+                                          display:block;
+                                          margin:1ex;
+                                          margin-top:1em;
+                                          margin-right:0ex;
+                                          clear:left;
+                                          float:left;
+                                          }
+
+/* label.absolventen.formular:hover,
+label.absolventen.formular:focus,
+label.absolventen.formular.jahrgang:hover,
+label.absolventen.formular.jahrgang:focus { 
+                               background-color: #EEE;
+                               color: #000;
+                               border-color: #EEE;
+                                             }
+*/
+div.absolventen.telefon.formular.adresse,
+div.absolventen.formular.radio,
+div.absolventen.formular.checkbox{ 
+                                                  display:block;
+                                                  clear:left;
+                                                  background-color: transparent;
+                                                  color: inherit;
+                                                  border: 2px ridge #B69C60;
+                                                  float:left;
+ }
+
+td.absolventen.email.formular.adrencode { 
+                                          margin:auto;
+                                          }
+
+label.absolventen.formular { 
+                             display:block;
+                             }
+
+div.absolventen.bearbeiten.austragen.knoepfe { 
+                                               clear:both;
+                                               padding-top: 1em;
+                                             }
+option.absolventen { 
+                     background:transparent;
+                     color: inherit;
+                     margin:0px;
+                     border-width:0px;
+                     border:none;
+                     padding-top:0px;
+                     padding-bottom:0px;
+                     }
+
+th.absolventen.formular[colspan="2"] { 
+                                          text-align:center; 
+                                         }
+
+div.absolventen.bearbeiten.austragen.formular.abs-ja-nein { 
+                                                            width:100px;
+                                                            margin-left:auto;
+                                                            margin-right:auto;
+                                                            margin-bottom:1ex;
+                                                         }
+
+h3.absolventen.emailformular { 
+                               width:70%;
+                               margin-top:1em;
+                               margin-left:auto;
+                               margin-right:auto;
+                               }
+
+ul.absolventen.emailformular.status { 
+	list-style-type:		none;
+                                        text-align:left; 
+                                        font-family: monospace;
+                                        padding-left: 0px;
+                                        padding-right: 0px;
+                                        border: 2px ridge #B69C60;
+                                        }
+
+li.absolventen.emailformular.gesendet { 
+                                        padding-left: 1ex;
+                                        padding-right: 1ex;
+                                        padding-top:2px;
+                                        padding-bottom:2px;
+                                        }
+
+li.absolventen.emailformular.gesendet.header { 
+                                        border-bottom: 2px ridge #B69C60;
+                                        }
