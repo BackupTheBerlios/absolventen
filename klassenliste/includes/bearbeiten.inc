@@ -1,4 +1,4 @@
-<?php /* $Id: bearbeiten.inc,v 1.6 2004/07/15 11:30:39 keinstein Exp $
+<?php /* $Id: bearbeiten.inc,v 1.7 2004/07/19 22:20:52 keinstein Exp $
 Copyright (c) 2000-2004 SchlemmerSoft (Tobias Schlemmer)
 
 This program is free software; you can redistribute it and/or
@@ -18,6 +18,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 Der Autor kann unter der Email: Tobias.Schlemmer@web.de erreicht werden.
 
 $Log: bearbeiten.inc,v $
+Revision 1.7  2004/07/19 22:20:52  keinstein
+puffer_leeren() aufrufen
+globale Variablen nach $GLOBALS
+
 Revision 1.6  2004/07/15 11:30:39  keinstein
 Allgemein: Klassen für HTML-Ausgabe
 	   Fehlermeldungen bei Formularen
@@ -61,12 +65,14 @@ function bearb_sicherheitscheck($tabelle,$daten,$neu,$uidcheck=true) {
     if (empty($_SESSION['mod_absolventen']['uid']) || (empty($daten[$uidcheck?'uid':'id'])) ||
 	($_SESSION['mod_absolventen']['uid']!=$daten[$uidcheck?'uid':'id'])) {
       bearb_verweigert($tabelle->db);
+      $tabelle->puffer_leeren();
       return true;
     }  
   }
 
   if (!$uidcheck && !empty($daten['uid'])) {
     bearb_verweigert($tabelle->db);
+    $tabelle->puffer_leeren();
     return true;
   }  
 
@@ -74,18 +80,21 @@ function bearb_sicherheitscheck($tabelle,$daten,$neu,$uidcheck=true) {
     if (empty($daten['id']) || !ereg('^[0-9]+$',$daten['id']) || !$tabelle->diese($daten['id']) ||
 	($uidcheck && ($tabelle->uid() != $_SESSION['mod_absolventen']['uid']))){
       bearb_verweigert($tabelle->db);
+      $tabelle->puffer_leeren();
       return true;
     }  
   } elseif (!empty($daten['id'])) {
       bearb_verweigert($tabelle->db);
+      $tabelle->puffer_leeren();
       return true;
   }
 
+  $tabelle->puffer_leeren();
   return false;
 }
 
 function bearb_menu(&$db) {
-  global $PHP_SELF;
+  
   $jg=new jg(&$db);
   $person =new  personen(&$db);
   $jg->erste_person($_SESSION['mod_absolventen']['uid']);
@@ -96,15 +105,15 @@ function bearb_menu(&$db) {
 <p class="absolventen bearbeiten menu">
      Wählen Sie bitte die zu bearbeitenden Daten:
   <ul class="absolventen bearbeiten menu">
-    <li class="absolventen bearbeiten menu"><a href="<?=$PHP_SELF?>?aktion=persformaendern">Allgemeine Daten</a></li>
-    <li class="absolventen bearbeiten menu"><a href="<?=$PHP_SELF?>?aktion=jgform">Jahrgang</a></li>
-    <li class="absolventen bearbeiten menu"><a href="<?=$PHP_SELF?>?aktion=adrform">Adressen</a></li>
-    <li class="absolventen bearbeiten menu"><a href="<?=$PHP_SELF?>?aktion=telform">Telefonnummern</a></li>
-    <li class="absolventen bearbeiten menu"><a href="<?=$PHP_SELF?>?aktion=mailform">Adressen elektronischer Post</a></li>
-    <li class="absolventen bearbeiten menu"><a href="<?=$PHP_SELF?>?aktion=hpform">WWW-Seiten</a></li>
-    <li class="absolventen bearbeiten menu"><a href="<?=$PHP_SELF?>?aktion=austragen">Aus 
+    <li class="absolventen bearbeiten menu"><a href="<?=$GLOBALS['mod_absolventen_glob']['php_self']?>?aktion=persformaendern">Allgemeine Daten</a></li>
+    <li class="absolventen bearbeiten menu"><a href="<?=$GLOBALS['mod_absolventen_glob']['php_self']?>?aktion=jgform">Jahrgang</a></li>
+    <li class="absolventen bearbeiten menu"><a href="<?=$GLOBALS['mod_absolventen_glob']['php_self']?>?aktion=adrform">Adressen</a></li>
+    <li class="absolventen bearbeiten menu"><a href="<?=$GLOBALS['mod_absolventen_glob']['php_self']?>?aktion=telform">Telefonnummern</a></li>
+    <li class="absolventen bearbeiten menu"><a href="<?=$GLOBALS['mod_absolventen_glob']['php_self']?>?aktion=mailform">Adressen elektronischer Post</a></li>
+    <li class="absolventen bearbeiten menu"><a href="<?=$GLOBALS['mod_absolventen_glob']['php_self']?>?aktion=hpform">WWW-Seiten</a></li>
+    <li class="absolventen bearbeiten menu"><a href="<?=$GLOBALS['mod_absolventen_glob']['php_self']?>?aktion=austragen">Aus 
         der Datenbank austragen</a></li>
-    <li class="absolventen bearbeiten menu"><a href="<?=$PHP_SELF?>?aktion=logout">Abmelden</a></li>
+    <li class="absolventen bearbeiten menu"><a href="<?=$GLOBALS['mod_absolventen_glob']['php_self']?>?aktion=logout">Abmelden</a></li>
   </ul>
 </p>
 <p class="absolventen bearbeiten anzeige">
@@ -119,16 +128,16 @@ function bearb_menu(&$db) {
 }
 
 function persdatenform($db){
-  global $PHP_SELF;
+  
   $person=new personen($db);
   if (!$person->diese($_SESSION['mod_absolventen']['uid'])) bearb_verweigert($db);
 ?>
 <p class="absolventen bearbeiten menu">Auswahl:
   <ul class="absolventen bearbeiten menu">
      <li class="absolventen bearbeiten menu"><a 
-        href="<?=$PHP_SELF?>?aktion=bearbmenu">Übersicht&nbsp;eigene&nbsp;Daten</a></li>
+        href="<?=$GLOBALS['mod_absolventen_glob']['php_self']?>?aktion=bearbmenu">Übersicht&nbsp;eigene&nbsp;Daten</a></li>
      <li class="absolventen bearbeiten menu"><a 
-        href="<?=$PHP_SELF?>?aktion=logout">Abmelden</a></li>
+        href="<?=$GLOBALS['mod_absolventen_glob']['php_self']?>?aktion=logout">Abmelden</a></li>
   </ul>
 </p>
 <?php 
@@ -151,6 +160,7 @@ function persdatenaendern($db,$daten,$neu){
     
     $person->formular($neu,$daten,$fehler);
     print('</div>');
+    $person->puffer_leeren();
     return;
   }
   if (!empty($daten['pw1'])) $daten['pw']=$daten['pw1'];
@@ -173,16 +183,17 @@ function persdatenaendern($db,$daten,$neu){
       print('</div>');
     }
   }
+  $person->puffer_leeren();
 }
 
 function untertabdatenform($tabelle){
-  global $PHP_SELF;
+  
 ?>
 <p class="absolventen bearbeiten menu">Auswahl:
   <ul class="absolventen bearbeiten menu">
     <li class="absolventen bearbeiten menu"><a 
-        href="<?=$PHP_SELF?>?aktion=bearbmenu">Übersicht&nbsp;eigene&nbsp;Daten</a></li>
-    <li class="absolventen bearbeiten menu"><a href="<?=$PHP_SELF?>?aktion=logout">Abmelden</a></li>
+        href="<?=$GLOBALS['mod_absolventen_glob']['php_self']?>?aktion=bearbmenu">Übersicht&nbsp;eigene&nbsp;Daten</a></li>
+    <li class="absolventen bearbeiten menu"><a href="<?=$GLOBALS['mod_absolventen_glob']['php_self']?>?aktion=logout">Abmelden</a></li>
   </ul>
 </p>
 <?php 
@@ -211,17 +222,18 @@ function untertabdatenaendern($tabelle,$daten,$neu){
     print('<div class="absolventen bearbeiten datenformular">');
     $tabelle->formular($neu,$daten,$fehler);
     print('</div>');
+    $tabelle->puffer_leeren();
     return;
   }
   if (!$neu) {
     $tabelle->update($daten);
-    $tabelle->puffer_leeren();
   } else {
     $tabelle->insert($daten);
   }
   $person=new personen($tabelle->db);
   $person->aktualisiere_akt($daten['uid']);
   untertabdatenform($tabelle);
+  $tabelle->puffer_leeren();
 }
 
 function untertabdatenloeschen($tabelle,$daten){
@@ -229,10 +241,11 @@ function untertabdatenloeschen($tabelle,$daten){
   if (bearb_sicherheitscheck($tabelle,$daten,false)) return;
   $tabelle->loeschen($daten['id'],$_SESSION['mod_absolventen']['uid']);
   untertabdatenform($tabelle);
+  $tabelle->puffer_leeren();
 }
 
 function austragen($db,$daten) {
-  global $PHP_SELF;
+  
   $person =new  personen($db);
   $jg=new jg($db);
   if (isset($daten['wirklich']) || isset($daten['austrageid'])) {
@@ -248,6 +261,7 @@ function austragen($db,$daten) {
        <?php    
           unset($_SESSION['mod_absolventen']['austrageid']);
           bearb_menu($db);
+	  $person->puffer_leeren();
           return;
     }
     if ($_SESSION['mod_absolventen']['austrageid']==$daten['austrageid'] &&
@@ -279,10 +293,10 @@ Sie wurden <em>nicht</em> aus der Datenbank ausgetragen.</strong>
      class="absolventen bearbeiten austragen">Ihre kompletten Daten werden gelöscht.</strong>
      <br />Sind Sie sich wirklich sicher?
 </p>
-<form method="post" action="<?=$PHP_SELF?>" class="absolventen bearbeiten austragen">
+<form method="post" action="<?=$GLOBALS['mod_absolventen_glob']['php_self']?>" class="absolventen bearbeiten austragen">
   <input type="hidden" name="austrageid" value="<?=$_SESSION['mod_absolventen']['austrageid']?>" />
-  <input type="hidden" name="id" value="<?=$_SESSION['mod_absolventen']['uid']?>">
-  <input type="hidden" name="aktion" value="austragen">
+  <input type="hidden" name="id" value="<?=$_SESSION['mod_absolventen']['uid']?>" />
+  <input type="hidden" name="aktion" value="austragen" />
   <div class="absolventen bearbeiten austragen formular abs-ja-nein"> 
      <div class="absolventen bearbeiten formular austragen radio abs-ja"><input 
          type="radio" name="wirklich" value="ja" id="abs-ja"  
@@ -290,7 +304,7 @@ Sie wurden <em>nicht</em> aus der Datenbank ausgetragen.</strong>
          class="absolventen bearbeiten formular austragen radio abs-ja" for="abs-ja">Ja</label></div>
      <div class="absolventen bearbeiten formular austragen radio abs-ja"><input 
          type="radio" name="wirklich" value="nein" id="abs-nein" 
-         checked="1" class="absolventen bearbeiten formular austragen" /><label 
+         checked="checked" class="absolventen bearbeiten formular austragen" /><label 
          for="abs-nein" class="absolventen bearbeiten formular austragen radio abs-nein">Nein</label></div>
      <div class="absolventen bearbeiten austragen knoepfe"><input type="submit" 
          value="Weiter" class="absolventen bearbeiten austragen knoepfe"/></div>
