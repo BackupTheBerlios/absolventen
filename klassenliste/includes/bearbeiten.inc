@@ -1,4 +1,4 @@
-<?php /* $Id: bearbeiten.inc,v 1.7 2004/07/19 22:20:52 keinstein Exp $
+<?php /* $Id: bearbeiten.inc,v 1.8 2004/07/25 17:30:01 keinstein Exp $
 Copyright (c) 2000-2004 SchlemmerSoft (Tobias Schlemmer)
 
 This program is free software; you can redistribute it and/or
@@ -18,6 +18,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 Der Autor kann unter der Email: Tobias.Schlemmer@web.de erreicht werden.
 
 $Log: bearbeiten.inc,v $
+Revision 1.8  2004/07/25 17:30:01  keinstein
+Fehlerbehandlung für Unique-constraints
+
 Revision 1.7  2004/07/19 22:20:52  keinstein
 puffer_leeren() aufrufen
 globale Variablen nach $GLOBALS
@@ -226,9 +229,21 @@ function untertabdatenaendern($tabelle,$daten,$neu){
     return;
   }
   if (!$neu) {
-    $tabelle->update($daten);
+    $ergebnis=$tabelle->update($daten);
   } else {
-    $tabelle->insert($daten);
+    $ergebnis=$tabelle->insert($daten);
+  }
+  if ($ergebnis<=0) {
+    if ($farr=array_pop($tabelle->dbfehler)) {
+      if($farr['nr']==1062) {
+	print('<ul class="absolventen bearbeiten fehler">');
+	print('<li>Sie haben versucht, einen doppelten Datensatz zu speichern. '
+	      . 'Ändern Sie bitte einen der Bestehenden geeignet ab!</li>');
+	print('</ul>');
+      } else {
+	fehler($farr['funktion'].':'.$farr['nr']);
+      }
+    }
   }
   $person=new personen($tabelle->db);
   $person->aktualisiere_akt($daten['uid']);

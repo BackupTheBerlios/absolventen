@@ -1,4 +1,4 @@
-<?php /* $Id: dbtabelle.inc,v 1.3 2004/07/19 22:24:52 keinstein Exp $
+<?php /* $Id: dbtabelle.inc,v 1.4 2004/07/25 17:31:44 keinstein Exp $
 
 Copyright (c) 2000-2004 SchlemmerSoft (Tobias Schlemmer)
 
@@ -25,6 +25,7 @@ class dbtabelle {
   var $db;
   var $Werte;
   var $Qresult;
+  var $dbfehler = array();
 
   /**************
    * Prototypen *
@@ -97,6 +98,7 @@ class dbtabelle {
       $this->db->puffer_leeren($this->Qresult);
       $this->Qresult=0;
     }
+    $this->dbfehler=array();
   }
 
   // Nach erstem Datensatz von $person suchen
@@ -127,9 +129,11 @@ class dbtabelle {
 
   // Service-Funktion für Einfügeoperationen
   function insert_backend($sql,$uid=0) {
-    $this->puffer_leeren();
-    if (!$this->Qresult=$this->db->query($sql)) {
-      fehler("dbtabelle-&gt;insert_backend(" . $sql . "," . $uid . ")");
+    if (!$this->db->query_direkt($sql)) {
+      $this->dbfehler[]=array('funktion' =>
+			      "dbtabelle-&gt;insert_backend(" . $sql . "," . $uid . ")",
+			      'nr' => $this->db->fehlernr(),
+			      'text' => $this->db->fehlertext());
       return -2;
     } 
     $id=$this->db->insert_id();
@@ -138,15 +142,16 @@ class dbtabelle {
       $person->aktualisiere_akt($uid);
       $person->puffer_leeren();
     }
-    @$this->puffer_leeren();
     return $id;
   }
 
   // Service-Funktion für Änderungsoperationen
   function update_backend($sql,$uid=0) {
-    $this->puffer_leeren();
-    if (!$this->Qresult=$this->db->query($sql)) {
-      fehler("adresse-&gt;update_backend(" . $sql . ",". $uid . ")");
+    if (!$this->db->query_direkt($sql)) {
+      $this->dbfehler[]=array('funktion' =>
+			     "adresse-&gt;update_backend(" . $sql . ",". $uid . ")",
+			      'nr' => $this->db->fehlernr(),
+			      'text' => $this->db->fehlertext());
       return -2;
     }
     if ($uid) {
@@ -154,7 +159,6 @@ class dbtabelle {
       $person->aktualisiere_akt($uid);
       $person->puffer_leeren();
     }
-    @$this->puffer_leeren();
     return 0;
   }
 
@@ -168,7 +172,7 @@ class dbtabelle {
 	$query=$this->sql('persloeschen',$uid);
       } else return -3;
     }
-    if (!$this->Qresult=$this->db->query($query)) {
+    if (!$this->Qresult=$this->db->query_direkt($query)) {
       fehler("dbtabelle-&gt;loeschen(" . $id . ")");
       return -2;
     }
