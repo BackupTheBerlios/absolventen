@@ -1,4 +1,4 @@
-<?php /* $Id: mystripslashes.inc,v 1.1 2004/07/15 11:57:49 keinstein Exp $
+<?php /* $Id: mystripslashes.inc,v 1.2 2004/07/19 22:38:44 keinstein Exp $
 Copyright (c) 2000-2004 SchlemmerSoft (Tobias Schlemmer)
 
 This program is free software; you can redistribute it and/or
@@ -18,6 +18,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 Der Autor kann unter der Email: Tobias.Schlemmer@web.de erreicht werden.
 
 $Log: mystripslashes.inc,v $
+Revision 1.2  2004/07/19 22:38:44  keinstein
+Kodierung von HTML-eigenen Zeichen im Extra-Schritt
+damit kein einzelnes & übrigbleibt
+Frage: haben wir jetzt alle HTML-Entitäten?
+
 Revision 1.1  2004/07/15 11:57:49  keinstein
 Funktion zum dekodieren der HTTP_POST/HTTP_GET-Eingaben.
 
@@ -26,12 +31,6 @@ Funktion zum dekodieren der HTTP_POST/HTTP_GET-Eingaben.
 
 function mystripslashes($daten) {
   $conversion_table=Array( 
-			  // diverse Zeichen müssen einfach kodiert werden:
-			  '<'     => '&lt;',
-			  '>'     => '&gt;',
-			  '"'     => '&quot;',
-			  // &amp; wird nicht kodiert/dekodiert. Das brauchen wir für die Sonderzeichen.
-			  
 			  // und nun die anderen Zeichen "normalisieren"
 			  '&nbsp;' => ' ',
 			  '&iexcl;' => '¡',
@@ -274,6 +273,14 @@ function mystripslashes($daten) {
 			  '&rsaquo;' => '›'
 			  );
 
+  $encodemap= array(
+			  // diverse Zeichen müssen einfach kodiert werden:
+			  '<'     => '&lt;',
+			  '>'     => '&gt;',
+			  '"'     => '&quot;',
+			  // & wird auch kodiert, damit es gültiges XML wird. 
+			  '&'     => '&amp;');
+
   // konvertierungstabelle, die aber an den 4 htmlspecialchars lücken hat.
   // geht das auch eleganter?
   $convmap = array ( 0x0001, 0x0021, 0, 0xffff,
@@ -284,12 +291,15 @@ function mystripslashes($daten) {
   $enddaten=array();
   while(list($name, $wert) = each($daten))
     if (get_magic_quotes_gpc()) {
-      $enddaten[$name]=mb_decode_numericentity(strtr(stripslashes($wert),
-						     $conversion_table),
-					       $convmap);
+      $enddaten[$name]=strtr(mb_decode_numericentity(strtr(stripslashes($wert),
+							   $conversion_table),
+						     $convmap),
+			     $encodemap);
     } else {
-      $enddaten[$name]=mb_decode_numericentity(strtr($wert,$conversion_table),
-					       $convmap);
+      $enddaten[$name]=strtr(mb_decode_numericentity(strtr($wert,
+							   $conversion_table),
+						     $convmap),
+			     $encodemap);
     }
   return $enddaten;
 }
