@@ -1,121 +1,29 @@
-<?php
-/* Grundlegendes Setup */
-$startzeit=ereg_replace("^0.([0-9]*) ([0-9]*)$","\\2.\\1",microtime())*1000.;
-$version="1.1 (Status: alpha)";
-session_start();
+<?php /* $Id: index.php,v 1.6 2004/07/14 23:58:15 keinstein Exp $
+Copyright (c) 2000 SchlemmerSoft (Tobias Schlemmer)
 
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+his program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License 
+along with this program; if not, write to the Free Software 
+Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+
+Der Autor kann unter der Email: Tobias.Schlemmer@web.de erreicht werden.
+
+$Log: index.php,v $
+Revision 1.6  2004/07/14 23:58:15  keinstein
+Minimale Aufrufmöglichkeit des Skriptes (standalone)
+
+
+*/ 
 chdir('includes');
-require_once('includes.inc');
+require('main.inc');
 
-function mystripslashes($daten) {
-  while(list($name, $wert) = each($daten))
-    $enddaten[$name]=htmlspecialchars(stripslashes($wert));
-  return $enddaten;
-}
-
-$db=new mysqldb;
-$db->connect($mysql_daten['Rechner'],$mysql_daten['Nutzer'],
-	     $mysql_daten['Passwort']);
-$db->selectdb($mysql_daten['DB']);
-
-if (!$aktion) $aktion="jgauswahl";
-
-switch($aktion) {
- case 'logout': logout($db); break;
- case 'dologin':   tue_login(mystripslashes($HTTP_POST_VARS),$db);
-		   break;
-}
-
-seitenanfang();
-switch ($aktion) {
- case 'jganzeige': if (ereg('^[0-9]*$',$HTTP_GET_VARS['jahrgang'])) {
-		      anzeige_jg($HTTP_GET_VARS['jahrgang'],$db);
-		      break;
-                   } 
- case 'logout':  
- case 'jgauswahl': select_jgs($db);
-		   break;
-
- case 'login':     anzeige_login();
-		   break;
-
- case 'dologin':   if (!isset($_SESSION['uid'])) {
-                     anzeige_login(mystripslashes($HTTP_POST_VARS)); 
-		     break;
-                   }
- case 'bearbmenu': bearb_menu($db);
-		   break;
-
- case 'hinzufuegen': personen::formular();
-		     break;
-
- case 'persformaendern': persdatenform($db);
-		         break;
- case 'persdbneu':
- case 'persdbaendern': persdatenaendern($db,mystripslashes($HTTP_POST_VARS));
-		       break;
- case 'austragen': austragen($db, mystripslashes($HTTP_POST_VARS));
-                   break;
-		       
- case 'jgform':      untertabdatenform(new jg($db));
-                     break;
-
- 
- case 'jgdbneu':		      
- case 'jgdbaendern': untertabdatenaendern(new jg($db),mystripslashes($HTTP_POST_VARS));
-		     break;
- 
- case 'jgdbloeschen': untertabdatenloeschen(new jg($db),
-				      mystripslashes($HTTP_POST_VARS));
-		      break;
- 
-   
- case 'adrform':      untertabdatenform(new adresse($db));
-		      break;
-
- case 'adrdbneu':		      
- case 'adrdbaendern': untertabdatenaendern(new adresse($db),mystripslashes($HTTP_POST_VARS));
-		      break;
- 
- case 'adrdbloeschen': untertabdatenloeschen(new adresse($db),
-					    mystripslashes($HTTP_POST_VARS));
-		       break;
- 
- case 'mailform':     untertabdatenform(new email($db));
-		      break;
-
- case 'maildbneu':		      
- case 'maildbaendern': untertabdatenaendern(new email($db),mystripslashes($HTTP_POST_VARS));
-		       break;
- 
- case 'maildbloeschen': untertabdatenloeschen(new email($db),
-					    mystripslashes($HTTP_POST_VARS));
-		        break;
- 
- case 'hpform':       untertabdatenform(new homepage($db));
-		      break;
-
- case 'hpdbneu':		      
- case 'hpdbaendern': untertabdatenaendern(new homepage($db),mystripslashes($HTTP_POST_VARS));
-		     break;
- 
- case 'hpdbloeschen': untertabdatenloeschen(new homepage($db),
-					    mystripslashes($HTTP_POST_VARS));
-		      break;
- case 'telform':      untertabdatenform(new telefon($db));
-		      break;
-
- case 'teldbneu':		      
- case 'teldbaendern': untertabdatenaendern(new telefon($db),mystripslashes($HTTP_POST_VARS));
-		      break;
- 
- case 'teldbloeschen': untertabdatenloeschen(new telefon($db),
-					    mystripslashes($HTTP_POST_VARS));
-		       break;
- case 'email' : mailsenden($db,$HTTP_POST_VARS);
-   break;
-
-   
-}
-seitenende();
-	  ?>
+?>
