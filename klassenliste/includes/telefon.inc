@@ -1,5 +1,6 @@
 <?php /*
-Copyright (c) 2000 SchlemmerSoft (Tobias Schlemmer)
+$Id: telefon.inc,v 1.3 2004/05/08 16:12:06 keinstein Exp $
+Copyright © 2000 SchlemmerSoft (Tobias Schlemmer)
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -16,6 +17,12 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 Der Autor kann unter der Email: Tobias.Schlemmer@web.de erreicht werden.
+
+$Log: telefon.inc,v $
+Revision 1.3  2004/05/08 16:12:06  keinstein
+Person/Adresse löschen
+Labels für radio-buttons
+
 
 */ 
 
@@ -54,6 +61,11 @@ class telefon extends dbtabelle{
 			       $args['id']);
 	case "loeschen":
 	        return sprintf("delete from %s where id=%d",$mysql_daten['TelTab'],$args);
+	case "persloeschen":
+	        return sprintf("delete from %s where uid=%d",$mysql_daten['TelTab'],$args);
+        case "adr_loeschen":
+                return sprintf("update %s set aid=NULL,uid=%d where aid=%d",
+			       $mysql_daten['TelTab'],$args['uid'],$args['aid']);
     }
   }
 	
@@ -94,6 +106,14 @@ class telefon extends dbtabelle{
     return $this->update_backend($this->sql("update",$daten),$daten['uid']);
   }
 
+  function adr_loeschen($aid,$uid){
+    $this->puffer_leeren();
+    if (!$aid || !ereg('^[0-9]*$',$id)) {
+      return -1;
+    }
+    echo $this->sql("adr_loeschen",array('aid'=> $aid, 'uid'=>$uid));
+    return $this->update_backend($this->sql("adr_loeschen",array('aid'=> $aid, 'uid'=>$uid)),$uid);
+  }
   /* die einzelnen Felder der Person */
 
   function id() {
@@ -139,7 +159,7 @@ class telefon extends dbtabelle{
     if (!$daten) $daten=array('uid' => $_SESSION['uid']);
     $adressen=new adresse($this->db);
     $adressen->erste_person($daten['uid']);
-?>
+?>      
 <form method="post" action="<?=$PHP_SELF?>">
 <input type="hidden" name="aktion" 
    value="<?=$daten['id']?"teldbaendern":"teldbneu"?>" />
@@ -150,14 +170,17 @@ class telefon extends dbtabelle{
 <table border="0">
 <tr><td>Adresse</td><td>
       <p>
-      <input type="radio" name="aid" value="" /> Keine 
+      <input type="radio" id="aidinputnull<?=$daten['id']?>" name="aid" value="" <?=$daten['aid']?"":"checked=\"1\" "?>/>
+      <label for="aidinputnull<?=$daten['id']?>">Keine</label>
    </p>
    <?php do { ?><p>
-      <input type="radio" name="aid" value="<?=$adressen->id();?>" 
-	      <?=$daten['aid']==$adressen->id()?"checked=\"1\"":""?> /><?=$adressen->anfang()?><br>
+      <input type="radio" name="aid" id="aid<?=$adressen->id()?>input<?=$daten['id']?>" value="<?=$adressen->id();?>" 
+      	      <?=$daten['aid']==$adressen->id()?"checked=\"1\"":""?> />
+	      <label for="aid<?=$adressen->id()?>input<?=$daten['id']?>"><?=$adressen->anfang()?><br>
 	      <?=$adressen->plz()?>&nbsp;<?=$adressen->ort()?><br>
 	      <?=$adressen->ende()?>
-	      </p>
+      </label>
+      </p>
 <?php } while ($adressen->naechste()); ?>
 </td></tr>
 <tr><td>Vorwahl</td><td>
