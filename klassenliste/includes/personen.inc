@@ -33,8 +33,9 @@ class personen extends dbtabelle {
 	case "insert":
 	        return sprintf("insert into %s (%slogin,aktueller_name,geburtsname,"
 			       . "vorname,kommentar,pw) values (%s'%s','%s','%s','%s','%s',"
-			       . "encrypt('%s'))",$args['id']?"id,":"",
+			       . "encrypt('%s'))",
 			       $mysql_daten['PersTab'],
+			       $args['id']?"id,":"",
 			       $args['id']?addslashes($args['id']) . ',':"",
 			       addslashes($args['login']),
 			       addslashes($args['aktueller_name']),
@@ -48,14 +49,14 @@ class personen extends dbtabelle {
 			       . "geburtsname='%s',vorname='%s',kommentar='%s'%s"
 			       . "where id=%d",
 			       $mysql_daten['PersTab'],
-			       addslashes($daten['login']),
-			       addslashes($daten['aktueller_name']),
-			       addslashes($daten['geburtsname']),
-			       addslashes($daten['vorname']),
-			       addslashes(nl2br($daten['kommentar'])),
-			       $daten['pw']?",pw=encrypt('" 
-			       . addslashes($daten['pw']) . "')":"",
-			       $daten['id']);
+			       addslashes($args['login']),
+			       addslashes($args['aktueller_name']),
+			       addslashes($args['geburtsname']),
+			       addslashes($args['vorname']),
+			       addslashes(nl2br($args['kommentar'])),
+			       $args['pw']?",pw=encrypt('" 
+			       . addslashes($args['pw']) . "')":"",
+			       $args['id']);
 
         case "loeschen":
 	        return sprintf("delete from %s where id=%d",$mysql_daten['PersTab'],$args);
@@ -167,6 +168,40 @@ class personen extends dbtabelle {
     return $this->Werte['id'];
   }
 
+  function loeschen($id,$tr_aktiv=0){
+    if (!$tr_aktiv){
+      $status=!($this->db->transaction_start());
+    }
+    if (!$status) {
+      $tabelle= new adresse($this->db);
+      $status=$tabelle->loeschen(0,$id,1);
+      if (!$status) {
+	$tabelle= new email($this->db);
+	$status= $tabelle->loeschen(0,$id);
+      }
+      if (!$status) {
+	$tabelle= new homepage($this->db);
+	$status= $tabelle->loeschen(0,$id);
+      }
+      if (!$status) {
+	$tabelle= new jg($this->db);
+	$status= $tabelle->loeschen(0,$id);
+      }
+      if (!$status) {
+	$tabelle= new telefon($this->db);
+	$status= $tabelle->loeschen(0,$id);
+      }
+      if (!$status) {
+	$status=parent::loeschen($id);
+      }
+    }
+    if (!$tr_aktiv){
+      if ($status) $this->db->rollback();
+      else $this->db->commit();
+    }
+    return $status;
+  }
+
   /* die einzelnen Felder der Person */
 
   function id() {
@@ -204,7 +239,7 @@ class personen extends dbtabelle {
     $hp=new homepage($this->db); 
     $email=new email($this->db);
     do {
-      echo $layout['tabtrenner'];
+      echo $layout['tabtrenner']. "\n";
 ?>
 <tr><?=$erstespalte?><td><?=$this->geburtsname()?></td><td><?=$this->vorname()?></td><?php
    if ($adresse->erste_person($this->id())){
@@ -252,6 +287,18 @@ class personen extends dbtabelle {
     $telefon->puffer_leeren();
     $hp->puffer_leeren(); 
     $email->puffer_leeren();
+  } 
+
+  function mailformopts(){
+    $email=new email($this->db);
+    $mailformopts=array();
+    do {
+      $email->erste_nurformular($this->id());
+      $neuformopts=$email->mailformopts();
+      $mailformopts=array_merge($mailformopts,$neuformopts);
+    } while ($this->naechste());
+    $email->puffer_leeren();
+    return $mailformopts;
   } 
 
   function formular($daten=0) {
