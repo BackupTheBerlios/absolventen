@@ -1,5 +1,5 @@
-<?php /*
-Copyright (c) 2000 SchlemmerSoft (Tobias Schlemmer)
+<?php /* $Id: layoutstag.inc,v 1.3 2004/07/15 11:47:15 keinstein Exp $
+Copyright (c) 2000-2004 SchlemmerSoft (Tobias Schlemmer)
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -16,6 +16,10 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 Der Autor kann unter der Email: Tobias.Schlemmer@web.de erreicht werden.
+
+$Log: layoutstag.inc,v $
+Revision 1.3  2004/07/15 11:47:15  keinstein
+copyright korrigiert
 
 */ 
 
@@ -67,7 +71,7 @@ function seitenende($br=" | ",$copy=1){
   <p><?=$layout['linie']?><font size="-1">
   <a href="http://absolventen.berlios.de">Klassenliste Version <?=$version?></a></font><br />
   <address><font size="-2">
-   &copy; 2000
+   &copy; 2000-2004
     <a href="mailto:Tobias.Schlemmer@web.de">SchlemmerSoft 
      (Tobias schlemmer)</a><br />
     Dieses Programm steht unter der 
