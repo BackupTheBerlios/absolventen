@@ -1,4 +1,4 @@
-<?php /* $Id: adressen.inc,v 1.6 2004/07/15 00:02:42 keinstein Exp $
+<?php /* $Id: adressen.inc,v 1.7 2004/07/19 22:16:55 keinstein Exp $
 Copyright (c) 2000-2004 SchlemmerSoft (Tobias Schlemmer)
 
 This program is free software; you can redistribute it and/or
@@ -18,6 +18,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 Der Autor kann unter der Email: Tobias.Schlemmer@web.de erreicht werden.
 
 $Log: adressen.inc,v $
+Revision 1.7  2004/07/19 22:16:55  keinstein
+Globale Variablen -> $GLOBALS['mod_absolventen_glob']
+Felder getestet
+im Formular bei neu nicht mehr alle Felder löschen
+dort: HTML-Attribute in ""
+
 Revision 1.6  2004/07/15 00:02:42  keinstein
 ids beim insert notfalls mit NULL belegen, aber immer
     mit aufführen
@@ -32,18 +38,18 @@ id und uid: raus (sind in dbtabelle)
 
 class adresse extends dbtabelle{
   function sql($funktion,$args){
-    global $mysql_daten;
+    
     switch ($funktion) {
 	case "erste_person": 
 		return sprintf("select id, uid, anfang, plz, ort, ende from %s where uid=%d",
-			$mysql_daten['AdrTab'],$args);
+			$GLOBALS['mod_absolventen_glob']['mysql']['AdrTab'],$args);
   	case "diese": 
 		return sprintf("select id,uid,anfang,plz,ort,ende from %s where id=%d",
-			$mysql_daten['AdrTab'],$args);
+			$GLOBALS['mod_absolventen_glob']['mysql']['AdrTab'],$args);
 	case "insert":
 		return sprintf("insert into %s (id,uid,anfang,plz,ort,ende"
 			       . ") values (%s,%d,%s,%s,%s,%s)",
-			       $mysql_daten['AdrTab'],
+			       $GLOBALS['mod_absolventen_glob']['mysql']['AdrTab'],
 			       empty($args['id'])?'NULL':sprintf('%d',$args['id']),
 			       $args['uid'],
 			       empty($args['anfang'])?'NULL':"'" . addslashes(nl2br($args['anfang'])) . "'",
@@ -54,7 +60,7 @@ class adresse extends dbtabelle{
 		return sprintf("update %s set uid=%d,anfang=%s,plz=%s,"
 			       . "ort=%s,ende=%s"
 			       . " where id=%d",
-			       $mysql_daten['AdrTab'],
+			       $GLOBALS['mod_absolventen_glob']['mysql']['AdrTab'],
 			       $args['uid'],
 			       empty($args['anfang'])?'NULL':"'" . addslashes(nl2br($args['anfang'])) . "'",
 			       empty($args['plz'])?"NULL":"'" . addslashes($args['plz']) . "'",
@@ -62,9 +68,9 @@ class adresse extends dbtabelle{
 			       empty($args['ende'])?"NULL":"'" . addslashes(nl2br($args['ende'])) . "'",
 			       $args['id']);
 	case "loeschen":
-	        return sprintf("delete from %s where id=%d",$mysql_daten['AdrTab'],$args);
+	        return sprintf("delete from %s where id=%d",$GLOBALS['mod_absolventen_glob']['mysql']['AdrTab'],$args);
 	case "persloeschen":
-	        return sprintf("delete from %s where uid=%d",$mysql_daten['AdrTab'],$args);
+	        return sprintf("delete from %s where uid=%d",$GLOBALS['mod_absolventen_glob']['mysql']['AdrTab'],$args);
     }
   }
 	
@@ -119,19 +125,19 @@ class adresse extends dbtabelle{
 
   /* die einzelnen Felder der Adresse */
   function anfang() {
-    return $this->Werte["anfang"];
+    return isset($this->Werte["anfang"])?$this->Werte["anfang"]:false;
   }
 
   function plz() {
-    return $this->Werte["plz"];
+    return isset($this->Werte["plz"])?$this->Werte["plz"]:false;
   }
 
   function ort() {
-    return $this->Werte["ort"];
+    return isset($this->Werte["ort"])?$this->Werte["ort"]:false;
   }
 
   function ende() {
-    return $this->Werte["ende"];
+    return isset($this->Werte["ende"])?$this->Werte["ende"]:false;
   }
 
 
@@ -171,11 +177,13 @@ class adresse extends dbtabelle{
     }  while ($this->naechste());
   }
 
-  function formular($neu,$daten=0,$fehler=0) {
-    global $PHP_SELF;
-    if ($neu) $daten=array('uid' => $_SESSION['mod_absolventen']['uid']);
+  function formular($neu,$daten=array(),$fehler=array()) {
+    if ($neu) {
+      $daten['uid'] = $_SESSION['mod_absolventen']['uid'];
+      if (isset($daten['id'])) unset($daten['id']);
+    }
 ?>
-<form class="absolventen adressen formular" method="post" action="<?=$PHP_SELF?>">
+<form class="absolventen adressen formular" method="post" action="<?=$GLOBALS['mod_absolventen_glob']['php_self']?>">
   <input class="absolventen adressen formular" type="hidden" name="aktion" 
     value="<?=$neu?"adrdbneu":"adrdbaendern"?>" />
   <?php if (isset($daten['id'])) 
@@ -186,9 +194,8 @@ class adresse extends dbtabelle{
     <tr class="absolventen adressen formular adranfang">
       <th class="absolventen adressen formular adranfang"><label 
           class="absolventen adressen formular adranfang"
-          for="adranfang<?=isset($daten['id'])?$daten['id']:""?>"
-          class="absolventen adressen formular">Anfang der Adresse</label></th>
-      <td class="absolventen adressen formular adranfang"><textarea cols=30 rows=2 name="anfang" 
+          for="adranfang<?=isset($daten['id'])?$daten['id']:""?>">Anfang der Adresse</label></th>
+      <td class="absolventen adressen formular adranfang"><textarea cols="30" rows="2" name="anfang" 
           class="absolventen adressen formular<?=isset($fehler['anfang'])?" fehler":""?>" 
           id="adranfang<?=isset($daten['id'])?$daten['id']:""?>"><?=isset($daten['anfang'])?
                 preg_replace("/<br[^>]*>/i","",$daten['anfang']):""?></textarea></td>
@@ -197,7 +204,7 @@ class adresse extends dbtabelle{
       <th class="absolventen adressen formular adrplz"><label
           class="absolventen adressen formular adrplz" 
           for="adrplz<?=isset($daten['id'])?$daten['id']:""?>">Postleitzahl</label></th>
-      <td class="absolventen adressen formular adrplzort"><input type="text" size=5 name="plz" 
+      <td class="absolventen adressen formular adrplzort"><input type="text" size="5" name="plz" 
 	  value="<?=isset($daten['plz'])?$daten['plz']:""?>" 
           class="absolventen adressen formular adrplzort<?=isset($fehler['plz'])?" fehler":""?>"
           id="adrplz<?=isset($daten['id'])?$daten['id']:""?>"/></td>
@@ -206,7 +213,7 @@ class adresse extends dbtabelle{
       <th class="absolventen adressen formular adrort"><label 
           class="absolventen adressen formular adrort" 
           for="adrort<?=isset($daten['id'])?$daten['id']:""?>">Ort</label></th>
-      <td class="absolventen adressen formular adrplzort"><input type="text" size=20 name="ort" 
+      <td class="absolventen adressen formular adrplzort"><input type="text" size="20" name="ort" 
           value="<?=isset($daten['ort'])?$daten['ort']:""?>" 
           class="absolventen adressen formular adrplzort<?=isset($fehler['ort'])?" fehler":""?>"
           id="adrort<?=isset($daten['id'])?$daten['id']:""?>" /></td>
@@ -216,7 +223,7 @@ class adresse extends dbtabelle{
 	  class="absolventen adressen formular adrende"
           for="adrende<?=isset($daten['id'])?$daten['id']:""?>">Weiteres zu 
         dieser<br />Adresse (z.&thinsp;B. Land)</label></th>
-      <td class="absolventen adressen formular adrende"><textarea cols=30 rows=2 
+      <td class="absolventen adressen formular adrende"><textarea cols="30" rows="2" 
           id="adrende<?=isset($daten['id'])?$daten['id']:""?>"
           class="absolventen adressen formular<?=isset($fehler['ende'])?" fehler":""?>" 
           name="ende"><?=isset($daten['ende'])?preg_replace(
@@ -231,7 +238,7 @@ class adresse extends dbtabelle{
   </table>
 </form>
 <?php if (!$neu) { ?>
-<form method="post" action="<?=$PHP_SELF?>" class="absolventen adressen formular adrloeschen">
+<form method="post" action="<?=$GLOBALS['mod_absolventen_glob']['php_self']?>" class="absolventen adressen formular adrloeschen">
   <input type="hidden" name="aktion" value="adrdbloeschen"  class="absolventen adressen formular"/>
   <input type="hidden" name="id" value="<?=$daten['id']?>"  class="absolventen adressen formular"/>
   <input type="hidden" name="uid" value="<?=$daten['uid']?>"  class="absolventen adressen formular"/>
@@ -240,7 +247,7 @@ class adresse extends dbtabelle{
 <?php
     }
     if (!empty($fehler)) { ?>
-<form method="post" action="<?=$PHP_SELF?>" class="absolventen adressen formular adrabbrechen">
+<form method="post" action="<?=$GLOBALS['mod_absolventen_glob']['php_self']?>" class="absolventen adressen formular adrabbrechen">
   <input type="hidden" name="aktion" value="adrform" class="absolventen adressen formular"/>
   <input type="submit"  value="Abbrechen" class="absolventen adressen formular adrabbrechen" />
 </form>
@@ -249,7 +256,7 @@ class adresse extends dbtabelle{
   }
 
   function checkdaten($daten,$neu) {
-    global $klasse;
+    
     $fehler=array();
     if (!empty($daten['id']) && !ereg("^[0-9]*$",$daten['id'])) 
       $fehler['id'] ="Fehlerhafte id";
