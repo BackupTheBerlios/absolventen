@@ -17,13 +17,17 @@ $klasse=array('Kurssystem' => '',
 	      'S-Zug'      => 'S-Zug');
 
 /* MySQL */
-$mysql_daten['Nutzer']='www';
-$mysql_daten['Passwort']='web';
-$mysql_daten['Rechner']='localhost';
-$mysql_daten['DB']='stag';
-/* Namen der einzelnen Tabellen */
-$mysql_daten['AdrTab']='StAgAdr';
-$mysql_daten['JgTab']='StAgJg';
+$mysql_daten=array('Nutzer'   => 'www',
+		   'Passwort' => 'web',
+		   'Rechner'  => 'localhost',
+                   'DB'       => 'stag',
+                /* Namen der einzelnen Tabellen */
+		   'PersTab'  => 'StAg',
+                   'AdrTab'   => 'StAgAdr',
+                   'TelTab'   => 'StAgTel',
+                   'JgTab'    => 'StAgJg',
+		   'EmailTab' => 'StAgMail',
+		   'HPTab'    => 'StAgHP');
 
 /* Erlaube/setzte einige Tags für Kommentare 
    Format ist für preg_replace, also Perl-Syntax 
