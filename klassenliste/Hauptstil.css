@@ -1,3 +1,12 @@
+/* $Id: Hauptstil.css,v 1.3 2004/07/25 17:27:21 keinstein Exp $ */
+
+/* $Log: Hauptstil.css,v $
+/* Revision 1.3  2004/07/25 17:27:21  keinstein
+/* Links unter Maus invertiert
+/*
+
+*/
+
 
 body { 
        border:0px;
@@ -582,6 +591,15 @@ div.absolventen a:link {
                          background-color:transparent;
                          color: inherit;
                          }
+
+div.absolventen a:hover { 
+	color:					#6E241E;
+	background-color:		#EEE;
+}
+
+div.absolventen a.fussmenu { 
+padding: 3px;
+ }
 
 ul.absolventen.fehler:before { 
                                      background-color: #edd;
