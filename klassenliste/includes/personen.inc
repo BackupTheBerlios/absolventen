@@ -1,4 +1,4 @@
-<?php /* $Id: personen.inc,v 1.6 2004/07/15 11:52:57 keinstein Exp $
+<?php /* $Id: personen.inc,v 1.7 2004/07/19 22:46:34 keinstein Exp $
 Copyright (c) 2000-2004 SchlemmerSoft (Tobias Schlemmer)
 
 This program is free software; you can redistribute it and/or
@@ -18,6 +18,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 Der Autor kann unter der Email: Tobias.Schlemmer@web.de erreicht werden.
 
 $Log: personen.inc,v $
+Revision 1.7  2004/07/19 22:46:34  keinstein
+globale Variablen -> $GLOBALS
+bb-Code für Kommentar
+
 Revision 1.6  2004/07/15 11:52:57  keinstein
 
 
@@ -42,20 +46,20 @@ loeschen(): ohne Statusmeldungen
 
 class personen extends dbtabelle {
   function sql($funktion,$args){
-    global $mysql_daten;
+    
     switch ($funktion) {
 	case "erste_person": 
   	case "diese": 
 		return sprintf("select id,login,aktueller_name,geburtsname,vorname,kommentar,"
 			       . "DATE_FORMAT(aktualisierung,'%%d.%%m.%%Y %%T') as aktualisierung "
 			       . "from %s where id=%d",
-			       $mysql_daten['PersTab'],$args);
+			       $GLOBALS['mod_absolventen_glob']['mysql']['PersTab'],$args);
 
 	case "insert":
 	        return sprintf("insert into %s (id,login,aktueller_name,geburtsname,"
 			       . "vorname,kommentar,pw) values (%s,'%s','%s','%s','%s',%s,"
 			       . "%s)",
-			       $mysql_daten['PersTab'],
+			       $GLOBALS['mod_absolventen_glob']['mysql']['PersTab'],
 			       empty($args['id'])?"NULL":sprintf("%d",$args['id']),
 			       addslashes($args['login']),
 			       addslashes($args['aktueller_name']),
@@ -68,7 +72,7 @@ class personen extends dbtabelle {
                 return sprintf("update %s set login='%s',aktueller_name='%s',"
 			       . "geburtsname='%s',vorname='%s',kommentar=%s%s"
 			       . " where id=%d",
-			       $mysql_daten['PersTab'],
+			       $GLOBALS['mod_absolventen_glob']['mysql']['PersTab'],
 			       addslashes($args['login']),
 			       addslashes($args['aktueller_name']),
 			       addslashes($args['geburtsname']),
@@ -78,7 +82,7 @@ class personen extends dbtabelle {
 			       $args['id']);
 
         case "loeschen":
-	        return sprintf("delete from %s where id=%d",$mysql_daten['PersTab'],$args);
+	        return sprintf("delete from %s where id=%d",$GLOBALS['mod_absolventen_glob']['mysql']['PersTab'],$args);
 
         case "erste_jahrgang":
 	        return sprintf("select %s.id as "
@@ -89,31 +93,31 @@ class personen extends dbtabelle {
 			       . " and %s.klasse=%s and %s.drin=%d"
 			       . " and %s.uid=%s.id"
 			       . " order by geburtsname,vorname,aktueller_name",
-			       $mysql_daten['PersTab'],
-			       $mysql_daten['PersTab'],
-			       $mysql_daten['JgTab'],
-			       $mysql_daten['JgTab'],
+			       $GLOBALS['mod_absolventen_glob']['mysql']['PersTab'],
+			       $GLOBALS['mod_absolventen_glob']['mysql']['PersTab'],
+			       $GLOBALS['mod_absolventen_glob']['mysql']['JgTab'],
+			       $GLOBALS['mod_absolventen_glob']['mysql']['JgTab'],
 			       $args['jahrgang'],
-			       $mysql_daten['JgTab'],
+			       $GLOBALS['mod_absolventen_glob']['mysql']['JgTab'],
 			       isset($args['klasse'])?"'" . addslashes($args['klasse']) . "'":"NULL",
-			       $mysql_daten['JgTab'],
+			       $GLOBALS['mod_absolventen_glob']['mysql']['JgTab'],
 			       $args['drin'],
-			       $mysql_daten['JgTab'],
-			       $mysql_daten['PersTab']);
+			       $GLOBALS['mod_absolventen_glob']['mysql']['JgTab'],
+			       $GLOBALS['mod_absolventen_glob']['mysql']['PersTab']);
         case "aktualisiere_akt":
                 return sprintf("update %s set aktualisierung=NULL "
 			       . "where id=%d",
-			       $mysql_daten['PersTab'],
+			       $GLOBALS['mod_absolventen_glob']['mysql']['PersTab'],
 			       $args);
         case "get_pw":
         	return sprintf("select aktueller_name,geburtsname,vorname,"
 			       . "id,pw "
 			       . "from %s where login='%s'",
-			       $mysql_daten['PersTab'],
+			       $GLOBALS['mod_absolventen_glob']['mysql']['PersTab'],
 			       empty($args)?"":addslashes($args));
         case "login_exists":
 	  return sprintf("select id from %s where login='%s'",
-			 $mysql_daten['PersTab'],empty($args)?"":addslashes($args));
+			 $GLOBALS['mod_absolventen_glob']['mysql']['PersTab'],empty($args)?"":addslashes($args));
 
     }
   }
@@ -187,39 +191,32 @@ class personen extends dbtabelle {
   }
 
   function loeschen($id,$tr_aktiv=0){
-    echo "Transaktion: ";
     if (!$tr_aktiv){
       $status=!($this->db->transaction_start());
     }
     if (!$status) {
-      echo "OK<br />Adressen: ";
       $tabelle= new adresse($this->db);
       $status=$tabelle->loeschen(0,$id,1);
       if (!$status) {
-	echo "OK<br />Emails: ";
 	$tabelle= new email($this->db);
 	$status= $tabelle->loeschen(0,$id);
       }
       if (!$status) {
-	echo "OK<br />Emails: ";
 	$tabelle= new homepage($this->db);
 	$status= $tabelle->loeschen(0,$id);
       }
       if (!$status) {
-	echo "OK<br />Emails: ";
 	$tabelle= new jg($this->db);
 	$status= $tabelle->loeschen(0,$id);
       }
       if (!$status) {
-	echo "OK<br />Emails: ";
 	$tabelle= new telefon($this->db);
 	$status= $tabelle->loeschen(0,$id);
       }
       if (!$status) {
-	echo "OK<br />Emails: ";
 	$status=parent::loeschen($id);
-      } else echo "Fehler<br />";
-    } else echo "Fehler<br />";
+      } 
+    }
     if (!$tr_aktiv){
       if ($status) $this->db->rollback();
       else $this->db->commit();
@@ -229,42 +226,38 @@ class personen extends dbtabelle {
 
   /* die einzelnen Felder der Person */
 
-  function id() {
-    return $this->Werte["id"];
-  }
-
   function aktueller_name() {
-    return $this->Werte["aktueller_name"];
+    return !isset($this->Werte["aktueller_name"])?false:$this->Werte["aktueller_name"];
   }
 
   function geburtsname() {
-    return $this->Werte["geburtsname"];
+    return !isset($this->Werte["geburtsname"])?false:$this->Werte["geburtsname"];
   }
 
   function vorname() {
-    return $this->Werte["vorname"];
+    return !isset($this->Werte["vorname"])?false:$this->Werte["vorname"];
   }
 
   function kommentar() {
-    return $this->Werte["kommentar"];
+    return !isset($this->Werte["kommentar"])?false:$this->Werte["kommentar"];
   }
 
   function aktualisierung() {
-    return $this->Werte["aktualisierung"];
+    return !isset($this->Werte["aktualisierung"])?false:$this->Werte["aktualisierung"];
   }
   
   function login() {
-    return $this->Werte["login"];
+    return !isset($this->Werte["login"])?false:$this->Werte["login"];
   }
   
   function normprint($erstespalte=false){
-    global $layout;
+    
     $adresse=new adresse($this->db);
     $telefon=new telefon($this->db);
     $hp=new homepage($this->db); 
     $email=new email($this->db);
     do {
-      echo $layout['tabtrenner']. "\n";
+      echo $GLOBALS['mod_absolventen_glob']['layout']['tabtrenner']. "\n";
 ?>
 <tr class="absolventen anzeige anzeige_jg"><?=$erstespalte?>
 <td class="absolventen anzeige anzeige_geburtsname"><?=$this->geburtsname()?></td>
@@ -276,7 +269,7 @@ class personen extends dbtabelle {
 <td class="absolventen anzeige anzeige_akuteller_name"><?=$this->aktueller_name()?></td><?php 
      $adresse->zweitprint();?></tr><?php
      if ($adrzeilen==3) {
-       print('<tr class="absolventen anzeige anzeige_jg"><td colspan="2 class="absolventen anzeige anzeige_leer""></td>');
+       print('<tr class="absolventen anzeige anzeige_jg"><td colspan="2" class="absolventen anzeige anzeige_leer"></td>');
        $adresse->drittprint();
        print('</tr>');
      }
@@ -308,9 +301,9 @@ size="-2" class="absolventen anzeige anzeige_timestamp"><?=$this->aktualisierung
    if ($hp->erste_person($this->id())) {
      if ($istemail) {
        echo "</td></tr>\n";
-       echo '<tr><td colspan="2"></td><td colspan="3"';
+       echo '<tr><td colspan="2"></td><td colspan="3" ';
      }
-     print ('class="absolventen anzeige anzeige_hp">');
+     print (' class="absolventen anzeige anzeige_hp">');
      $hp->normprint($erstespalte);
    } else if (!$istemail) print ('class="absolventen anzeige anzeige_leer">');
 ?>
@@ -340,10 +333,13 @@ size="-2" class="absolventen anzeige anzeige_timestamp"><?=$this->aktualisierung
     return $mailformopts;
   } 
 
-  function formular($neu,$daten=0,$fehler=0) {
-    global $PHP_SELF;
+  function formular($neu,$daten=array(),$fehler=array()) {
+    $bbparser=new kommentar_code_class();
+    if ($neu) {
+      if (isset($daten['id'])) unset($daten['id']);
+    }
 ?>
-<form method="post" action="<?=$PHP_SELF?>" class="absolventen person formular">
+<form method="post" action="<?=$GLOBALS['mod_absolventen_glob']['php_self']?>" class="absolventen person formular">
 <input type="hidden" name="aktion" 
    value="<?=$neu?"persdbneu":"persdbaendern"?>" />
 <?php if (!empty($daten['id'])) { ?>
@@ -385,7 +381,7 @@ size="-2" class="absolventen anzeige anzeige_timestamp"><?=$this->aktualisierung
 	id="abs_bemerkungen"
         class="absolventen person formular pers_bemerkungen<?=isset($fehler['kommentar'])?" fehler":""
           ?>"><?=isset($daten['kommentar'])?preg_replace("/<br[^>]*>/i","",
-		    $daten["kommentar"]):""?></textarea></td>
+		    $bbparser->backparse($daten["kommentar"])):""?></textarea></td>
   </tr>
   <tr class="absolventen person formular pers_login">
     <th class="absolventen person formular pers_login"><label 
@@ -425,7 +421,7 @@ size="-2" class="absolventen anzeige anzeige_timestamp"><?=$this->aktualisierung
 </table>
 </form>
 <?php if (!empty($fehler)) { ?>
-<form method="post" action="<?=$PHP_SELF?>" class="absolventen jahrgang formular">
+<form method="post" action="<?=$GLOBALS['mod_absolventen_glob']['php_self']?>" class="absolventen jahrgang formular">
   <input type="hidden" name="aktion" value="<?=$neu?"hinzufuegen":"persformaendern"?>" />
   <input type="submit"  value="Abbrechen" 
 	class="absolventen jahrgang formular knoepfe jg_loeschen" />
@@ -434,10 +430,13 @@ size="-2" class="absolventen anzeige anzeige_timestamp"><?=$this->aktualisierung
   }
 
   function checkdaten(&$daten,$neu) {
+    $bbparser=new kommentar_code_class();
     $fehler=array();
     if (empty($daten['vorname'])) $fehler['vorname']="Der Vorname fehlt."; 
     if (empty($daten['aktueller_name'])) $fehler['aktueller_name']="Der aktuelle Name fehlt."; 
     if (empty($daten['geburtsname'])) $fehler['geburtsname']="Der &bdquo;Geburtsname&rdquo; fehlt."; 
+    $daten['kommentar']=$bbparser->parse($daten['kommentar']);
+    if ($bbparser->getfehler()) $fehler['kommentar']=$bbparser->getfehler();
     if (empty($daten['login'])) $fehler['login']="Der Nutzername fehlt."; 
     if (($neu && (empty($daten['pw1']) ||empty($daten['pw1']))) || 
 	((!empty($daten['pw1']) || !empty($daten['pw1'])) && 
@@ -445,8 +444,10 @@ size="-2" class="absolventen anzeige anzeige_timestamp"><?=$this->aktualisierung
       $fehler['pw']="Es wurden keine zwei identischen Passw&ouml;rter eingegeben.";
     if (!empty($daten['login']) && $lid=$this->login_exists($daten['login'])){
       if(empty($daten['id']) || $lid!=$daten['id']) {
-	  $fehler[empty($fehler['login'])?'login':'login2'] = "Der Nutzername wird von schon von einem Nutzer verwendet." .
-	    $empty($daten['id'])?" Melden Sie sich bitte gegebenenfalls unter Ihrem Nutzernamen an, bevor Sie Daten ändern.":"";
+	$fehler[empty($fehler['login'])?'login':'login2'] = (
+	  "Der Nutzername wird von schon von einem Nutzer verwendet." .
+	  ( empty($daten['id'])?" Melden Sie sich bitte gegebenenfalls"
+	    . "unter Ihrem Nutzernamen an, bevor Sie Daten ändern.":"") );
       }
     }
     if (!empty($daten['id']) && (empty($_SESSION['mod_absolventen']['uid']) || $daten['id']!=$_SESSION['mod_absolventen']['uid'])) {
