@@ -137,6 +137,7 @@ function jgdatenaendern($db,$daten){
   $person->aktualisiere_akt($daten['uid']);
   jgdatenform($db);
 }
+
 function adrdatenaendern($db,$daten){
   $adresse=new adresse($db);
   if ($daten['id']) {
@@ -161,7 +162,33 @@ function adrdatenaendern($db,$daten){
   }
   $person=new personen($db);
   $person->aktualisiere_akt($daten['uid']);
-  adrdatenform($db);
+  untertabdatenform($adresse);
+}
+
+function untertabdatenaendern($tabelle,$daten){
+  if ($daten['id']) {
+    $tabelle->diese($daten['id']);
+    if ($daten['uid'] != $_SESSION['uid']){
+      print('<strong>Zugriff verweigert!</strong>');
+      select_jgs($this->db);
+      return;
+    }  
+  }
+  $fehler=$tabelle->checkdaten($daten);
+  if ($fehler) {
+    printf("<strong>%s</strong>",$fehler);
+    $tabelle->formular($daten);
+    return;
+  }
+  if ($daten['id']) {
+    $tabelle->update($daten);
+    $tabelle->puffer_leeren();
+  } else {
+    $tabelle->insert($daten);
+  }
+  $person=new personen($tabelle->db);
+  $person->aktualisiere_akt($daten['uid']);
+  untertabdatenform($tabelle);
 }
 
 function untertabdatenloeschen($tabelle,$daten){
@@ -172,7 +199,7 @@ function untertabdatenloeschen($tabelle,$daten){
     return;
   }  
   $tabelle->loeschen($daten['id'],$daten['uid']);
-  adrdatenform($db);
+  untertabdatenform($tabelle);
 }
 
 ?>
