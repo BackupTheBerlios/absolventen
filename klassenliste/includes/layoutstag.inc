@@ -1,4 +1,4 @@
-<?php /* $Id: layoutstag.inc,v 1.3 2004/07/15 11:47:15 keinstein Exp $
+<?php /* $Id: layoutstag.inc,v 1.4 2004/07/19 22:34:48 keinstein Exp $
 Copyright (c) 2000-2004 SchlemmerSoft (Tobias Schlemmer)
 
 This program is free software; you can redistribute it and/or
@@ -18,16 +18,19 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 Der Autor kann unter der Email: Tobias.Schlemmer@web.de erreicht werden.
 
 $Log: layoutstag.inc,v $
+Revision 1.4  2004/07/19 22:34:48  keinstein
+globale variablen nach $GLOBALS
+
 Revision 1.3  2004/07/15 11:47:15  keinstein
 copyright korrigiert
 
 */ 
 
 /* Trennlinie in der Tabelle (komplette Tabellenzeile) */
-$layout['tabtrenner']='<tr><td colspan=5 align=center><IMG SRC="../eksg/bilder/regenbogen.gif" HEIGHT=5 WIDTH=700 ALIGN=CENTER></td></tr>';
+$GLOBALS['mod_absolventen_glob']['layout']['tabtrenner']='<tr><td colspan=5 align=center><IMG SRC="../eksg/bilder/regenbogen.gif" HEIGHT=5 WIDTH=700 ALIGN=CENTER></td></tr>';
 
 /* Trennlinie im freien Text */
-$layout['linie']='<hr width="95%" />';
+$GLOBALS['mod_absolventen_glob']['layout']['linie']='<hr width="95%" />';
 
 
 
@@ -51,25 +54,26 @@ function seitenanfang($title="ehemalige Sch&uuml;ler von St.&nbsp;Augustin",
 }
 
 function seitenende($br=" | ",$copy=1){
-  global $layout;
-  global $version;
-  global $startzeit;
+  
+  
+  
 ?>
-  <p><?=$layout['linie']?>
-  <a href="<?=$PHP_SELF?>?aktion=jgauswahl">Abfrage</a><?=$br?>
-  <a href="<?=$PHP_SELF?>?aktion=hinzufuegen">Hinzuf&uuml;gen</a><?=$br?>
-  <a href="<?=$PHP_SELF?>?aktion=login">Einloggen</a>
-  </p>
-<?php if ($layout['homelink']) {?>
-  <p><?=$layout['linie']?>
-  <?=$layout['homelink']?>
+  <p><?=$GLOBALS['mod_absolventen_glob']['layout']['linie']?>
+  <a href="<?=$GLOBALS['mod_absolventen_glob']['php_self']?>?aktion=jgauswahl">Abfrage</a><?=$br?>
+  <a href="<?=$GLOBALS['mod_absolventen_glob']['php_self']?>?aktion=hinzufuegen">Hinzuf&uuml;gen</a><?=$br?>
+  <a href="<?=$GLOBALS['mod_absolventen_glob']['php_self']?>?aktion=login">Einloggen</a>
+  </p><?=$br?>
+  <a href="http://absolventen.berlios.de/hilfe" target="_empty">Hilfe</a>
+<?php if ($GLOBALS['mod_absolventen_glob']['layout']['homelink']) {?>
+  <p><?=$GLOBALS['mod_absolventen_glob']['layout']['linie']?>
+  <?=$GLOBALS['mod_absolventen_glob']['layout']['homelink']?>
   </p>
 <?php }
   if ($copy) 
   { 
 ?>
-  <p><?=$layout['linie']?><font size="-1">
-  <a href="http://absolventen.berlios.de">Klassenliste Version <?=$version?></a></font><br />
+  <p><?=$GLOBALS['mod_absolventen_glob']['layout']['linie']?><font size="-1">
+  <a href="http://absolventen.berlios.de">Klassenliste Version <?=$GLOBALS['mod_absolventen_glob']['version']?></a></font><br />
   <address><font size="-2">
    &copy; 2000-2004
     <a href="mailto:Tobias.Schlemmer@web.de">SchlemmerSoft 
@@ -77,7 +81,7 @@ function seitenende($br=" | ",$copy=1){
     Dieses Programm steht unter der 
       <a href="http://www.gnu.org/copyleft/gpl.html">GPL</a></font>
   </address>
- <font size=-3>Rechenzeit: <?php printf("%.3f",ereg_replace("^0.([0-9]*) ([0-9]*)$","\\2.\\1",microtime())*1000.-$startzeit)?> ms</font>
+ <font size=-3>Rechenzeit: <?php printf("%.3f",ereg_replace("^0.([0-9]*) ([0-9]*)$","\\2.\\1",microtime())*1000.-$GLOBALS['mod_absolventen_glob']['startzeit'])?> ms</font>
 <?php } ?>
 </center>
 </body>
