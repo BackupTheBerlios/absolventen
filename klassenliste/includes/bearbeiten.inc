@@ -28,15 +28,15 @@ function bearb_menu($db) {
 ?>
   <h2>Nutzerdaten bearbeiten</h2>
 <p>
-<table border=0>
+<table border="0">
      <tr>
      <th><a href="<?=$PHP_SELF?>?aktion=persformaendern">Allgemeine Daten</a></th>
      </tr>
      <tr>
-     <th>Jahrgang</th>
+     <th><a href="<?=$PHP_SELF?>?aktion=jgform">Jahrgang</a></th>
      </tr>
      <tr>
-     <th>Adresse</th>
+     <th><a href="<?=$PHP_SELF?>?aktion=adrform">Adressen</a></th>
      </tr>
      <tr>
      <th>Telefonnummer</th>
@@ -50,7 +50,7 @@ function bearb_menu($db) {
 </table>
 </p>
 <p>
-<table border=1>
+<table border="1">
      <?php $jg->nurjgprint();
      $person->normprint(); ?>
 </table>
@@ -72,21 +72,107 @@ function persdatenaendern($db,$daten){
   if ($daten['id']) {
     $person->diese($_SESSION['uid']);
     if ($daten['id'] != $_SESSION['uid']){
-      seitenanfang();
       print('<strong>Zugriff verweigert!</strong>');
       select_jgs($db);
-      seitenende();
       return;
     }  
   }
   $fehler=$person->checkdaten($daten,!$daten['id']);
   if ($fehler) {
-    seitenanfang();
     printf("<strong>%s</strong>",$fehler);
     $person->formular($daten);
-    seitenende();
     return;
   }
+  if ($daten['pw1']) $daten['pw']=$daten['pw1'];
+  if ($daten['id']) {
+    $person->update($daten);
+    $person->puffer_leeren();
+    persdatenform($db);
+  } else {
+    $_SESSION['uid']=$person->insert($daten);
+    $_SESSION['name']=$daten['vorname'] . " " . $daten['aktueller_name']
+      . ($daten['geburtsname']!=$daten['aktueller_name']?" geb. " .
+	 $daten['geburtsname']:"");
+    bearb_menu($db);
+  }
+}
+
+function untertabdatenform($tabelle){
+  $tabelle->erste_person($_SESSION['uid']);
+  echo '<table border="1">';
+  do {
+    echo '<tr><td align="center">';
+    $tabelle->datenformular();
+    echo '</td></tr>';
+  } while ($tabelle->naechste());
+  echo '<tr><td align="center">';
+  $tabelle->formular();
+  echo '</td></tr></table>';
+  $tabelle->puffer_leeren();
+}
+
+function jgdatenaendern($db,$daten){
+  $jahrgang=new jg($db);
+  if ($daten['id']) {
+    $jahrgang->dieser($daten['id']);
+    if ($daten['uid'] != $_SESSION['uid']){
+      print('<strong>Zugriff verweigert!</strong>');
+      select_jgs($db);
+      return;
+    }  
+  }
+  $fehler=$jahrgang->checkdaten($daten);
+  if ($fehler) {
+    printf("<strong>%s</strong>",$fehler);
+    $jahrgang->formular($daten);
+    return;
+  }
+  if ($daten['id']) {
+    $jahrgang->update($daten);
+    $jahrgang->puffer_leeren();
+  } else {
+    $jahrgang->insert($daten);
+  }
+  $person=new personen($db);
+  $person->aktualisiere_akt($daten['uid']);
+  jgdatenform($db);
+}
+function adrdatenaendern($db,$daten){
+  $adresse=new adresse($db);
+  if ($daten['id']) {
+    $adresse->diese($daten['id']);
+    if ($daten['uid'] != $_SESSION['uid']){
+      print('<strong>Zugriff verweigert!</strong>');
+      select_jgs($db);
+      return;
+    }  
+  }
+  $fehler=$adresse->checkdaten($daten);
+  if ($fehler) {
+    printf("<strong>%s</strong>",$fehler);
+    $adresse->formular($daten);
+    return;
+  }
+  if ($daten['id']) {
+    $adresse->update($daten);
+    $adresse->puffer_leeren();
+  } else {
+    $adresse->insert($daten);
+  }
+  $person=new personen($db);
+  $person->aktualisiere_akt($daten['uid']);
+  adrdatenform($db);
+}
+
+function untertabdatenloeschen($tabelle,$daten){
+  $tabelle->diese($daten['id']);
+  if ($tabelle->uid() != $_SESSION['uid']){
+    print('<strong>Zugriff verweigert!</strong>');
+    select_jgs($tabelle->db());
+    return;
+  }  
+  $tabelle->loeschen($daten['id'],$daten['uid']);
+  adrdatenform($db);
 }
 
 ?>
