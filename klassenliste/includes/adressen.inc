@@ -19,47 +19,43 @@ Der Autor kann unter der Email: Tobias.Schlemmer@web.de erreicht werden.
 
 */ 
 
-class adresse {
-  var $db;
-  var $sql;
-  var $Werte;
-  var $Qresult;
-  
+class adresse extends dbtabelle{
+  function sql($funktion,$args){
+    global $mysql_daten;
+    switch ($funktion) {
+	case "erste_person": 
+		return sprintf("select id, uid, anfang, plz, ort, ende from %s where uid=%d",
+			$mysql_daten['AdrTab'],$args);
+  	case "diese": 
+		return sprintf("select id,uid,anfang,plz,ort,ende from %s where id=%d",
+			$mysql_daten['AdrTab'],$args);
+	case "insert":
+		return sprintf("insert into %s (%suid,anfang,plz,ort,ende"
+		 	. ") values (%s%d,'%s','%s','%s','%s')",
+			 $mysql_daten['AdrTab'],
+			 $args['id']?"id,":"",
+			 $args['id']?$args['id'] . ',':"",
+			 $args['uid'],
+			 addslashes($args['anfang']),
+			 addslashes($args['plz']),
+			 addslashes($args['ort']),
+			 addslashes($args['ende']));
+	case "update":
+		return sprintf("update %s set uid=%d,anfang='%s',plz='%s',"
+		 . "ort='%s',ende='%s'"
+		 . " where id=%d",
+		 $mysql_daten['AdrTab'],
+		 $args['uid'],
+		 addslashes($args['anfang']),
+		 addslashes($args['plz']),
+		 addslashes($args['ort']),
+		 addslashes($args['ende']),
+		 $args['id']);
+    }
+  }
+	
   function adresse ($h_db=0) {
-    $this->db=$h_db;
-  }
-
-  function puffer_leeren() {
-    if ($this->Qresult) {
-      $this->db->puffer_leeren($this->Qresult);
-      $this->Qresult=0;
-    }
-  }
-
-  function erste_person($person){
-    $this->puffer_leeren();
-    $sql="select id,uid,anfang,plz,ort,ende from StAgAdr where uid=" . $person;
-    if (!$this->Qresult=$this->db->query($sql)){
-      fehler('adresse-&gt;erste_person(' . $person . ')');
-      return false;
-    }
-    $this->Werte=$this->db->fetch_array($this->Qresult);
-    return ($this->Werte && true);
-  }
-
-  function diese($id){
-    $this->puffer_leeren();
-    $sql="select id,uid,anfang,plz,ort,ende from StAgAdr where id=" . $id;
-    if (!$this->Qresult=$this->db->query($sql)){
-      fehler('adresse-&gt;diese(' . $id . ')');
-      return false;
-    }
-    $this->Werte=$this->db->fetch_array($this->Qresult);
-    return ($this->Werte && true);
-  }
-
-  function naechste(){
-    return $this->Werte=$this->db->fetch_array($this->Qresult);
+    $this->dbtabelle($h_db);
   }
 
   function insert($daten) {
@@ -67,23 +63,7 @@ class adresse {
     if ($daten['id'] && !ereg('^[0-9]*$',$daten['id'])) {
       return -1;
     }
-    $sql=sprintf("insert into StAgAdr (%suid,anfang,plz,ort,ende"
-		 . ") values (%s%d,'%s','%s','%s','%s')",
-		 $daten['id']?"id,":"",
-		 $daten['id']?$daten['id'] . ',':"",
-		 $daten['uid'],
-		 addslashes($daten['anfang']),
-		 addslashes($daten['plz']),
-		 addslashes($daten['ort']),
-		 addslashes($daten['ende']));
-    if (!$this->Qresult=$this->db->query($sql)) {
-      fehler("adresse-&gt;insert(" . $daten . ")");
-      return -2;
-    }
-    $person=new personen($this->db);
-    $person->aktualisiere_akt($daten['id']);
-    $id=@$this->puffer_leeren();
-    return $id;
+    return $this->insert_backend($this->sql("insert",$daten),$daten['uid']);
   }
 
   function update($daten) {
@@ -91,23 +71,7 @@ class adresse {
     if (!$daten['id'] || !ereg('^[0-9]*$',$daten['id'])) {
       return -1;
     }
-    $sql=sprintf("update StAgAdr set uid=%d,anfang='%s',plz='%s',"
-		 . "ort='%s',ende='%s'"
-		 . " where id=%d",
-		 $daten['uid'],
-		 addslashes($daten['anfang']),
-		 addslashes($daten['plz']),
-		 addslashes($daten['ort']),
-		 addslashes($daten['ende']),
-		 $daten['id']);
-    if (!$this->Qresult=$this->db->query($sql)) {
-      fehler("adresse-&gt;update(" . $daten . ")");
-      return -2;
-    }
-    $person=new personen($this->db);
-    $person->aktualisiere_akt($daten['id']);
-    @$this->puffer_leeren();
-    return 0;
+    return $this->update_backend($this->sql("update",$daten),$daten['uid']);
   }
 
   function loeschen($id,$uid){
@@ -216,10 +180,6 @@ name="ende"><?=preg_replace("/<br[^>]*>/i","",$daten['ende'])?></textarea>
 </form>
 <?php
     }
-  }
-
-  function datenformular() {
-    $this->formular($this->Werte);
   }
 
   function checkdaten($daten) {
