@@ -23,14 +23,14 @@ function anzeige_login($daten=0){
 ?>
 <form method="post" action="<?$PHP_SELF?>">
 <input type="hidden" name="aktion" value="dologin" />
-<table border=1>
-   <tr><td>Nutername:</td>
+<table border="1">
+   <tr><td>Nutzername:</td>
    <td><input type="text" name="nutzername" 
    value="<?=$daten['nutzername']?>" size="10" /></td></tr>
    <tr><td>Passwort:</td>
 <td><input type="password" name="passwort" value="" size="10"/></td></tr>
 <tr><td colspan="2" align="center">
-<input type="submit" value="Einloggen" />
+   <input type="submit" value="Einloggen" />&nbsp;
 <input type="reset" value="Zur&uuml;cksetzen" /></td></tr>
 </table>
 </form>
