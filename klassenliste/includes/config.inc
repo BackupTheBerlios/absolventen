@@ -21,6 +21,9 @@ $mysql_daten['Nutzer']='www';
 $mysql_daten['Passwort']='web';
 $mysql_daten['Rechner']='localhost';
 $mysql_daten['DB']='stag';
+/* Namen der einzelnen Tabellen */
+$mysql_daten['AdrTab']='StAgAdr';
+$mysql_daten['JgTab']='StAgJg';
 
 /* Erlaube/setzte einige Tags für Kommentare 
    Format ist für preg_replace, also Perl-Syntax 
