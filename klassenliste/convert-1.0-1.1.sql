@@ -9,7 +9,7 @@ alter table StAgMail
   add Name varchar(255) default null,
   add Link bool not null default 0,
   add Encode bool not null default 1,
-  add Formular bool not null default 1;
+  add MailFormular bool not null default 1;
 update StAgMail set encode=0,Link=1;
 update StAgMail set name='F&uuml;r Spam' where id=1;
 
@@ -22,6 +22,7 @@ insert into StAgTel (uid,aid,vorwahl,telefon)
 alter table StAgAdr 
   drop vorwahl, 
   drop telefon;
+
 alter table StAgJg
   modify klasse varchar(255);
 update StAgJg set klasse=concat(klasse,"-Zug") where length(klasse)>0;
