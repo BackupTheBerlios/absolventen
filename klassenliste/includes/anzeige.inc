@@ -19,6 +19,11 @@ Der Autor kann unter der Email: Tobias.Schlemmer@web.de erreicht werden.
 
 */ 
 
+function format_kommentar($kommentar) {
+  global $kommentar_tags_suche;
+  global $kommentar_tag_ersetze;
+}
+
 function select_jgs($db){
   global $layout;
   $jg=new jg($db);
@@ -28,12 +33,12 @@ function select_jgs($db){
     return; 
   }
 ?>
-<form method="get" action="<?$PHP_SELF?>">
-<input type="hidden" name="aktion" value="jganzeige">
+<form method="get" action="<?$PHP_SELF?>" enctype="application/x-www-form-urlencoded">
+<input type="hidden" name="aktion" value="jganzeige" />
 <select size="1" name="jahrgang">
    <?php $jg->optionprint(); ?>
 </select>
-<input type="submit" value="Ok.">
+<input type="submit" value="Ok." />
 </form>
 <?php
     $jg->puffer_leeren();
@@ -49,14 +54,14 @@ function anzeige_jg ($jahrgang,$db) {
     return; 
   }
 ?>
-<table border=1>
-<tr><th colspan=5><font size=+2>Jahrgang <?=$jahrgang?></th></tr>
-<tr align=left><th>Geburtsname</th><th>Vorname</th><th colspan=2>Adresse erster Teil</th><th>Telefon</th></tr>
-<tr align=left><th></th><th>aktueller Name</th><th>PLZ</th><th>Ort</th><th></th></tr>
-<tr align=left><th colspan=2></th><th colspan=2>Adresse zweiter Teil</th><th ></th></tr>
-<tr align=left><th colspan=2><font size=-2>letzte &Auml;nderung</font></th><th colspan=3>Email</th></tr>
-<tr align=left><th colspan=2></th><th colspan=3>Homepage</th></tr>
-<tr align=left><th colspan=5>Bemerkungen</th><tr>
+<table border="1">
+<tr><th colspan="5"><font size="+2">Jahrgang <?=$jahrgang?></font></th></tr>
+<tr align="left"><th>Geburtsname</th><th>Vorname</th><th colspan="2">Adresse erster Teil</th><th>Telefon</th></tr>
+<tr align="left"><th></th><th>aktueller Name</th><th>PLZ</th><th>Ort</th><th></th></tr>
+<tr align="left"><th colspan="2"></th><th colspan="2">Adresse zweiter Teil</th><th ></th></tr>
+<tr align="left"><th colspan="2"><font size="-2">letzte &Auml;nderung</font></th><th colspan="3">Email</th></tr>
+<tr align="left"><th colspan="2"></th><th colspan="3">Homepage</th></tr>
+<tr align="left"><th colspan="5">Bemerkungen</th></tr>
 <?php
   do {
     $jg->normprint();
