@@ -1,4 +1,4 @@
-<?php /* $Id: includes.inc,v 1.5 2004/07/15 11:41:34 keinstein Exp $
+<?php /* $Id: includes.inc,v 1.6 2004/07/19 22:28:47 keinstein Exp $
 Copyright (c) 2000-2004 SchlemmerSoft (Tobias Schlemmer)
 
 This program is free software; you can redistribute it and/or
@@ -18,14 +18,18 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 Der Autor kann unter der Email: Tobias.Schlemmer@web.de erreicht werden.
 
 $Log: includes.inc,v $
+Revision 1.6  2004/07/19 22:28:47  keinstein
+Globale Variablen -> $GLOBALS
+
 Revision 1.5  2004/07/15 11:41:34  keinstein
 mystripslashes.inc eingebunden
 require_once für layout
 $_session umbenannt
 
 */ 
+ 
+unset($GLOBALS['mod_absolventen_glob']['mysql']);
 
-unset($mysql_daten);
 require_once('config.inc');
 require_once('init.inc');
 require_once('mysqldb.inc');
@@ -42,13 +46,13 @@ require_once('login.inc');
 require_once('bearbeiten.inc');
 require_once('mystripslashes.inc');
 
-#echo $layoutid;
-unset($layout);
+#echo $GLOBALS['mod_absolventen_glob']['layout']id;
+unset($GLOBALS['mod_absolventen_glob']['layout']);
 if (file_exists("layout" . $_SESSION['mod_absolventen']['layoutid'] . ".inc")) 
      require_once("layout" . $_SESSION['mod_absolventen']['layoutid'] . ".inc");
 else {
 #  echo "default";
-  $layoutid="";
+  $_SESSION['mod_absolventen']['layoutid']="";
   require_once("layout.inc");
 }
 ?>
