@@ -1,16 +1,8 @@
 <?php
-session_start();
+/* Grundlegendes Setup */
 $startzeit=ereg_replace("^0.([0-9]*) ([0-9]*)$","\\2.\\1",microtime())*1000.;
 $version="1.1 (Status: alpha)";
-
-if (isset($HTTP_POST_VARS['layout']))
-   $_SESSION['layoutid']=$HTTP_POST_VARS['layout'];
-if (isset($HTTP_GET_VARS['layout'])) 
-   $_SESSION['layoutid']=$HTTP_GET_VARS['layout'];
-if (!ereg('^[0-9a-zA-Z_]*$',$_SESSION['layoutid'])) $_SESSION['layoutid']="";
-
-if ($HTTP_POST_VARS['aktion']) $aktion=$HTTP_POST_VARS['aktion'];
-else $aktion=$HTTP_GET_VARS['aktion'];
+session_start();
 
 chdir('includes');
 require_once('includes.inc');
@@ -70,7 +62,47 @@ switch ($aktion) {
 		     seitenende();
 		     break;
  case 'persdbneu':
- case 'persdbaendern': persdatenaendern($db,mystripslashes($HTTP_POST_VARS));
+ case 'persdbaendern': seitenanfang();
+                       persdatenaendern($db,mystripslashes($HTTP_POST_VARS));
+		       seitenende();
                        break;
+		       
+ case 'jgform':      seitenanfang();
+                     untertabdatenform(new jg($db));
+                     seitenende();
+                     break;
+
+ 
+ case 'jgdbneu':		      
+ case 'jgdbaendern': seitenanfang();
+                     jgdatenaendern($db,mystripslashes($HTTP_POST_VARS));
+		     seitenende();
+		     break;
+ 
+ case 'jgdbloeschen': seitenanfang();
+                      jgdatenloeschen(new jg($db),
+				      mystripslashes($HTTP_POST_VARS));
+		      seitenende();
+		      break;
+ 
+   
+ case 'adrform':      seitenanfang();
+                      untertabdatenform(new adresse($db));
+		      seitenende();
+		      break;
+
+ case 'adrdbneu':		      
+ case 'adrdbaendern': seitenanfang();
+                     adrdatenaendern($db,mystripslashes($HTTP_POST_VARS));
+		     seitenende();
+		     break;
+ 
+ case 'adrdbloeschen': seitenanfang();
+                      untertabdatenloeschen(new adresse($db),
+					    mystripslashes($HTTP_POST_VARS));
+		      seitenende();
+		      break;
+ 
+   
 }
 	  ?>
