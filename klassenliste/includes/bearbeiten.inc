@@ -39,14 +39,21 @@ function bearb_menu($db) {
      <th><a href="<?=$PHP_SELF?>?aktion=adrform">Adressen</a></th>
      </tr>
      <tr>
-     <th>Telefonnummer</th>
+     <th><a href="<?=$PHP_SELF?>?aktion=telform">Telefonnummer</a></th>
      </tr>
      <tr>
-     <th>Adresse elektronischer Post</th>
+     <th><a href="<?=$PHP_SELF?>?aktion=mailform">Adressen elektronischer Post</a></th>
      </tr>
      <tr>
-     <th>WWW-Seiten</th>
+     <th><a href="<?=$PHP_SELF?>?aktion=hpform">WWW-Seiten</a></th>
      </tr>
+     <tr>
+     <th>Aus den Datenbank austragen</th>
+     </tr>
+     <tr>
+     <th><a href="<?=$PHP_SELF?>?aktion=logout">Abmelden</a></th>
+     </tr>
+
 </table>
 </p>
 <p>
@@ -107,62 +114,14 @@ function untertabdatenform($tabelle){
   } while ($tabelle->naechste());
   echo '<tr><td align="center">';
   $tabelle->formular();
-  echo '</td></tr></table>';
+  ?></td></tr></table>
+<p>
+<b><a href="<?=$PHP_SELF?>?aktion=bearbmenu">eigene&nbsp;Daten</a><br>
+   <a href="<?=$PHP_SELF?>?aktion=logout">Abmelden</a>
+</b>
+</p>
+<?php 
   $tabelle->puffer_leeren();
-}
-
-function jgdatenaendern($db,$daten){
-  $jahrgang=new jg($db);
-  if ($daten['id']) {
-    $jahrgang->dieser($daten['id']);
-    if ($daten['uid'] != $_SESSION['uid']){
-      print('<strong>Zugriff verweigert!</strong>');
-      select_jgs($db);
-      return;
-    }  
-  }
-  $fehler=$jahrgang->checkdaten($daten);
-  if ($fehler) {
-    printf("<strong>%s</strong>",$fehler);
-    $jahrgang->formular($daten);
-    return;
-  }
-  if ($daten['id']) {
-    $jahrgang->update($daten);
-    $jahrgang->puffer_leeren();
-  } else {
-    $jahrgang->insert($daten);
-  }
-  $person=new personen($db);
-  $person->aktualisiere_akt($daten['uid']);
-  jgdatenform($db);
-}
-
-function adrdatenaendern($db,$daten){
-  $adresse=new adresse($db);
-  if ($daten['id']) {
-    $adresse->diese($daten['id']);
-    if ($daten['uid'] != $_SESSION['uid']){
-      print('<strong>Zugriff verweigert!</strong>');
-      select_jgs($db);
-      return;
-    }  
-  }
-  $fehler=$adresse->checkdaten($daten);
-  if ($fehler) {
-    printf("<strong>%s</strong>",$fehler);
-    $adresse->formular($daten);
-    return;
-  }
-  if ($daten['id']) {
-    $adresse->update($daten);
-    $adresse->puffer_leeren();
-  } else {
-    $adresse->insert($daten);
-  }
-  $person=new personen($db);
-  $person->aktualisiere_akt($daten['uid']);
-  untertabdatenform($adresse);
 }
 
 function untertabdatenaendern($tabelle,$daten){
