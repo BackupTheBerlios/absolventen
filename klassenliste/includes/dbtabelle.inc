@@ -1,4 +1,4 @@
-<?php /* $Id: dbtabelle.inc,v 1.2 2004/07/15 11:34:22 keinstein Exp $
+<?php /* $Id: dbtabelle.inc,v 1.3 2004/07/19 22:24:52 keinstein Exp $
 
 Copyright (c) 2000-2004 SchlemmerSoft (Tobias Schlemmer)
 
@@ -65,7 +65,7 @@ class dbtabelle {
   //       false, wenn Formular für Änderungen ausgegeben wird
   // $daten: Array: Vorbelegungen der Felder
   // $fehler: Array: Fehlermeldungen zu den einzlnen Feldern
-  function formular($neu,$daten=0,$fehler=0) {
+  function formular($neu,$daten=array(),$fehler=array()) {
   }
 
   // Eingabe auf Plausibilität prüfen
@@ -136,6 +136,7 @@ class dbtabelle {
     if ($uid) {
       $person=new personen($this->db);
       $person->aktualisiere_akt($uid);
+      $person->puffer_leeren();
     }
     @$this->puffer_leeren();
     return $id;
@@ -151,6 +152,7 @@ class dbtabelle {
     if ($uid) {
       $person=new personen($this->db);
       $person->aktualisiere_akt($uid);
+      $person->puffer_leeren();
     }
     @$this->puffer_leeren();
     return 0;
@@ -173,6 +175,7 @@ class dbtabelle {
     if ($uid) {
       $person=new personen($this->db);
       $person->aktualisiere_akt($uid);
+      $person->puffer_leeren();
     }
     @$this->puffer_leeren();
     return 0;
@@ -181,11 +184,11 @@ class dbtabelle {
   /* die einzelnen Felder der Person */
 
   function id() {
-    return $this->Werte["id"];
+    return isset($this->Werte["id"])?$this->Werte["id"]:false;
   }
 
   function uid() {
-    return $this->Werte["uid"];
+    return isset($this->Werte["uid"])?$this->Werte["uid"]:false;
   }
 
   // Änderungs-Formular für aktuellen Datensatz ausgeben
