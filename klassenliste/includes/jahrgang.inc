@@ -26,6 +26,7 @@ class jg extends dbtabelle{
   function jg($h_db=0) {
     $this->dbtabelle($h_db);
     $this->mitjg=0;
+    $this->mailformopts="";
   }
 
   function sql($funktion,$args=0){
@@ -76,6 +77,8 @@ class jg extends dbtabelle{
 			      $args['id']);
        case "loeschen":
 	 return sprintf("delete from %s where id=%d",$mysql_daten['JgTab'],$args);
+       case "persloeschen":
+	 return sprintf("delete from %s where uid=%d",$mysql_daten['JgTab'],$args);
     }
   }
 	
@@ -163,6 +166,19 @@ class jg extends dbtabelle{
     $personen->puffer_leeren();
   }
 
+  function mailformopts(){
+    $mailformopts=array();
+    $personen=new personen($this->db);
+
+    do {
+      $personen->erste_jahrgang($this->jahrgang(),
+				$this->klasse(),$this->drin());
+      $mailformopts=array_merge($mailformopts,$personen->mailformopts());
+    } while ($this->naechste());
+    $personen->puffer_leeren();
+    return $mailformopts;
+  }
+
   function nurjgprint($erstspalte=""){
     global $layout;
 
@@ -194,11 +210,9 @@ class jg extends dbtabelle{
     do {
       printf("<option value=\"%s\" %s>%s</option>\n",$this->jahrgang(),
 	     $this->jahrgang()==$jahrgang?" selected":"",$this->jahrgang());
+      print_r ($this);
     } while ($this->naechste());
   }
-
-
-
 
 function formular($daten=0) {
   global $klasse;
