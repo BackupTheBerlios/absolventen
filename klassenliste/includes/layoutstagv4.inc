@@ -1,4 +1,4 @@
-<?php /* $Id: layoutstagv4.inc,v 1.2 2004/07/19 22:35:29 keinstein Exp $
+<?php /* $Id: layoutstagv4.inc,v 1.3 2004/07/25 17:34:50 keinstein Exp $
 Copyright (c) 2000-2004 SchlemmerSoft (Tobias Schlemmer)
 
 This program is free software; you can redistribute it and/or
@@ -18,6 +18,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 Der Autor kann unter der Email: Tobias.Schlemmer@web.de erreicht werden.
 
 $Log: layoutstagv4.inc,v $
+Revision 1.3  2004/07/25 17:34:50  keinstein
+Tippfehler in Fußzeile: Hilfe
+
 Revision 1.2  2004/07/19 22:35:29  keinstein
 globale Variablen nach $GLOBALS
 
@@ -59,7 +62,7 @@ function seitenende($br=" | ",$copy=1){
  <?php } else { ?>
   <a class="absolventen fussmenu" href="<?=$GLOBALS['mod_absolventen_glob']['php_self']?>?aktion=login">Einloggen</a>
  <?php } ?><?=$br?>
-  <a class="absolventen fussmenu" href="http://absolventen.berlios.de/hilfe/" target="_empty">Abmelden</a>
+  <a class="absolventen fussmenu" href="http://absolventen.berlios.de/hilfe/" target="_empty">Hilfe</a>
   </p><?=$GLOBALS['mod_absolventen_glob']['layout']['linie']?><?php
       if (isset($_SESSION['mod_absolventen']['name']))
   printf('<p><font size="-1">Sie sind %s.<br /> Nein? '
