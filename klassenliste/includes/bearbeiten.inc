@@ -1,5 +1,5 @@
-<?php /*
-Copyright (c) 2000 SchlemmerSoft (Tobias Schlemmer)
+<?php /* $Id: bearbeiten.inc,v 1.6 2004/07/15 11:30:39 keinstein Exp $
+Copyright (c) 2000-2004 SchlemmerSoft (Tobias Schlemmer)
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -17,50 +17,101 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 Der Autor kann unter der Email: Tobias.Schlemmer@web.de erreicht werden.
 
+$Log: bearbeiten.inc,v $
+Revision 1.6  2004/07/15 11:30:39  keinstein
+Allgemein: Klassen für HTML-Ausgabe
+	   Fehlermeldungen bei Formularen
+	   $_SESSION -> $_SESSION['mod_absolventen']
+
+Neu: bearb_fehlerliste() -- callback für array_walk
+     bearb_verweigert()  -- Fehlermeldung für falsche
+     	                    Zugriffsrechte
+     bearb_sicherheitscheck() -- Überprüfung von Session-
+     	                         und empfangenen Daten
+
+bearb_menu(): keine Tabelle mehr, ul für Menü
+
+persdatenaendern(): Sicherheitscheck ausgelagert
+                    Neuer Datensatz per extra Variable
+		    Sitzungsnamen setzen
+
+untertabdatenform(): Kurzmenü am Anfang
+untertabdatenaendern(): Sicherheitscheck ausgelagert
+	                Fehlermeldung ul
+			Neu mit extra Variable
+austragen(): Sicherheitscheck ausgelagert
+	     fast komplett neu
+
 */ 
 
-function bearb_menu($db) {
-  $jg=new jg($db);
-  $person =new  personen($db);
-  $jg->erste_person($_SESSION['uid']);
-  $jg->mitjg=1;
-  $person->diese($_SESSION['uid']);
-?>
-  <h2>Nutzerdaten bearbeiten</h2>
-<p>
-<table border="0">
-     <tr>
-     <td><a href="<?=$PHP_SELF?>?aktion=persformaendern">Allgemeine Daten</a></td>
-     </tr>
-     <tr>
-     <td><a href="<?=$PHP_SELF?>?aktion=jgform">Jahrgang</a></td>
-     </tr>
-     <tr>
-     <td><a href="<?=$PHP_SELF?>?aktion=adrform">Adressen</a></td>
-     </tr>
-     <tr>
-     <td><a href="<?=$PHP_SELF?>?aktion=telform">Telefonnummer</a></td>
-     </tr>
-     <tr>
-     <td><a href="<?=$PHP_SELF?>?aktion=mailform">Adressen elektronischer Post</a></td>
-     </tr>
-     <tr>
-     <td><a href="<?=$PHP_SELF?>?aktion=hpform">WWW-Seiten</a></td>
-     </tr>
-     <tr>
-     <td><a href="<?=$PHP_SELF?>?aktion=austragen">Aus der Datenbank austragen</a></td>
-     </tr>
-     <tr>
-     <td><a href="<?=$PHP_SELF?>?aktion=logout">Abmelden</a></td>
-     </tr>
+function bearb_fehlerliste($value,$key) {
+  printf("<li>%s</li>\n",$value);
+}
 
-</table>
+function bearb_verweigert($db) {
+    logout($db);
+    print('<ul class="absolventen bearbeiten fehler"><li>Zugriff verweigert!</li></ul>');
+}
+
+function bearb_sicherheitscheck($tabelle,$daten,$neu,$uidcheck=true) {
+  // Gravierende Fehler bezüglich Zugriffskontrolle
+  // (Angriffe; können nicht vom Nutzer korrigiert werden)
+  // fehlerhafte id und uid
+  if (!$neu || $uidcheck) {
+    if (empty($_SESSION['mod_absolventen']['uid']) || (empty($daten[$uidcheck?'uid':'id'])) ||
+	($_SESSION['mod_absolventen']['uid']!=$daten[$uidcheck?'uid':'id'])) {
+      bearb_verweigert($tabelle->db);
+      return true;
+    }  
+  }
+
+  if (!$uidcheck && !empty($daten['uid'])) {
+    bearb_verweigert($tabelle->db);
+    return true;
+  }  
+
+  if (!$neu) {
+    if (empty($daten['id']) || !ereg('^[0-9]+$',$daten['id']) || !$tabelle->diese($daten['id']) ||
+	($uidcheck && ($tabelle->uid() != $_SESSION['mod_absolventen']['uid']))){
+      bearb_verweigert($tabelle->db);
+      return true;
+    }  
+  } elseif (!empty($daten['id'])) {
+      bearb_verweigert($tabelle->db);
+      return true;
+  }
+
+  return false;
+}
+
+function bearb_menu(&$db) {
+  global $PHP_SELF;
+  $jg=new jg(&$db);
+  $person =new  personen(&$db);
+  $jg->erste_person($_SESSION['mod_absolventen']['uid']);
+  $jg->mitjg=1;
+  $person->diese($_SESSION['mod_absolventen']['uid']);
+?>
+  <h2 class="absolventen bearbeiten">Nutzerdaten bearbeiten</h2>
+<p class="absolventen bearbeiten menu">
+     Wählen Sie bitte die zu bearbeitenden Daten:
+  <ul class="absolventen bearbeiten menu">
+    <li class="absolventen bearbeiten menu"><a href="<?=$PHP_SELF?>?aktion=persformaendern">Allgemeine Daten</a></li>
+    <li class="absolventen bearbeiten menu"><a href="<?=$PHP_SELF?>?aktion=jgform">Jahrgang</a></li>
+    <li class="absolventen bearbeiten menu"><a href="<?=$PHP_SELF?>?aktion=adrform">Adressen</a></li>
+    <li class="absolventen bearbeiten menu"><a href="<?=$PHP_SELF?>?aktion=telform">Telefonnummern</a></li>
+    <li class="absolventen bearbeiten menu"><a href="<?=$PHP_SELF?>?aktion=mailform">Adressen elektronischer Post</a></li>
+    <li class="absolventen bearbeiten menu"><a href="<?=$PHP_SELF?>?aktion=hpform">WWW-Seiten</a></li>
+    <li class="absolventen bearbeiten menu"><a href="<?=$PHP_SELF?>?aktion=austragen">Aus 
+        der Datenbank austragen</a></li>
+    <li class="absolventen bearbeiten menu"><a href="<?=$PHP_SELF?>?aktion=logout">Abmelden</a></li>
+  </ul>
 </p>
-<p>
-<table border="1">
+<p class="absolventen bearbeiten anzeige">
+  <table border="1" class="absolventen anzeige berarbeiten_pers">
      <?php $jg->nurjgprint();
      $person->normprint(); ?>
-</table>
+  </table>
 </p>
 <?php
     $person->puffer_leeren();
@@ -68,78 +119,101 @@ function bearb_menu($db) {
 }
 
 function persdatenform($db){
+  global $PHP_SELF;
   $person=new personen($db);
-  $person->diese($_SESSION['uid']);
+  if (!$person->diese($_SESSION['mod_absolventen']['uid'])) bearb_verweigert($db);
+?>
+<p class="absolventen bearbeiten menu">Auswahl:
+  <ul class="absolventen bearbeiten menu">
+     <li class="absolventen bearbeiten menu"><a 
+        href="<?=$PHP_SELF?>?aktion=bearbmenu">Übersicht&nbsp;eigene&nbsp;Daten</a></li>
+     <li class="absolventen bearbeiten menu"><a 
+        href="<?=$PHP_SELF?>?aktion=logout">Abmelden</a></li>
+  </ul>
+</p>
+<?php 
   $person->datenformular();
   $person->puffer_leeren();
 }
 
-function persdatenaendern($db,$daten){
+function persdatenaendern($db,$daten,$neu){
+  // Personen brauchen wir
   $person=new personen($db);
-  if ($daten['id']) {
-    $person->diese($_SESSION['uid']);
-    if ($daten['id'] != $_SESSION['uid']){
-      print('<strong>Zugriff verweigert!</strong>');
-      select_jgs($db);
-      return;
-    }  
-  }
-  $fehler=$person->checkdaten($daten,!$daten['id']);
-  if ($fehler) {
-    printf("<strong>%s</strong>",$fehler);
-    $person->formular($daten);
+  // Sicherheitscheck
+  if (bearb_sicherheitscheck($person,$daten,$neu,false)) return;
+  // Plausibilitätsprüfung (Nutzer kann korrigieren)
+  $fehler=$person->checkdaten($daten,$neu);
+  if (!empty($fehler)) {
+    print('<ul class="absolventen bearbeiten fehler">');
+    array_walk($fehler,'bearb_fehlerliste');
+    print('</ul>');
+    print('<div class="absolventen bearbeiten datenformular">');
+    
+    $person->formular($neu,$daten,$fehler);
+    print('</div>');
     return;
   }
-  if ($daten['pw1']) $daten['pw']=$daten['pw1'];
-  if ($daten['id']) {
+  if (!empty($daten['pw1'])) $daten['pw']=$daten['pw1'];
+  if (!$neu) {
     $person->update($daten);
+    setzesitzungsname($daten['vorname'],$daten['aktueller_name'],$daten['geburtsname']);
     $person->puffer_leeren();
     persdatenform($db);
   } else {
-    $_SESSION['uid']=$person->insert($daten);
-    $_SESSION['name']=$daten['vorname'] . " " . $daten['aktueller_name']
-      . ($daten['geburtsname']!=$daten['aktueller_name']?" geb. " .
-	 $daten['geburtsname']:"");
-    bearb_menu($db);
+    if($_SESSION['mod_absolventen']['uid']=$person->insert($daten)) {
+      setzesitzungsname($daten['vorname'],$daten['aktueller_name'],$daten['geburtsname']);
+      bearb_menu($db);
+    } else {
+      print('<ul class="absolventen bearbeiten fehler">');
+      print('<li>Daten konnten nicht gespeichert werden</li>');
+      print('</ul>');
+      print('<div class="absolventen bearbeiten datenformular">');
+      
+      $person->formular($neu,$daten);
+      print('</div>');
+    }
   }
 }
 
 function untertabdatenform($tabelle){
-  $tabelle->erste_person($_SESSION['uid']);
-  echo '<table border="1">';
-  do {
-    echo '<tr><td align="center">';
-    $tabelle->datenformular();
-    echo '</td></tr>';
-  } while ($tabelle->naechste());
-  echo '<tr><td align="center">';
-  $tabelle->formular();
-  ?></td></tr></table>
-<p>
-<b><a href="<?=$PHP_SELF?>?aktion=bearbmenu">eigene&nbsp;Daten</a><br>
-   <a href="<?=$PHP_SELF?>?aktion=logout">Abmelden</a>
-</b>
+  global $PHP_SELF;
+?>
+<p class="absolventen bearbeiten menu">Auswahl:
+  <ul class="absolventen bearbeiten menu">
+    <li class="absolventen bearbeiten menu"><a 
+        href="<?=$PHP_SELF?>?aktion=bearbmenu">Übersicht&nbsp;eigene&nbsp;Daten</a></li>
+    <li class="absolventen bearbeiten menu"><a href="<?=$PHP_SELF?>?aktion=logout">Abmelden</a></li>
+  </ul>
 </p>
 <?php 
+  if ($tabelle->erste_person($_SESSION['mod_absolventen']['uid'])) {
+    do {
+      print('<div class="absolventen bearbeiten datenformular">' . "\n");
+      $tabelle->datenformular();
+      print('</div>' . "\n");
+    } while ($tabelle->naechste());
+  }
+  print('<div class="absolventen bearbeiten datenformular">' . "\n");
+  $tabelle->formular(true);
+  print('</div>' . "\n");
   $tabelle->puffer_leeren();
 }
 
-function untertabdatenaendern($tabelle,$daten){
-  if ($daten['id']) {
-    $tabelle->diese($daten['id']);
-    if ($daten['uid'] != $_SESSION['uid']){
-      print('<strong>Zugriff verweigert!</strong>');
-      select_jgs($this->db);
-      return;
-    }  
-  }
-  $fehler=$tabelle->checkdaten($daten);
-  if ($fehler) {
-    printf("<strong>%s</strong>",$fehler);
-    $tabelle->formular($daten);
+function untertabdatenaendern($tabelle,$daten,$neu){
+  // id/uid/Sitzung testen
+  if (bearb_sicherheitscheck($tabelle,$daten,$neu)) return;
+  // Normale Fehler müssen von der Klasse gefunden werden
+  $fehler=$tabelle->checkdaten($daten,$neu);
+  if (!empty($fehler)) {
+    print('<ul class="absolventen bearbeiten fehler">');
+    array_walk($fehler,'bearb_fehlerliste');
+    print('</ul>');
+    print('<div class="absolventen bearbeiten datenformular">');
+    $tabelle->formular($neu,$daten,$fehler);
+    print('</div>');
     return;
   }
-  if ($daten['id']) {
+  if (!$neu) {
     $tabelle->update($daten);
     $tabelle->puffer_leeren();
   } else {
@@ -151,65 +225,86 @@ function untertabdatenaendern($tabelle,$daten){
 }
 
 function untertabdatenloeschen($tabelle,$daten){
-  $tabelle->diese($daten['id']);
-  if ($tabelle->uid() != $_SESSION['uid']){
-    print('<strong>Zugriff verweigert!</strong>');
-    select_jgs($tabelle->db);
-    return;
-  }  
-  $tabelle->loeschen($daten['id'],$_SESSION['uid']);
+  // id/uid/Sitzung testen
+  if (bearb_sicherheitscheck($tabelle,$daten,false)) return;
+  $tabelle->loeschen($daten['id'],$_SESSION['mod_absolventen']['uid']);
   untertabdatenform($tabelle);
 }
 
 function austragen($db,$daten) {
+  global $PHP_SELF;
   $person =new  personen($db);
   $jg=new jg($db);
-  if ($daten['wirklich']=='nein'||
-      ($daten['austrageid'] && ($_SESSION['austrageid']!=$daten['austrageid'] ||
-      !ereg("^" . $_SESSION['uid'] . '+',$daten['austrageid']))) ||
-      ($daten['uid'] && $_SESSION['uid']!=$daten['uid'])){
-?> Sie wurden <em>nicht</em> aus der Datenbank ausgetragen.
-<?php    
-     unset($_SESSION['austrageid']);
-    bearb_menu($db);
-    return;
-  }
-  if ($_SESSION['austrageid'] && $_SESSION['austrageid']==$daten['austrageid'] &&
-      $_SESSION['uid']==$daten['uid']) {
-    if (! $person->loeschen($daten['uid'])) {
-      logout($db);
-      select_jgs($db);
-    }else {
-      bearb_menu($db);
+  if (isset($daten['wirklich']) || isset($daten['austrageid'])) {
+    if (bearb_sicherheitscheck($person,$daten,false,false)) return;
+    if (!isset($daten['wirklich']) || $daten['wirklich']!='ja' || !isset($_SESSION['mod_absolventen']['uid']) ||
+	!isset($daten['austrageid']) || !isset($_SESSION['mod_absolventen']['austrageid'])
+	|| ($_SESSION['mod_absolventen']['austrageid']!=$daten['austrageid']) ||
+	!ereg("^" . $_SESSION['mod_absolventen']['uid'] . '+',$daten['austrageid']) ||
+	!isset($daten['id']) || $_SESSION['mod_absolventen']['uid']!=$daten['id']){
+  ?>
+ <ul class="absolventen bearbeiten fehler"><li>Sie wurden <em>nicht</em> 
+    aus der Datenbank ausgetragen.</li></ul>
+       <?php    
+          unset($_SESSION['mod_absolventen']['austrageid']);
+          bearb_menu($db);
+          return;
+    }
+    if ($_SESSION['mod_absolventen']['austrageid']==$daten['austrageid'] &&
+	$_SESSION['mod_absolventen']['uid']==$daten['id']) {
+      if (! $person->loeschen($daten['id'])) {
+  ?><p class="absolventen bearbeiten austragen status">
+<strong class="absolventen bearbeiten austragen status">
+Sie wurden aus der Datenbank ausgetragen.</strong>
+</p>
+       <?php    
+        logout($db);
+        select_jgs($db);
+      } else {
+  ?><p class="absolventen bearbeiten austragen status">
+<strong class="absolventen bearbeiten fehler">Beim Austragen ist ein Fehler aufgetreten.<br />
+Sie wurden <em>nicht</em> aus der Datenbank ausgetragen.</strong>
+</p>
+       <?php    
+	bearb_menu($db);
+      }
     }
   } else {
-    $_SESSION['austrageid']=uniqid($_SESSION['uid'] . "+");
-  $jg->erste_person($_SESSION['uid']);
-  $jg->mitjg=1;
-  $person->diese($_SESSION['uid']);
-?><h2>Austragen</h2>
-  <p><strong>Ihre kompletten Daten werden gelöscht.</strong></p>
-  <form method="post" action="<?=$PHP_SELF?>">
-  <input type="hidden" name="austrageid" value="<?=$_SESSION['austrageid']?>" />
-  <input type="hidden" name="uid" value="<?=$_SESSION['uid']?>">
-  Sind Sie sich wirklich sicher?
-  </p>
-  <p><input type="radio" name="wirklich" value="ja" id="ja" /> <label for="ja">Ja</label><br>
-     <input type="radio" name="wirklich" value="nein" id="nein" checked="1" /> 
-     <label for="nein">Nein</label>
-  </p>
-  <p><input type="submit" value="Weiter"/></p>
-  </form>
-<p>
-<table border="1">
+    $_SESSION['mod_absolventen']['austrageid']=uniqid($_SESSION['mod_absolventen']['uid'] . "+");
+    $jg->erste_person($_SESSION['mod_absolventen']['uid']);
+    $jg->mitjg=1;
+    $person->diese($_SESSION['mod_absolventen']['uid']);
+?><h2 class="absolventen bearbeiten austragen">Austragen</h2>
+<p class="absolventen bearbeiten austragen"><strong 
+     class="absolventen bearbeiten austragen">Ihre kompletten Daten werden gelöscht.</strong>
+     <br />Sind Sie sich wirklich sicher?
+</p>
+<form method="post" action="<?=$PHP_SELF?>" class="absolventen bearbeiten austragen">
+  <input type="hidden" name="austrageid" value="<?=$_SESSION['mod_absolventen']['austrageid']?>" />
+  <input type="hidden" name="id" value="<?=$_SESSION['mod_absolventen']['uid']?>">
+  <input type="hidden" name="aktion" value="austragen">
+  <div class="absolventen bearbeiten austragen formular abs-ja-nein"> 
+     <div class="absolventen bearbeiten formular austragen radio abs-ja"><input 
+         type="radio" name="wirklich" value="ja" id="abs-ja"  
+         class="absolventen bearbeiten formular austragen"/><label 
+         class="absolventen bearbeiten formular austragen radio abs-ja" for="abs-ja">Ja</label></div>
+     <div class="absolventen bearbeiten formular austragen radio abs-ja"><input 
+         type="radio" name="wirklich" value="nein" id="abs-nein" 
+         checked="1" class="absolventen bearbeiten formular austragen" /><label 
+         for="abs-nein" class="absolventen bearbeiten formular austragen radio abs-nein">Nein</label></div>
+     <div class="absolventen bearbeiten austragen knoepfe"><input type="submit" 
+         value="Weiter" class="absolventen bearbeiten austragen knoepfe"/></div>
+  </div>
+</form>
+<p class="absolventen bearbeiten anzeige">
+  <table border="1" class="absolventen bearbeiten anzeige anzeige_jg">
      <?php $jg->nurjgprint();
      $person->normprint(); ?>
-</table>
+  </table>
 </p>
 <?php
     $person->puffer_leeren();
-     $jg->puffer_leeren();
-
+    $jg->puffer_leeren();
   }
 }
 ?>
