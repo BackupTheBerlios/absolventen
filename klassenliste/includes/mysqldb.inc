@@ -1,4 +1,4 @@
-<?php /*
+<?php /* $Id: mysqldb.inc,v 1.4 2004/07/15 11:50:38 keinstein Exp $
 Copyright (c) 2000 SchlemmerSoft (Tobias Schlemmer)
 
 This program is free software; you can redistribute it and/or
@@ -16,6 +16,13 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 Der Autor kann unter der Email: Tobias.Schlemmer@web.de erreicht werden.
+
+$Log: mysqldb.inc,v $
+Revision 1.4  2004/07/15 11:50:38  keinstein
+fetch_array(): @mysql_fetch_assoc statt ..._array
+transaction-start() ohne Statusmeldung
+connect(): Versuche Zeichensatz für SQL zu setzen
+
 
 */ 
 
@@ -38,6 +45,7 @@ class mysqldb {
     $this->login=$my_login;
     $this->password=$my_password;
     $this->db=mysql_connect($this->server,$this->login,$this->password);
+    $this->query("set charset utf8");
   }
 
   function selectdb($dbname) {
@@ -54,7 +62,7 @@ class mysqldb {
   }
 
   function fetch_array($qu){
-    return mysql_fetch_array($qu,$this->db);
+    return @mysql_fetch_assoc($qu);
   }
   
   function insert_id() {
@@ -63,7 +71,6 @@ class mysqldb {
 
   function transaction_start() {
     $x=$this->query("start transaction");
-    echo $x;
     return $x;
   }
 
