@@ -1,4 +1,4 @@
-# $Id: convert-1.0-1.1.sql,v 1.5 2004/07/14 23:57:35 keinstein Exp $
+# $Id: convert-1.0-1.1.sql,v 1.6 2004/07/19 22:13:29 keinstein Exp $
 #
 # $log$
 
@@ -8,6 +8,8 @@ alter table StAg
   charset utf8,
   type=BDB;
 update StAg set login=id,aktualisierung=aktualisierung;
+update StAg set kommentar=replace(kommentar,'<br>','<br />'),
+                aktualisierung=aktualisierung;
 alter table StAg
   add unique login (login);
 
@@ -40,9 +42,12 @@ alter table StAgAdr
   drop telefon,
   charset utf8,
   type=BDB;
+update StAgAdr set anfang=replace(anfang,'<br>','<br />'),
+                   ende=replace(ende,'<br>','<br />');
 
 alter table StAgJg
   modify klasse varchar(255),
+  modify jahrgang int(4);
   charset utf8,
   type=BDB;
 update StAgJg set klasse="" where klasse="12" or klasse="1" or klasse="0"
