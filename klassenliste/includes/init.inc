@@ -1,4 +1,4 @@
-<?php /* $Id: init.inc,v 1.2 2004/07/15 11:43:14 keinstein Exp $
+<?php /* $Id: init.inc,v 1.3 2004/07/19 22:29:51 keinstein Exp $
 Copyright (c) 2000-2004 SchlemmerSoft (Tobias Schlemmer)
 
 This program is free software; you can redistribute it and/or
@@ -18,11 +18,15 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 Der Autor kann unter der Email: Tobias.Schlemmer@web.de erreicht werden.
 
 $Log: init.inc,v $
+Revision 1.3  2004/07/19 22:29:51  keinstein
+globale Variablen nach $GLOBALS
+mb_conver_variables verwendet glob. Var. zeichensätze
+
 Revision 1.2  2004/07/15 11:43:14  keinstein
 Rekodierung mit mb_*
 eigene ob-Callback-Funktion
 $_SESSION umbenannt
-$version gesetzt
+$GLOBALS['mod_absolventen_glob']['version'] gesetzt
 
 
 */ 
@@ -65,21 +69,25 @@ if (!empty($iconvnutzung)) {
 
   mb_http_output($_SESSION['mod_absolventen']['zeichensatz']);
   mb_internal_encoding("UTF-8");
-  mb_convert_variables("UTF-8","ASCII,UTF-8,ISO-8859-1",$HTTP_POST_VARS,$HTTP_GET_VARS);
+  mb_convert_variables("UTF-8",
+		       implode(",",$GLOBALS['mod_absolventen_glob']['zeichensätze']),
+		       $GLOBALS['mod_absolventen_glob']['post'],
+		       $GLOBALS['mod_absolventen_glob']['get']);
   ob_start("ob_absolventen_handler" /* "mb_output_handler" */);
 }
 
-if (isset($HTTP_POST_VARS['layout']))
-   $_SESSION['mod_absolventen']['layoutid']=$HTTP_POST_VARS['layout'];
-if (isset($HTTP_GET_VARS['layout'])) 
-   $_SESSION['mod_absolventen']['layoutid']=$HTTP_GET_VARS['layout'];
+if (isset($GLOBALS['mod_absolventen_glob']['post']['layout']))
+   $_SESSION['mod_absolventen']['layoutid']=$GLOBALS['mod_absolventen_glob']['post']['layout'];
+if (isset($GLOBALS['mod_absolventen_glob']['get']['layout'])) 
+   $_SESSION['mod_absolventen']['layoutid']=$GLOBALS['mod_absolventen_glob']['get']['layout'];
 if (!(isset($_SESSION['mod_absolventen']['layoutid']) && 
 	    ereg('^[0-9a-zA-Z_]*$',$_SESSION['mod_absolventen']['layoutid']))) 
     $_SESSION['mod_absolventen']['layoutid']="";
 
-if (isset($HTTP_POST_VARS['aktion'])) $aktion=$HTTP_POST_VARS['aktion'];
-else $aktion=isset($HTTP_GET_VARS['aktion'])?$HTTP_GET_VARS['aktion']:"";
+if (isset($GLOBALS['mod_absolventen_glob']['post']['aktion'])) $aktion=$GLOBALS['mod_absolventen_glob']['post']['aktion'];
+else $aktion=isset($GLOBALS['mod_absolventen_glob']['get']['aktion'])?$GLOBALS['mod_absolventen_glob']['get']['aktion']:"";
 
-$version="1.1 (Status: beta)";
+$GLOBALS['mod_absolventen_glob']['version']="1.1 (Status: beta)";
+
 
 ?>
